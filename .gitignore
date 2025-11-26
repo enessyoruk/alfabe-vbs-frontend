@@ -1,0 +1,32 @@
+﻿# Build / cache (Next.js, Turbopack vs.)
+.next/
+out/
+dist/
+.cache/
+.turbo/
+
+# Dependencies
+node_modules/
+
+# Vercel local config (gereksiz, commit etme)
+.vercel/
+
+# Env & local (gizli bilgiler)
+# Bu dosyalara API key, session secret vs. yazacaksın ama GIT'E GİTMEYECEKLER.
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# OS / Editor çöpleri
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+appsettings.Production.json

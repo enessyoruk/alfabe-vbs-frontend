@@ -1,0 +1,365 @@
+/* Tailwind v4 çekirdeği */
+@import "tailwindcss";
+
+/* (İsteğe bağlı) animasyon yardımcıları — paketi kurduysan kullan */
+@import "tw-animate-css";
+
+/* Dark mode helper (Tailwind v4 custom variant) */
+@custom-variant dark (&:is(.dark *));
+
+/* ---------- Design Tokens (Light) ---------- */
+:root {
+  /* Alfabe teması: cyan + indigo */
+  --background: #ffffff;
+  --foreground: #4b5563;
+
+  --card: #f9fafb;
+  --card-foreground: #4b5563;
+
+  --popover: #ffffff;
+  --popover-foreground: #4b5563;
+
+  --primary: #0891b2;
+  --primary-foreground: #ffffff;
+
+  --secondary: #6366f1;
+  --secondary-foreground: #ffffff;
+
+  --muted: #f9fafb;
+  --muted-foreground: #4b5563;
+
+  --accent: #f3f4f6;
+  --accent-foreground: #4b5563;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e5e7eb;
+  --input: #ffffff;
+  --ring: rgba(38, 182, 255, 0.5);
+
+  --chart-1: #6366f1;
+  --chart-2: #facc15;
+  --chart-3: #ef4444;
+  --chart-4: #22c55e;
+  --chart-5: #3b82f6;
+
+  --radius: 0.5rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #4b5563;
+  --sidebar-primary: rgb(253, 250, 250);
+  --sidebar-primary-foreground: #4b5563;
+  --sidebar-accent: #f3f4f6;
+  --sidebar-accent-foreground: #4b5563;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: rgba(38, 182, 255, 0.5);
+}
+
+/* ---------- Design Tokens (Dark) ---------- */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #f9fafb;
+
+  --card: #374151;
+  --card-foreground: #f9fafb;
+
+  --popover: #374151;
+  --popover-foreground: #f9fafb;
+
+  --primary: #0891b2;
+  --primary-foreground: #ffffff;
+
+  --secondary: #6366f1;
+  --secondary-foreground: #ffffff;
+
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
+
+  --accent: #4b5563;
+  --accent-foreground: #f9fafb;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #f9fafb;
+
+  --border: #4b5563;
+  --input: #374151;
+  --ring: rgba(38, 182, 255, 0.5);
+
+  --chart-1: #6366f1;
+  --chart-2: #facc15;
+  --chart-3: #ef4444;
+  --chart-4: #22c55e;
+  --chart-5: #3b82f6;
+
+  --radius: 0.5rem;
+
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #f9fafb;
+  --sidebar-primary: #374151;
+  --sidebar-primary-foreground: #f9fafb;
+  --sidebar-accent: #4b5563;
+  --sidebar-accent-foreground: #f9fafb;
+  --sidebar-border: #4b5563;
+  --sidebar-ring: rgba(38, 182, 255, 0.5);
+}
+
+/* ---------- Tailwind Theme Bindings ---------- */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ---------- Base Layer ---------- */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ---------- Animations ---------- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* Seamless marquee */
+@keyframes scroll-x {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(-400px * 5 - 24px * 4)); }
+}
+
+/* Gradient animations */
+@keyframes gradient-x {
+  0%, 100% {
+    background-size: 200% 200%;
+    background-position: left center;
+    background-image: linear-gradient(to right, #22c55e, white, #6366f1);
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+    background-image: linear-gradient(to left, #22c55e, white, #6366f1);
+  }
+}
+
+@keyframes gradient-x-slow {
+  0%, 100% {
+    background-size: 200% 200%;
+    background-position: left center;
+    background-image: linear-gradient(to right, #22c55e, white, #6366f1);
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+    background-image: linear-gradient(to left, #22c55e, white, #6366f1);
+  }
+}
+
+@keyframes gradient-sync {
+  0% {
+    background-size: 200% 200%;
+    background-position: left center;
+    background-image: linear-gradient(to right, #16a34a, #f8fafc, #22c55e);
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+    background-image: linear-gradient(to right, #22c55e, #f1f5f9, #16a34a);
+  }
+  100% {
+    background-size: 200% 200%;
+    background-position: left center;
+    background-image: linear-gradient(to right, #16a34a, #f8fafc, #22c55e);
+  }
+}
+
+@keyframes gradient-sync-alt {
+  0% {
+    background-size: 200% 200%;
+    background-position: right center;
+    background-image: linear-gradient(to left, #16a34a, #e2e8f0, #22c55e);
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: left center;
+    background-image: linear-gradient(to left, #22c55e, #f1f5f9, #16a34a);
+  }
+  100% {
+    background-size: 200% 200%;
+    background-position: right center;
+    background-image: linear-gradient(to left, #16a34a, #e2e8f0, #22c55e);
+  }
+}
+
+/* Utility classes for animations */
+.animate-fade-in-up { animation: fadeInUp 0.6s ease-out; }
+.animate-slide-in-right { animation: slideInRight 0.6s ease-out; }
+.animate-fade-in { animation: fadeIn 0.8s ease-out; }
+.animate-fade-in-delay { animation: fadeIn 0.8s ease-out 0.2s both; }
+.animate-fade-in-delay-2 { animation: fadeIn 0.8s ease-out 0.4s both; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-scroll-x { animation: scroll-x 60s linear infinite; }
+.pause-animation:hover { animation-play-state: paused; }
+
+.animate-gradient-x { animation: gradient-x 3s ease infinite; }
+.animate-gradient-x-slow { animation: gradient-x-slow 4s ease infinite; }
+.animate-gradient-sync { animation: gradient-sync 4s ease-in-out infinite; }
+.animate-gradient-sync-alt { animation: gradient-sync-alt 4s ease-in-out infinite 2s; }
+
+/* ---------- Auth arka planı için yumuşak blob animasyonları ---------- */
+
+@keyframes blob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(24px, -40px, 0) scale(1.04);
+  }
+  66% {
+    transform: translate3d(-18px, 20px, 0) scale(0.98);
+  }
+}
+
+.animate-blob {
+  animation: blob 12s ease-in-out infinite;
+}
+
+.animate-blob-slow {
+  animation: blob 24s ease-in-out infinite;
+}
+
+/* Küçük gecikmeler için yardımcı sınıflar */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* ---------- Daha canlı blob animasyonları ---------- */
+/* ---------- Blob Animasyonları ---------- */
+/* ---------- Blob Animasyonları (daha geniş alan, tüm ekranda gezer) ---------- */
+@keyframes blob-move-1 {
+  0%   { transform: translate3d(0,   0,   0); }
+  20%  { transform: translate3d(120px, 60px, 0); }
+  40%  { transform: translate3d(80px, 140px, 0); }
+  60%  { transform: translate3d(-40px, 120px, 0); }
+  80%  { transform: translate3d(-80px, 40px, 0); }
+  100% { transform: translate3d(0,   0,   0); }
+}
+
+@keyframes blob-move-2 {
+  0%   { transform: translate3d(0,   0,   0); }
+  20%  { transform: translate3d(-130px, 80px, 0); }
+  40%  { transform: translate3d(-60px, 160px, 0); }
+  60%  { transform: translate3d(40px, 110px, 0); }
+  80%  { transform: translate3d(80px, 30px, 0); }
+  100% { transform: translate3d(0,   0,   0); }
+}
+
+@keyframes blob-move-3 {
+  0%   { transform: translate3d(0,   0,   0); }
+  20%  { transform: translate3d(110px, -60px, 0); }
+  40%  { transform: translate3d(160px, 40px, 0); }
+  60%  { transform: translate3d(60px, 130px, 0); }
+  80%  { transform: translate3d(-60px, 80px, 0); }
+  100% { transform: translate3d(0,   0,   0); }
+}
+
+@keyframes blob-move-4 {
+  0%   { transform: translate3d(0,   0,   0); }
+  20%  { transform: translate3d(-120px, -80px, 0); }
+  40%  { transform: translate3d(-40px, 40px, 0); }
+  60%  { transform: translate3d(80px, 120px, 0); }
+  80%  { transform: translate3d(40px, 20px, 0); }
+  100% { transform: translate3d(0,   0,   0); }
+}
+
+@keyframes blob-move-5 {
+  0%   { transform: translate3d(0,   0,   0); }
+  20%  { transform: translate3d(90px, -70px, 0); }
+  40%  { transform: translate3d(150px, -20px, 0); }
+  60%  { transform: translate3d(60px, 80px, 0); }
+  80%  { transform: translate3d(-80px, 40px, 0); }
+  100% { transform: translate3d(0,   0,   0); }
+}
+
+@layer utilities {
+  .blob-anim-1 { animation: blob-move-1 26s ease-in-out infinite; }
+  .blob-anim-2 { animation: blob-move-2 28s ease-in-out infinite; }
+  .blob-anim-3 { animation: blob-move-3 30s ease-in-out infinite; }
+  .blob-anim-4 { animation: blob-move-4 32s ease-in-out infinite; }
+  .blob-anim-5 { animation: blob-move-5 34s ease-in-out infinite; }
+}
+
+
+
