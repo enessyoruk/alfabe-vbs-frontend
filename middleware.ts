@@ -8,7 +8,6 @@ const PROTECTED = [
   { prefix: "/teacher/", need: "Teacher" },
 ]
 
-
 type SessionPayload = {
   roles?: string[] | string
   sub?: string
@@ -25,21 +24,41 @@ async function verify(token: string): Promise<SessionPayload> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Statik/next dosyaları, api ve kök sayfa → middleware devre dışı
+  // Static and API — no auth, but CSP override MUST apply
+  const res = NextResponse.next()
+
+  // 🔥 ZORUNLU CSP OVERRIDE — BEYAZ EKRANI KALDIRAN KOD
+  res.headers.set(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https: blob:",
+      "style-src 'self' 'unsafe-inline' https:",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https:",
+      "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com.tr",
+      "connect-src 'self' https://* http://*",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ")
+  )
+
+  // Özel durumlar: API, statik dosyalar → auth kontrolü yok
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico") ||
+    pathname === "/login" ||
     pathname === "/"
   ) {
-    return NextResponse.next()
+    return res
   }
 
-  // Korunan rota mı?
+  // Protected route kontrolü
   const rule = PROTECTED.find((r) => pathname.startsWith(r.prefix))
-  if (!rule) return NextResponse.next()
+  if (!rule) return res
 
-  // Oturum çerezi (HttpOnly JWT)
   const token = req.cookies.get("vbs_session")?.value
   if (!token) {
     const url = new URL("/login", req.url)
@@ -50,28 +69,20 @@ export async function middleware(req: NextRequest) {
   try {
     const payload = await verify(token)
 
-    // 1) JWT içindeki roller
     let roles: string[] = []
-    if (Array.isArray(payload.roles)) {
-      roles = payload.roles
-    } else if (typeof payload.roles === "string" && payload.roles.trim()) {
-      roles = [payload.roles]
-    }
+    if (Array.isArray(payload.roles)) roles = payload.roles
+    else if (typeof payload.roles === "string") roles = [payload.roles]
 
-    // 2) Ek güvenli fallback: vbs_role çerezi (login sırasında biz yazıyoruz)
     const cookieRole = req.cookies.get("vbs_role")?.value
-    if (cookieRole && !roles.includes(cookieRole)) {
-      roles.push(cookieRole)
-    }
+    if (cookieRole && !roles.includes(cookieRole)) roles.push(cookieRole)
 
-    // 3) Hedef rota için gereken rol var mı?
     if (!roles.includes(rule.need)) {
       const url = new URL("/login", req.url)
       url.searchParams.set("next", pathname)
       return NextResponse.redirect(url)
     }
 
-    return NextResponse.next()
+    return res
   } catch {
     const url = new URL("/login", req.url)
     url.searchParams.set("next", pathname)
@@ -79,7 +90,6 @@ export async function middleware(req: NextRequest) {
   }
 }
 
-// Eski geniş matcher (login, diğer sayfalar bozulmuyordu)
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+  matcher: "/:path*",
 }
