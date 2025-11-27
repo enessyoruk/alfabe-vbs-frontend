@@ -1,7 +1,9 @@
-// app/api/parent/students/route.ts
+"use server"
+
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 const BACKEND =
   process.env.BACKEND_API_BASE ||
@@ -26,52 +28,39 @@ async function readJson(r: Response) {
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get("vbs_session")?.value || ""
-    const incomingCookie = req.headers.get("cookie") || ""
-
     const headers: Record<string, string> = {
-      Accept: "application/json",
+      Accept: "application/json"
     }
 
-    // 🔥 JWT'yi Authorization header'a koy
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
+    // 🔥 Gelen tüm çerezleri taşı
+    const rawCookie = req.headers.get("cookie")
+    if (rawCookie) {
+      headers.Cookie = rawCookie
     }
 
-    // 🔥 Cookie header'ını elle oluştur
-    if (incomingCookie) {
-      headers.Cookie = incomingCookie
-    } else if (token) {
-      headers.Cookie = `vbs_session=${token}`
-    }
-
-    const upstream = await fetch(
-      `${BACKEND}/api/vbs/parent/students`,
-      {
-        method: "GET",
-        cache: "no-store",
-        credentials: "include",
-        headers,
-      }
-    )
+    const upstream = await fetch(`${BACKEND}/api/vbs/parent/students`, {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include",
+      headers
+    })
 
     const data = await readJson(upstream)
 
-    return noStore(
-      NextResponse.json(
-        upstream.ok
-          ? data
-          : { items: [], count: 0, error: "Backend error" },
-        { status: 200 }
-      )
+    const res = NextResponse.json(
+      upstream.ok
+        ? data
+        : { items: [], count: 0, error: "Backend error" },
+      { status: 200 }
     )
-  } catch (err) {
-    console.error("proxy /parent/students", err)
-    return noStore(
-      NextResponse.json(
-        { items: [], count: 0, error: "Sunucu hatası" },
-        { status: 200 }
-      )
+
+    return noStore(res)
+  } catch (e) {
+    console.error("[proxy] /parent/students", e)
+    const res = NextResponse.json(
+      { items: [], count: 0, error: "Sunucu hatası" },
+      { status: 200 }
     )
+    return noStore(res)
   }
 }

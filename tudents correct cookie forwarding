@@ -1,0 +1,9 @@
+[33mfa4f6cb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fixx
+[33m59729f7[m fix
+[33m9365252[m fix parent students cookie forward
+[33mb2578c2[m update
+[33m560c74f[m Fix teacher classes proxy cookie forwarding
+[33m0bd652c[m Fix teacher/classes proxy: remove Authorization & cookie header, enable proper credentials forwarding
+[33m9cc409b[m Final CSP fix via middleware override
+[33ma7d23bc[m Fix CSP production: enable inline script + connect-src
+[33m8c229f8[m Initial VBS frontend commit
