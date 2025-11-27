@@ -19,31 +19,25 @@ export async function GET(req: NextRequest) {
 
     const upstream = await fetch(url, {
       method: "GET",
-      credentials: "include",     // 🔥 Cookie forward buradan yapılır
+      credentials: "include",
       cache: "no-store",
       headers: {
-        Accept: "application/json"
-        // ❌ Authorization YOK
-        // ❌ Cookie header YOK
+        Accept: "application/json",
+        cookie: req.headers.get("cookie") ?? ""   // 🔥 ÇÖZÜM
       }
     })
 
-    const raw = await upstream.text()
-    let data: any
-    try {
-      data = raw ? JSON.parse(raw) : {}
-    } catch {
-      data = { message: raw }
-    }
+    const body = await upstream.text()
+    let data: any = {}
+    try { data = body ? JSON.parse(body) : {} } catch { data = { message: body } }
 
     const res = NextResponse.json(data, { status: upstream.status })
-
     const ra = upstream.headers.get("Retry-After")
     if (ra) res.headers.set("Retry-After", ra)
 
     return noStore(res)
-  } catch (err) {
-    console.error("[proxy] /api/teacher/classes", err)
+
+  } catch {
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
