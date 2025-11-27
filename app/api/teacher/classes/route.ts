@@ -15,6 +15,15 @@ function noStore(res: NextResponse) {
 
 export async function GET(req: NextRequest) {
   try {
+    if (!BACKEND) {
+      return noStore(
+        NextResponse.json(
+          { error: "BACKEND_API_BASE tanımlı değil" },
+          { status: 500 }
+        )
+      )
+    }
+
     const url = `${BACKEND}/api/vbs/teacher/classes`
 
     const upstream = await fetch(url, {
@@ -23,21 +32,33 @@ export async function GET(req: NextRequest) {
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        cookie: req.headers.get("cookie") ?? ""   // 🔥 ÇÖZÜM
+        // tarayıcıdaki vbs_session + vbs_role + vbs_auth komple backend'e gidiyor
+        cookie: req.headers.get("cookie") ?? ""
       }
     })
 
-    const body = await upstream.text()
+    const text = await upstream.text()
     let data: any = {}
-    try { data = body ? JSON.parse(body) : {} } catch { data = { message: body } }
+
+    try {
+      data = text ? JSON.parse(text) : {}
+    } catch {
+      data = { message: text }
+    }
 
     const res = NextResponse.json(data, { status: upstream.status })
-    const ra = upstream.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
+
+    const retryAfter = upstream.headers.get("Retry-After")
+    if (retryAfter) res.headers.set("Retry-After", retryAfter)
 
     return noStore(res)
-
-  } catch {
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
+  } catch (err) {
+    console.error("[proxy] /api/teacher/classes error:", err)
+    return noStore(
+      NextResponse.json(
+        { error: "Sunucu hatası" },
+        { status: 500 }
+      )
+    )
   }
 }
