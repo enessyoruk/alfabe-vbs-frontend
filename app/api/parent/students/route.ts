@@ -1,6 +1,8 @@
+// app/api/parent/students/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 const BACKEND =
   process.env.BACKEND_API_BASE ||
@@ -25,22 +27,35 @@ async function readJson(r: Response) {
 
 export async function GET(req: NextRequest) {
   try {
+    // TARAYICIDAN GELEN COOKIE → VAR
+    const token = req.cookies.get("vbs_session")?.value || ""
+    const rawCookie = req.headers.get("cookie") || ""
+
     const headers: Record<string, string> = {
       Accept: "application/json",
     }
 
-    // 🔥 Gelen cookie'leri birebir backend’e taşı
-    const incomingCookie = req.headers.get("cookie")
-    if (incomingCookie) {
-      headers.Cookie = incomingCookie
+    // (1) JWT → AUTH HEADER
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
     }
 
-    const upstream = await fetch(`${BACKEND}/api/vbs/parent/students`, {
-      method: "GET",
-      cache: "no-store",
-      credentials: "include",
-      headers,
-    })
+    // (2) COOKIE → BACKEND'E FORWARD
+    if (rawCookie) {
+      headers.Cookie = rawCookie
+    } else if (token) {
+      headers.Cookie = `vbs_session=${token}`
+    }
+
+    const upstream = await fetch(
+      `${BACKEND}/api/vbs/parent/students`,
+      {
+        method: "GET",
+        cache: "no-store",
+        credentials: "include",
+        headers,
+      }
+    )
 
     const data = await readJson(upstream)
 
@@ -48,12 +63,13 @@ export async function GET(req: NextRequest) {
       NextResponse.json(
         upstream.ok
           ? data
-          : { items: [], count: 0, error: "Backend error" },
+          : { items: [], count: 0 },
         { status: 200 }
       )
     )
+
   } catch (err) {
-    console.error("[proxy] /parent/students error:", err)
+    console.error("proxy /parent/students", err)
     return noStore(
       NextResponse.json(
         { items: [], count: 0, error: "Sunucu hatası" },
