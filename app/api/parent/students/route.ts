@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
-export const dynamic = "force-dynamic"
 
 const BACKEND =
   process.env.BACKEND_API_BASE ||
@@ -17,67 +16,62 @@ function noStore(res: NextResponse) {
 }
 
 async function readJson(r: Response) {
-  const t = await r.text()
+  const txt = await r.text()
   try {
-    return t ? JSON.parse(t) : {}
+    return txt ? JSON.parse(txt) : {}
   } catch {
-    return t ? { message: t } : {}
+    return txt ? { message: txt } : {}
   }
 }
 
 export async function GET(req: NextRequest) {
   try {
-    // ❗ Parent backend sadece Cookie = "vbs_session=..." içerdiğinde çalışır.
-    // Bu yüzden tüm gelen cookie header'ını aynen forward ediyoruz.
-    const cookieHeader = req.headers.get("cookie") || ""
+    const token = req.cookies.get("vbs_session")?.value || ""
+    const incomingCookie = req.headers.get("cookie") || ""
 
     const headers: Record<string, string> = {
       Accept: "application/json",
     }
 
-    if (cookieHeader.trim() !== "") {
-      headers.Cookie = cookieHeader
+    // 🔥 JWT'yi Authorization header'a koy
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
     }
 
-    const search = req.nextUrl.search || ""
-    const upstreamUrl = `${BACKEND}/api/vbs/parent/students${search}`
-
-    const up = await fetch(upstreamUrl, {
-      method: "GET",
-      cache: "no-store",
-      headers,
-    })
-
-    const data = await readJson(up)
-
-    // Backend 2xx ise → direkt döndür
-    if (up.ok) {
-      const res = NextResponse.json(data, { status: 200 })
-      return noStore(res)
+    // 🔥 Cookie header'ını elle oluştur
+    if (incomingCookie) {
+      headers.Cookie = incomingCookie
+    } else if (token) {
+      headers.Cookie = `vbs_session=${token}`
     }
 
-    // Backend hata dönerse → boş data ama 200
-    const fallback = {
-      items: [],
-      count: 0,
-      error:
-        (data as any)?.error ||
-        (data as any)?.message ||
-        `Öğrenci listesi yüklenemedi (HTTP ${up.status})`,
-    }
-
-    const res = NextResponse.json(fallback, { status: 200 })
-    return noStore(res)
-  } catch (e) {
-    console.error("[parent/students]", e)
-    const res = NextResponse.json(
+    const upstream = await fetch(
+      `${BACKEND}/api/vbs/parent/students`,
       {
-        items: [],
-        count: 0,
-        error: "Beklenmeyen hata",
-      },
-      { status: 200 }
+        method: "GET",
+        cache: "no-store",
+        credentials: "include",
+        headers,
+      }
     )
-    return noStore(res)
+
+    const data = await readJson(upstream)
+
+    return noStore(
+      NextResponse.json(
+        upstream.ok
+          ? data
+          : { items: [], count: 0, error: "Backend error" },
+        { status: 200 }
+      )
+    )
+  } catch (err) {
+    console.error("proxy /parent/students", err)
+    return noStore(
+      NextResponse.json(
+        { items: [], count: 0, error: "Sunucu hatası" },
+        { status: 200 }
+      )
+    )
   }
 }
