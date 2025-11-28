@@ -1,55 +1,27 @@
 // app/api/auth/logout/route.ts
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-function noStore(res: NextResponse) {
-  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
-  res.headers.set("Pragma", "no-cache")
-  res.headers.set("Expires", "0")
-  return res
-}
-
-export async function POST(req: NextRequest) {
-  const isHttps = req.nextUrl.protocol === "https:" || process.env.NODE_ENV === "production"
-
+export async function POST() {
+  // Bearer modelde sunucu tarafında iptal edilecek token yok.
+  // Sadece frontend localStorage temizleyecek.
   const res = NextResponse.json({ success: true })
-  res.cookies.set({
-    name: "vbs_session",
+
+  // Varsayılan temizleme: Tarayıcıdaki cookie kalıntıları varsa onları da öldürelim.
+  // (Backend artık cookie kullanmıyor ama eski oturumlardan kalan kalıntılar olabilir.)
+  const kill = {
     value: "",
     httpOnly: true,
     path: "/",
-    sameSite: "lax",
-    secure: isHttps,
+    sameSite: "lax" as const,
+    secure: true,
     maxAge: 0,
-  })
-  res.cookies.set({
-    name: "vbs_role",
-    value: "",
-    httpOnly: false,
-    path: "/",
-    sameSite: "lax",
-    secure: isHttps,
-    maxAge: 0,
-  })
-  res.cookies.set({
-    name: "vbs_auth",
-    value: "",
-    httpOnly: false,
-    path: "/",
-    sameSite: "lax",
-    secure: isHttps,
-    maxAge: 0,
-  })
-  res.cookies.set({
-  name: "vbs_backend",
-  value: "",
-  httpOnly: true,
-  path: "/",
-  sameSite: "lax",
-  secure: isHttps,
-  maxAge: 0,
-})
+  }
 
-  return noStore(res)
+  res.cookies.set("vbs_session", "", kill)
+  res.cookies.set("vbs_role", "", { ...kill, httpOnly: false })
+  res.cookies.set("vbs_auth", "", { ...kill, httpOnly: false })
+
+  return res
 }

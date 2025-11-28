@@ -1,49 +1,85 @@
 // app/api/vbs/teacher/dashboard-analytics/route.ts
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const classId = searchParams.get("classId")
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
-  if (!classId) {
-    return NextResponse.json(
-      { error: "classId gereklidir." },
-      { status: 400 },
-    )
-  }
+const BACKEND =
+  process.env.BACKEND_API_BASE ||
+  process.env.NEXT_PUBLIC_API_BASE
 
+if (!BACKEND) {
+  throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is missing")
+}
+
+function noStore(res: NextResponse) {
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+  res.headers.set("Pragma", "no-cache")
+  res.headers.set("Expires", "0")
+  return res
+}
+
+export async function GET(req: NextRequest) {
   try {
-    const base = process.env.BACKEND_API_BASE || process.env.NEXT_PUBLIC_API_BASE
-    if (!base) {
-      return NextResponse.json(
-        { error: "BACKEND_API_BASE tanımlı değil." },
-        { status: 500 },
+    const classId = req.nextUrl.searchParams.get("classId")
+
+    if (!classId) {
+      return noStore(
+        NextResponse.json(
+          { error: "classId gereklidir." },
+          { status: 400 }
+        )
       )
     }
 
-    const url = `${base}/api/vbs/teacher/dashboard-analytics?classId=${encodeURIComponent(
-      classId,
-    )}`
+    // -------- TOKEN AL -----------
+    const token = req.headers.get("x-vbs-token")
+    if (!token) {
+      return noStore(
+        NextResponse.json(
+          { error: "Token missing" },
+          { status: 401 }
+        )
+      )
+    }
 
-    const res = await fetch(url, {
+    const url = `${BACKEND}/api/vbs/teacher/dashboard-analytics?classId=${encodeURIComponent(classId)}`
+
+    // -------- BACKEND'E İSTEĞİ GÖNDER -----------
+    const upstream = await fetch(url, {
       method: "GET",
-      credentials: "include",
       cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`, // ⭐ KRİTİK
+      },
     })
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: "Backend error", status: res.status },
-        { status: res.status },
-      )
+    const raw = await upstream.text()
+    let data: any = {}
+
+    try {
+      data = raw ? JSON.parse(raw) : {}
+    } catch {
+      data = { message: raw }
     }
 
-    const data = await res.json()
-    return NextResponse.json(data, { status: 200 })
+    const resp = NextResponse.json(
+      upstream.ok ? data : { error: "Backend error", status: upstream.status },
+      { status: upstream.ok ? 200 : upstream.status }
+    )
+
+    const retryAfter = upstream.headers.get("Retry-After")
+    if (retryAfter) resp.headers.set("Retry-After", retryAfter)
+
+    return noStore(resp)
   } catch (err) {
-    return NextResponse.json(
-      { error: "Fetch error", details: String(err) },
-      { status: 500 },
+    console.error("proxy /dashboard-analytics error:", err)
+    return noStore(
+      NextResponse.json(
+        { error: "Proxy error", details: String(err) },
+        { status: 500 }
+      )
     )
   }
 }

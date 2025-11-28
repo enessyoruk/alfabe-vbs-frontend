@@ -4,7 +4,13 @@ import { NextRequest, NextResponse } from "next/server"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-const BACKEND = process.env.BACKEND_API_BASE || process.env.NEXT_PUBLIC_API_BASE
+const BACKEND =
+  process.env.BACKEND_API_BASE ||
+  process.env.NEXT_PUBLIC_API_BASE
+
+if (!BACKEND) {
+  throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is missing")
+}
 
 function noStore(res: NextResponse) {
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
@@ -15,35 +21,36 @@ function noStore(res: NextResponse) {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!BACKEND) {
+    // ----------- TOKEN OKUMA -----------
+    // FE → login'de token'ı localStorage'a yazdı.
+    // BU ROUTE → browser'dan gelen custom header üzerinden token'ı okur.
+    const token = req.headers.get("x-vbs-token")
+
+    if (!token) {
       return noStore(
-        NextResponse.json(
-          { error: "BACKEND_API_BASE tanımlı değil" },
-          { status: 500 }
-        )
+        NextResponse.json({ error: "Token missing" }, { status: 401 })
       )
     }
 
     const url = `${BACKEND}/api/vbs/teacher/classes`
 
+    // ----------- BACKEND REQUEST -----------
     const upstream = await fetch(url, {
       method: "GET",
-      credentials: "include",
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        // tarayıcıdaki vbs_session + vbs_role + vbs_auth komple backend'e gidiyor
-        cookie: req.headers.get("cookie") ?? ""
+        Authorization: `Bearer ${token}`, // ⭐ CRITICAL
       }
     })
 
-    const text = await upstream.text()
+    const raw = await upstream.text()
     let data: any = {}
 
     try {
-      data = text ? JSON.parse(text) : {}
+      data = raw ? JSON.parse(raw) : {}
     } catch {
-      data = { message: text }
+      data = { message: raw }
     }
 
     const res = NextResponse.json(data, { status: upstream.status })
@@ -53,12 +60,9 @@ export async function GET(req: NextRequest) {
 
     return noStore(res)
   } catch (err) {
-    console.error("[proxy] /api/teacher/classes error:", err)
+    console.error("proxy /api/teacher/classes error:", err)
     return noStore(
-      NextResponse.json(
-        { error: "Sunucu hatası" },
-        { status: 500 }
-      )
+      NextResponse.json({ error: "Proxy error" }, { status: 500 })
     )
   }
 }

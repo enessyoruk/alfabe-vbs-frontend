@@ -6,8 +6,11 @@ export const dynamic = "force-dynamic"
 
 const BACKEND =
   process.env.BACKEND_API_BASE ||
-  process.env.NEXT_PUBLIC_API_BASE ||
-  ""
+  process.env.NEXT_PUBLIC_API_BASE
+
+if (!BACKEND) {
+  throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is missing")
+}
 
 function noStore(res: NextResponse) {
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
@@ -16,63 +19,56 @@ function noStore(res: NextResponse) {
   return res
 }
 
-async function readJson(r: Response) {
-  const txt = await r.text()
-  try {
-    return txt ? JSON.parse(txt) : {}
-  } catch {
-    return txt ? { message: txt } : {}
-  }
-}
-
 export async function GET(req: NextRequest) {
   try {
-    // TARAYICIDAN GELEN COOKIE → VAR
-    const token = req.cookies.get("vbs_session")?.value || ""
-    const rawCookie = req.headers.get("cookie") || ""
+    // ----------- TOKEN AL -----------
+    const token = req.headers.get("x-vbs-token")
 
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-    }
-
-    // (1) JWT → AUTH HEADER
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-
-    // (2) COOKIE → BACKEND'E FORWARD
-    if (rawCookie) {
-      headers.Cookie = rawCookie
-    } else if (token) {
-      headers.Cookie = `vbs_session=${token}`
-    }
-
-    const upstream = await fetch(
-      `${BACKEND}/api/vbs/parent/students`,
-      {
-        method: "GET",
-        cache: "no-store",
-        credentials: "include",
-        headers,
-      }
-    )
-
-    const data = await readJson(upstream)
-
-    return noStore(
-      NextResponse.json(
-        upstream.ok
-          ? data
-          : { items: [], count: 0 },
-        { status: 200 }
+    if (!token) {
+      return noStore(
+        NextResponse.json(
+          { items: [], count: 0, error: "Token missing" },
+          { status: 401 }
+        )
       )
+    }
+
+    const url = `${BACKEND}/api/vbs/parent/students`
+
+    // ----------- BACKEND'E İSTEĞİ GÖNDER -----------
+    const upstream = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,   // ⭐ KRİTİK
+      },
+    })
+
+    const raw = await upstream.text()
+    let data: any = {}
+
+    try {
+      data = raw ? JSON.parse(raw) : {}
+    } catch {
+      data = { message: raw }
+    }
+
+    // Backend 401/403 döndürse bile FE'ye 200 ve boş liste döner (eski davranışla uyumlu)
+    const resp = NextResponse.json(
+      upstream.ok ? data : { items: [], count: 0 },
+      { status: 200 }
     )
 
+    const retryAfter = upstream.headers.get("Retry-After")
+    if (retryAfter) resp.headers.set("Retry-After", retryAfter)
+
+    return noStore(resp)
   } catch (err) {
-    console.error("proxy /parent/students", err)
+    console.error("proxy /parent/students error:", err)
     return noStore(
       NextResponse.json(
-        { items: [], count: 0, error: "Sunucu hatası" },
+        { items: [], count: 0, error: "Proxy error" },
         { status: 200 }
       )
     )

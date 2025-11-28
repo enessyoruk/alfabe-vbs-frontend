@@ -2,32 +2,25 @@
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
-function requiredEnv(name: string): string {
-  const val = process.env[name]
-  if (!val || !val.trim()) {
-    throw new Error(`Missing env: ${name}`)
-  }
-  return val
-}
-
-const BACKEND_API_BASE =
+const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
 
-if (!BACKEND_API_BASE) {
+if (!BACKEND) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-const UPSTREAM_PATH = "/api/vbs/parent/guidance"
+const UPSTREAM = "/api/vbs/parent/guidance"
 
 const u = (path: string) =>
-  `${BACKEND_API_BASE}${path.startsWith("/") ? "" : "/"}${path}`
+  `${BACKEND}${path.startsWith("/") ? "" : "/"}${path}`
 
 function noStore(res: NextResponse) {
   res.headers.set(
     "Cache-Control",
-    "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
   )
   res.headers.set("Pragma", "no-cache")
   res.headers.set("Expires", "0")
@@ -36,52 +29,50 @@ function noStore(res: NextResponse) {
 
 async function readJson(r: Response) {
   const t = await r.text()
-  try {
-    return t ? JSON.parse(t) : {}
-  } catch {
-    return t ? { message: t } : {}
-  }
+  try { return t ? JSON.parse(t) : {} }
+  catch { return t ? { message: t } : {} }
 }
 
+// ---------------- AUTH STANDARD ----------------
 function buildAuthHeaders(req: NextRequest): Record<string, string> {
   const headers: Record<string, string> = { Accept: "application/json" }
 
+  // 1) Authorization header varsa → öncelikli
   const ah = req.headers.get("authorization") || ""
-  const cookieToken = req.cookies.get("authToken")?.value
-
   if (ah.toLowerCase().startsWith("bearer ")) {
     headers.Authorization = ah
-  } else if (cookieToken) {
-    headers.Authorization = `Bearer ${cookieToken}`
+  } else {
+    // 2) Cookie → vbs_session → fallback Bearer
+    const token = req.cookies.get("vbs_session")?.value
+    if (token) headers.Authorization = `Bearer ${token}`
   }
 
-  const incomingCookie = req.headers.get("cookie")
-  if (incomingCookie) headers.Cookie = incomingCookie
+  // Cookie forward
+  const raw = req.headers.get("cookie")
+  if (raw) headers.Cookie = raw
 
   return headers
 }
 
+// ---------------- GET ----------------
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    const upstreamUrl = new URL(u(UPSTREAM_PATH))
+    // Query param forward
+    const upstreamUrl = new URL(u(UPSTREAM))
     req.nextUrl.searchParams.forEach((v, k) =>
-      upstreamUrl.searchParams.set(k, v),
+      upstreamUrl.searchParams.set(k, v)
     )
 
     const up = await fetch(upstreamUrl.toString(), {
       method: "GET",
-      cache: "no-store",
       credentials: "include",
+      cache: "no-store",
       headers,
     })
 
-    // Backend 404 verirse: boş items ile 200 dön
     if (up.status === 404) {
-      console.warn(
-        "[proxy] /api/vbs/parent/guidance 404, boş items ile 200 dönülüyor.",
-      )
       const res = NextResponse.json({ items: [] }, { status: 200 })
       return noStore(res)
     }
@@ -93,16 +84,17 @@ export async function GET(req: NextRequest) {
     if (ra) res.headers.set("Retry-After", ra)
 
     return noStore(res)
+
   } catch (e) {
-    console.error("[proxy] /api/parent/guidance-notes error:", e)
+    console.error("[proxy] /api/parent/guidance-notes", e)
     return noStore(
       NextResponse.json(
         {
           items: [],
           error: "Rehberlik notları şu anda yüklenemedi. Lütfen sonra tekrar deneyin.",
         },
-        { status: 200 },
-      ),
+        { status: 200 }
+      )
     )
   }
 }

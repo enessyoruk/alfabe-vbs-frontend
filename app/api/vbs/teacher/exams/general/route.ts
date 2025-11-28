@@ -1,30 +1,24 @@
-// app/api/vbs/teacher/exams/general/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-function requiredEnv(name: string): string {
-  const val = process.env[name]
-  if (!val || !val.trim()) {
-    throw new Error(`Missing env: ${name}`)
-  }
-  return val
-}
-
-const BACKEND_API_BASE =
+// Base URL
+const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
 
-if (!BACKEND_API_BASE) {
+if (!BACKEND) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-const UPSTREAM_PATH = "/api/vbs/teacher/exams/general"
+const UPSTREAM = "/api/vbs/teacher/exams/general"
 
+// Build full URL
 const u = (p: string) =>
-  `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
+  `${BACKEND}${p.startsWith("/") ? "" : "/"}${p}`
 
+// No-store headers
 function noStore(res: NextResponse) {
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
   res.headers.set("Pragma", "no-cache")
@@ -32,6 +26,7 @@ function noStore(res: NextResponse) {
   return res
 }
 
+// Safe JSON reader
 async function readJson(r: Response) {
   const t = await r.text()
   try {
@@ -41,55 +36,59 @@ async function readJson(r: Response) {
   }
 }
 
+// Token handler (Bearer priority)
 function buildAuthHeaders(req: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  }
+  const headers: Record<string, string> = { Accept: "application/json" }
 
-  // 🔑 VBS oturumu → vbs_session çerezi
-  const ah = req.headers.get("authorization") || ""
+  const hAuth = req.headers.get("authorization") || ""
   const cookieToken = req.cookies.get("vbs_session")?.value
 
-  if (ah.toLowerCase().startsWith("bearer ")) {
-    headers.Authorization = ah
+  if (hAuth.toLowerCase().startsWith("bearer ")) {
+    headers.Authorization = hAuth
   } else if (cookieToken) {
+    // Cookie → Bearer dönüşümü (token mode)
     headers.Authorization = `Bearer ${cookieToken}`
   }
 
-  const incomingCookie = req.headers.get("cookie")
-  if (incomingCookie) headers.Cookie = incomingCookie
+  // Optional cookie forward — no auth impact
+  const rawCookie = req.headers.get("cookie")
+  if (rawCookie) headers.Cookie = rawCookie
 
   return headers
 }
 
-// GET → sınav listesi (teacher paneli)
+// --------------------------
+// GET → exam list
+// --------------------------
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
-    const search = req.nextUrl.search || ""
-    const upstreamUrl = u(UPSTREAM_PATH + search)
+    const q = req.nextUrl.search || ""
+    const url = u(UPSTREAM + q)
 
-    const up = await fetch(upstreamUrl, {
+    const up = await fetch(url, {
       method: "GET",
-      cache: "no-store",
       credentials: "include",
+      cache: "no-store",
       headers,
     })
 
     const data = await readJson(up)
-    const res = NextResponse.json(data, { status: up.status })
 
+    const resp = NextResponse.json(data, { status: up.status })
     const ra = up.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
+    if (ra) resp.headers.set("Retry-After", ra)
 
-    return noStore(res)
-  } catch (e) {
-    console.error("[proxy] GET /api/vbs/teacher/exams/general", e)
+    return noStore(resp)
+  } catch (err) {
+    console.error("[proxy] GET /api/vbs/teacher/exams/general", err)
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
 
-// POST → yeni genel sınav oluşturma
+// --------------------------
+// POST → create exam
+// --------------------------
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
@@ -97,52 +96,54 @@ export async function POST(req: NextRequest) {
     const ct = req.headers.get("content-type")
     if (ct) headers["Content-Type"] = ct
 
-    const bodyText = await req.text()
+    const body = await req.text()
 
-    const up = await fetch(u(UPSTREAM_PATH), {
+    const up = await fetch(u(UPSTREAM), {
       method: "POST",
-      cache: "no-store",
       credentials: "include",
+      cache: "no-store",
       headers,
-      body: bodyText || undefined,
+      body: body || undefined,
     })
 
     const data = await readJson(up)
-    const res = NextResponse.json(data, { status: up.status })
 
+    const resp = NextResponse.json(data, { status: up.status })
     const ra = up.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
+    if (ra) resp.headers.set("Retry-After", ra)
 
-    return noStore(res)
-  } catch (e) {
-    console.error("[proxy] POST /api/vbs/teacher/exams/general", e)
+    return noStore(resp)
+  } catch (err) {
+    console.error("[proxy] POST /api/vbs/teacher/exams/general", err)
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
 
-// DELETE → sınav silme (?id=23 gibi query ile çağrılıyor)
+// --------------------------
+// DELETE → delete exam
+// --------------------------
 export async function DELETE(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
-    const search = req.nextUrl.search || ""
-    const upstreamUrl = u(UPSTREAM_PATH + search)
+    const q = req.nextUrl.search || ""
+    const url = u(UPSTREAM + q)
 
-    const up = await fetch(upstreamUrl, {
+    const up = await fetch(url, {
       method: "DELETE",
-      cache: "no-store",
       credentials: "include",
+      cache: "no-store",
       headers,
     })
 
     const data = await readJson(up)
-    const res = NextResponse.json(data, { status: up.status })
 
+    const resp = NextResponse.json(data, { status: up.status })
     const ra = up.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
+    if (ra) resp.headers.set("Retry-After", ra)
 
-    return noStore(res)
-  } catch (e) {
-    console.error("[proxy] DELETE /api/vbs/teacher/exams/general", e)
+    return noStore(resp)
+  } catch (err) {
+    console.error("[proxy] DELETE /api/vbs/teacher/exams/general", err)
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }

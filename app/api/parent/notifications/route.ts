@@ -26,43 +26,56 @@ async function readJson(res: Response) {
   }
 }
 
+function buildAuthHeaders(req: NextRequest) {
+  const headers: Record<string, string> = { Accept: "application/json" }
+
+  // 1) Authorization header varsa → kullan
+  const ah = req.headers.get("authorization") || ""
+  if (ah.toLowerCase().startsWith("bearer ")) {
+    headers.Authorization = ah
+    return headers
+  }
+
+  // 2) Cookie içinden Bearer token → vbs_session
+  const cookieToken = req.cookies.get("vbs_session")?.value
+  if (cookieToken) {
+    headers.Authorization = `Bearer ${cookieToken}`
+  }
+
+  return headers
+}
+
 export async function GET(req: NextRequest) {
   try {
     const search = req.nextUrl.search || ""
 
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-    }
+    const headers = buildAuthHeaders(req)
 
-    // Backend cookie forward
-    const backendCookie = req.cookies.get("vbs_backend")?.value
-    if (backendCookie) {
-      headers.Cookie = decodeURIComponent(backendCookie)
-    }
-
-    const upstream = await fetch(u(`/api/vbs/parent/notifications${search}`), {
-      method: "GET",
-      cache: "no-store",
-      headers,
-    })
+    const upstream = await fetch(
+      u(`/api/vbs/parent/notifications${search}`),
+      {
+        method: "GET",
+        cache: "no-store",
+        headers,
+      }
+    )
 
     const data = await readJson(upstream)
 
-    // ✅ Eğer backend 2xx dönerse → aynen data'yı 200 ile geç
+    // ✔ Backend başarılı → birebir passthrough
     if (upstream.ok) {
       const res = NextResponse.json(data, { status: 200 })
       return noStore(res)
     }
 
-    // ❌ Backend 4xx/5xx ise:
-    // UI tarafına 500 yansıtmak istemiyoruz.
+    // ❌ Backend hata → UI kırılmasın
     const messageFromBackend =
       (data as any)?.error ||
       (data as any)?.message ||
-      `Bildirimler şu anda yüklenemedi. (HTTP ${upstream.status})`
+      `Bildirimler alınamadı (HTTP ${upstream.status})`
 
     const fallback = {
-      items: [] as any[],
+      items: [],
       count: 0,
       error: messageFromBackend,
     }
@@ -71,14 +84,15 @@ export async function GET(req: NextRequest) {
     return noStore(res)
   } catch (e) {
     console.error("[proxy] /api/parent/notifications error:", e)
-    const res = NextResponse.json(
-      {
-        items: [],
-        count: 0,
-        error: "Bildirimler şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin.",
-      },
-      { status: 200 }
+
+    const fallback = {
+      items: [],
+      count: 0,
+      error: "Bildirimler şu anda yüklenemedi. Lütfen tekrar deneyin.",
+    }
+
+    return noStore(
+      NextResponse.json(fallback, { status: 200 })
     )
-    return noStore(res)
   }
 }

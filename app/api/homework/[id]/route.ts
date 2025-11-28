@@ -1,80 +1,94 @@
+// app/api/teacher/homework/[id]/route.ts
 import { type NextRequest, NextResponse } from "next/server"
-import jwt from "jsonwebtoken"
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+export const runtime = "nodejs"
 
-// Mock homework data (same as main route)
-const mockHomework = [
-  {
-    id: "1",
-    teacherId: "1",
-    classId: "1",
-    className: "9-A Matematik",
-    title: "Fonksiyonlar Konu Tekrarı",
-    description: "Sayfa 45-50 arası sorular çözülecek. Grafik çizimi ve fonksiyon tanımları üzerinde durulacak.",
-    subject: "Matematik",
-    assignedDate: "2024-01-15",
-    dueDate: "2024-01-25",
-    status: "active",
-    submissions: [
-      {
-        studentId: "1",
-        studentName: "Elif Yılmaz",
-        status: "pending",
-        submittedDate: null,
-        grade: null,
-        feedback: null,
-      },
-      {
-        studentId: "2",
-        studentName: "Can Demir",
-        status: "completed",
-        submittedDate: "2024-01-20",
-        grade: "85/100",
-        feedback: "İyi çalışma!",
-      },
-    ],
-  },
-  {
-    id: "2",
-    teacherId: "1",
-    classId: "2",
-    className: "10-B Matematik",
-    title: "Türev Uygulamaları",
-    description: "Türev konusu uygulama soruları. Sayfa 78-85 arası problemler çözülecek.",
-    subject: "Matematik",
-    assignedDate: "2024-01-12",
-    dueDate: "2024-01-22",
-    status: "active",
-    submissions: [],
-  },
-]
+// ENV
+const BACKEND_API_BASE =
+  process.env.BACKEND_API_BASE ||
+  process.env.NEXT_PUBLIC_API_BASE
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+if (!BACKEND_API_BASE) {
+  throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
+}
+
+const u = (p: string) =>
+  `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
+
+// no-store
+function noStore(res: NextResponse) {
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+  res.headers.set("Pragma", "no-cache")
+  res.headers.set("Expires", "0")
+  return res
+}
+
+async function readJson(r: Response) {
+  const t = await r.text()
   try {
-    const token = request.cookies.get("authToken")?.value
-    if (!token) {
-      return NextResponse.json({ error: "Yetkilendirme gerekli" }, { status: 401 })
+    return t ? JSON.parse(t) : {}
+  } catch {
+    return t ? { message: t } : {}
+  }
+}
+
+/* -------------------------------------------
+   AUTH — TOKEN MODEL
+   ------------------------------------------- */
+function buildAuthHeaders(req: NextRequest) {
+  const headers: Record<string, string> = { Accept: "application/json" }
+
+  const ah = req.headers.get("authorization") || ""
+  if (ah.toLowerCase().startsWith("bearer ")) {
+    headers.Authorization = ah
+  } else {
+    const token = req.cookies.get("vbs_session")?.value
+    if (token) headers.Authorization = `Bearer ${token}`
+  }
+
+  const incomingCookie = req.headers.get("cookie")
+  if (incomingCookie) headers.Cookie = incomingCookie
+
+  return headers
+}
+
+/* -------------------------------------------
+   GET — Single Homework Detail
+   ------------------------------------------- */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const homeworkId = params.id
+    if (!homeworkId) {
+      return noStore(
+        NextResponse.json({ error: "Missing homework id" }, { status: 400 })
+      )
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any
-    const homework = mockHomework.find((hw) => hw.id === params.id)
+    const headers = buildAuthHeaders(req)
 
-    if (!homework) {
-      return NextResponse.json({ error: "Ödev bulunamadı" }, { status: 404 })
-    }
+    const upstreamUrl = u(`/api/vbs/teacher/homework/${homeworkId}`)
 
-    // Check authorization
-    if (decoded.userType === "teacher" && homework.teacherId !== decoded.userId) {
-      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      homework,
+    const up = await fetch(upstreamUrl, {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include",
+      headers,
     })
-  } catch (error) {
-    console.error("Homework details API error:", error)
-    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
+
+    const data = await readJson(up)
+
+    const res = NextResponse.json(data, { status: up.status })
+    const ra = up.headers.get("Retry-After")
+    if (ra) res.headers.set("Retry-After", ra)
+
+    return noStore(res)
+  } catch (err) {
+    console.error("[proxy] GET /api/teacher/homework/[id]", err)
+    return noStore(
+      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
+    )
   }
 }

@@ -4,19 +4,16 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-
-  const bearer = req.headers.get("authorization") || "";
-  const sessionCookie = req.cookies.get("vbs_session")?.value || null;
+  const auth = req.headers.get("authorization") || "";
 
   const res = NextResponse.json(
     {
       ok: true,
-      bearerHeader: bearer,
-      hasBearer: bearer.toLowerCase().startsWith("bearer "),
-      bearerToken: bearer.toLowerCase().startsWith("bearer ")
-        ? bearer.substring(7)
+      authHeader: auth,
+      hasBearer: auth.toLowerCase().startsWith("bearer "),
+      bearerToken: auth.toLowerCase().startsWith("bearer ")
+        ? auth.substring(7)
         : null,
-      cookieToken: sessionCookie,
     },
     { status: 200 }
   );
