@@ -1,3 +1,4 @@
+//app/api/vbs/teacher/exams/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -26,17 +27,26 @@ async function readJson(r: Response) {
   catch { return t ? { message: t } : {} }
 }
 
+// 🔥 DÜZELTİLMİŞ buildHeaders
 function buildHeaders(req: NextRequest): Record<string, string> {
-  const h: Record<string, string> = {
-    Accept: "application/json",
+  const headers: Record<string, string> = {
+    Accept: "application/json"
   }
 
-  // 🔥 SADECE Authorization gönderiyoruz
-  const jwt = req.cookies.get("vbs_session")?.value
-  if (jwt) h.Authorization = `Bearer ${jwt}`
+  // 1) Authorization header varsa kullan
+  const ah = req.headers.get("authorization")
+  if (ah) headers.Authorization = ah
 
-  // ❌ Cookie header EKLEMİYORUZ (kritik)
-  return h
+  // 2) Eğer Authorization yoksa cookie’den token al
+  const cookieToken = req.cookies.get("vbs_session")?.value
+  if (cookieToken && !headers.Authorization)
+    headers.Authorization = `Bearer ${cookieToken}`
+
+  // 3) 🔥 EN KRİTİK: tüm cookie’yi upstream’e gönder
+  const cookieHeader = req.headers.get("cookie")
+  if (cookieHeader) headers.Cookie = cookieHeader
+
+  return headers
 }
 
 // GET — exam list
@@ -49,7 +59,7 @@ export async function GET(req: NextRequest) {
       method: "GET",
       credentials: "include",
       cache: "no-store",
-      headers,
+      headers
     })
 
     const data = await readJson(upstream)
@@ -65,7 +75,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST
+// POST — exam create
 export async function POST(req: NextRequest) {
   try {
     const headers = buildHeaders(req)
@@ -79,7 +89,7 @@ export async function POST(req: NextRequest) {
       credentials: "include",
       cache: "no-store",
       headers,
-      body: body || undefined,
+      body: body || undefined
     })
 
     const data = await readJson(upstream)
