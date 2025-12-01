@@ -1,26 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+// app/api/debug/cookies/route.ts
+import { NextRequest, NextResponse } from "next/server"
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
+  const cookies = req.cookies.getAll()
 
-  const bearer = req.headers.get("authorization") || "";
-  const sessionCookie = req.cookies.get("vbs_session")?.value || null;
-
-  const res = NextResponse.json(
+  return NextResponse.json(
     {
       ok: true,
-      bearerHeader: bearer,
-      hasBearer: bearer.toLowerCase().startsWith("bearer "),
-      bearerToken: bearer.toLowerCase().startsWith("bearer ")
-        ? bearer.substring(7)
-        : null,
-      cookieToken: sessionCookie,
+      fromNext: cookies,
+      rawCookieHeader: req.headers.get("cookie") || "",
     },
-    { status: 200 }
-  );
-
-  res.headers.set("Cache-Control", "no-store");
-  return res;
+    {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }
+  )
 }

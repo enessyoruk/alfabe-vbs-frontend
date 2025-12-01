@@ -2,6 +2,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 function requiredEnv(name: string): string {
   const val = process.env[name]
@@ -19,8 +20,10 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-const u = (path: string) =>
-  `${BACKEND_API_BASE}${path.startsWith("/") ? "" : "/"}${path}`
+
+const UPSTREAM_PATH = "/api/vbs/teacher/homework"
+
+const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
 function noStore(res: NextResponse) {
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
@@ -29,133 +32,70 @@ function noStore(res: NextResponse) {
   return res
 }
 
-async function readJson(res: Response) {
-  const text = await res.text()
-  try { return text ? JSON.parse(text) : {} } catch { return text ? { message: text } : {} }
+async function readJson(r: Response) {
+  const t = await r.text()
+  try {
+    return t ? JSON.parse(t) : {}
+  } catch {
+    return t ? { message: t } : {}
+  }
 }
 
-function buildAuthHeaders(req: NextRequest) {
-  const headers: Record<string, string> = { Accept: "application/json" }
-
-  // Authorization header öncelikli; yoksa cookie token (vbs_session)
-  const ah = req.headers.get("authorization") || ""
-  const cookieToken = req.cookies.get("vbs_session")?.value
-  if (ah.toLowerCase().startsWith("bearer ")) headers.Authorization = ah
-  else if (cookieToken) headers.Authorization = `Bearer ${cookieToken}`
-
-  // Cookie-based oturum varsa çerezi upstream’e geçir
-  const incomingCookie = req.headers.get("cookie")
-  if (incomingCookie) headers.Cookie = incomingCookie
-
-  return headers
-}
-
-// GET /api/teacher/homework?classId=...
 export async function GET(req: NextRequest) {
   try {
-    const headers = buildAuthHeaders(req)
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    }
 
-    const incoming = new URL(req.url)
-    const target = new URL(u("/api/vbs/teacher/homework"))
-    const classId = incoming.searchParams.get("classId")
-    if (classId) target.searchParams.set("classId", classId)
+    const authHeader = req.headers.get("authorization") || ""
+    const cookieToken = req.cookies.get("authToken")?.value
 
-    const upstream = await fetch(target.toString(), {
+    if (authHeader.toLowerCase().startsWith("bearer ")) {
+      headers.Authorization = authHeader
+    } else if (cookieToken) {
+      headers.Authorization = `Bearer ${cookieToken}`
+    }
+
+    const incomingCookie = req.headers.get("cookie")
+    if (incomingCookie) {
+      headers.Cookie = incomingCookie
+    }
+
+    const url = new URL(req.url)
+    const upstreamUrl = new URL(u(UPSTREAM_PATH))
+
+    url.searchParams.forEach((value, key) => {
+      upstreamUrl.searchParams.set(key, value)
+    })
+
+    const upstreamRes = await fetch(upstreamUrl.toString(), {
       method: "GET",
       cache: "no-store",
       credentials: "include",
       headers,
     })
 
-    const body = await readJson(upstream)
-    const res = NextResponse.json(body, { status: upstream.status })
-    const ra = upstream.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
-    return noStore(res)
-  } catch (e) {
-    console.error("[proxy] /api/teacher/homework GET", e)
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
-  }
-}
+    const data = await readJson(upstreamRes)
 
-// POST /api/teacher/homework
-export async function POST(req: NextRequest) {
-  try {
-    const headers = buildAuthHeaders(req)
-    headers["Content-Type"] = "application/json"
-
-    const bodyText = await req.text()
-    const upstream = await fetch(u("/api/vbs/teacher/homework"), {
-      method: "POST",
-      cache: "no-store",
-      credentials: "include",
-      headers,
-      body: bodyText,
+    const res = NextResponse.json(data, {
+      status: upstreamRes.status,
     })
 
-    const body = await readJson(upstream)
-    const res = NextResponse.json(body, { status: upstream.status })
-    const ra = upstream.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
+    const retryAfter = upstreamRes.headers.get("Retry-After")
+    if (retryAfter) {
+      res.headers.set("Retry-After", retryAfter)
+    }
+
     return noStore(res)
-  } catch (e) {
-    console.error("[proxy] /api/teacher/homework POST", e)
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
-  }
-}
-
-// PUT /api/teacher/homework
-export async function PUT(req: NextRequest) {
-  try {
-    const headers = buildAuthHeaders(req)
-    headers["Content-Type"] = "application/json"
-
-    const bodyText = await req.text()
-    const upstream = await fetch(u("/api/vbs/teacher/homework"), {
-      method: "PUT",
-      cache: "no-store",
-      credentials: "include",
-      headers,
-      body: bodyText,
-    })
-
-    const body = await readJson(upstream)
-    const res = NextResponse.json(body, { status: upstream.status })
-    const ra = upstream.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
-    return noStore(res)
-  } catch (e) {
-    console.error("[proxy] /api/teacher/homework PUT", e)
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
-  }
-}
-
-// DELETE /api/teacher/homework?id=123
-export async function DELETE(req: NextRequest) {
-  try {
-    const headers = buildAuthHeaders(req)
-
-    const incoming = new URL(req.url)
-    const target = new URL(u("/api/vbs/teacher/homework"))
-    const id = incoming.searchParams.get("id")
-    const action = incoming.searchParams.get("action")
-    if (id) target.searchParams.set("id", id)
-    if (action) target.searchParams.set("action", action)
-
-    const upstream = await fetch(target.toString(), {
-      method: "DELETE",
-      cache: "no-store",
-      credentials: "include",
-      headers,
-    })
-
-    const body = await readJson(upstream)
-    const res = NextResponse.json(body, { status: upstream.status })
-    const ra = upstream.headers.get("Retry-After")
-    if (ra) res.headers.set("Retry-After", ra)
-    return noStore(res)
-  } catch (e) {
-    console.error("[proxy] /api/teacher/homework DELETE", e)
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
+  } catch (error) {
+    console.error("[proxy] /api/teacher/homework GET", error)
+    return noStore(
+      NextResponse.json(
+        {
+          error: "Sunucu hatası",
+        },
+        { status: 500 },
+      ),
+    )
   }
 }

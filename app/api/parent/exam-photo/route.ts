@@ -15,26 +15,31 @@ export async function GET(req: NextRequest) {
   const fileUrl = searchParams.get("url")
 
   if (!fileUrl) {
-    return NextResponse.json({ error: "Missing url" }, { status: 400 })
+    return new Response("Missing url", { status: 400 })
   }
 
-  // ----- AUTH -----
+  // ---- AUTH (Doğru sıra) ----
   const headers: Record<string, string> = {
     Accept: "*/*",
   }
 
+  // 1) Authorization header varsa → kullan
   const ah = req.headers.get("authorization") || ""
   if (ah.toLowerCase().startsWith("bearer ")) {
     headers.Authorization = ah
   } else {
+    // 2) Fallback → vbs_session → Bearer
     const token = req.cookies.get("vbs_session")?.value
-    if (token) headers.Authorization = `Bearer ${token}`
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
   }
 
+  // 3) Cookie forward (bazı backend'ler buna ihtiyaç duyuyor)
   const rawCookie = req.headers.get("cookie")
   if (rawCookie) headers.Cookie = rawCookie
 
-  // ----- FETCH UPSTREAM -----
+  // ---- Upstream fetch ----
   const upstream = await fetch(fileUrl, {
     method: "GET",
     credentials: "include",
@@ -43,16 +48,15 @@ export async function GET(req: NextRequest) {
 
   if (!upstream.ok) {
     const text = await upstream.text().catch(() => "")
-    return NextResponse.json(
-      { error: text || "Fotoğraf çekilemedi" },
+    return new Response(
+      text || "Fotoğraf çekilemedi",
       { status: upstream.status }
     )
   }
 
   const arrayBuffer = await upstream.arrayBuffer()
 
-  // NextResponse ile binary response gönder
-  const res = new NextResponse(arrayBuffer, {
+  const res = new Response(arrayBuffer, {
     status: 200,
     headers: {
       "Content-Type": upstream.headers.get("Content-Type") || "image/jpeg",

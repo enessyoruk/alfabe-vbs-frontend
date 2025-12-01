@@ -4,7 +4,15 @@ import { jwtVerify } from "jose"
 
 export const runtime = "nodejs"
 
-function noStore(res: NextResponse) {
+function ok<T>(data: T, init?: number) {
+  const res = NextResponse.json({ ok: true, ...data }, { status: init ?? 200 })
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate")
+  res.headers.set("Pragma", "no-cache")
+  res.headers.set("Expires", "0")
+  return res
+}
+function fail(msg: string, status = 400) {
+  const res = NextResponse.json({ ok: false, error: msg }, { status })
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate")
   res.headers.set("Pragma", "no-cache")
   res.headers.set("Expires", "0")
@@ -13,42 +21,30 @@ function noStore(res: NextResponse) {
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization") || ""
-    if (!authHeader.toLowerCase().startsWith("bearer ")) {
-      return noStore(
-        NextResponse.json({ ok: false, error: "Bearer token yok" }, { status: 401 })
-      )
-    }
-
-    const token = authHeader.slice("bearer ".length).trim()
-    const secret = new TextEncoder().encode(process.env.SESSION_SECRET)
+    const session = req.cookies.get("vbs_session")?.value || null
+    const role = req.cookies.get("vbs_role")?.value || null
+    const auth = req.cookies.get("vbs_auth")?.value || null
 
     let payload: any = null
     let verified = false
-
-    try {
-      const { payload: p } = await jwtVerify(token, secret)
-      payload = p
-      verified = true
-    } catch (err: any) {
-      payload = { verifyError: err?.message || "Token doğrulama hatası" }
+    if (session) {
+      try {
+        const secret = new TextEncoder().encode(process.env.SESSION_SECRET || "")
+        const { payload: p } = await jwtVerify(session, secret)
+        payload = p
+        verified = true
+      } catch (e: any) {
+        payload = { verifyError: e?.message || "verify failed" }
+      }
     }
 
-    return noStore(
-      NextResponse.json(
-        {
-          ok: true,
-          verified,
-          claims: payload,
-          rawToken: token,
-          url: req.nextUrl.href,
-        },
-        { status: 200 }
-      )
-    )
-  } catch (err: any) {
-    return noStore(
-      NextResponse.json({ ok: false, error: err?.message || "debug error" }, { status: 500 })
-    )
+    return ok({
+      cookies: { has_vbs_session: !!session, vbs_role: role, vbs_auth: auth },
+      verified,
+      claims: payload,
+      url: req.nextUrl.href,
+    })
+  } catch (e: any) {
+    return fail(e?.message || "debug error", 500)
   }
 }

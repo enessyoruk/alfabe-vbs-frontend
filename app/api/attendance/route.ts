@@ -3,9 +3,14 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-// =========================
-// ENV
-// =========================
+function requiredEnv(name: string): string {
+  const val = process.env[name]
+  if (!val || !val.trim()) {
+    throw new Error(`Missing env: ${name}`)
+  }
+  return val
+}
+
 const BACKEND_API_BASE =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
@@ -14,12 +19,9 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-const u = (p: string) =>
-  `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
-// =========================
-// NO-STORE
-// =========================
+const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
+
 function noStore(res: NextResponse) {
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
   res.headers.set("Pragma", "no-cache")
@@ -27,9 +29,6 @@ function noStore(res: NextResponse) {
   return res
 }
 
-// =========================
-// JSON SAFE READER
-// =========================
 async function readJson(r: Response) {
   const t = await r.text()
   try {
@@ -39,49 +38,65 @@ async function readJson(r: Response) {
   }
 }
 
-// =========================
-// AUTH (Bearer only)
-// =========================
+// 🔹 Eksik olan fonksiyon buydu
 function buildAuthHeaders(req: NextRequest) {
   const headers: Record<string, string> = { Accept: "application/json" }
 
+  // Authorization header öncelikli; yoksa cookie token (opsiyonel)
   const ah = req.headers.get("authorization") || ""
+  const cookieToken = req.cookies.get("authToken")?.value
   if (ah.toLowerCase().startsWith("bearer ")) {
     headers.Authorization = ah
+  } else if (cookieToken) {
+    headers.Authorization = `Bearer ${cookieToken}`
   }
 
-  // ❌ Cookie forward kaldırıldı (cookie ile işimiz yok)
+  // Cookie-based oturum varsa çerezi upstream’e geçir
+  const incomingCookie = req.headers.get("cookie")
+  if (incomingCookie) {
+    headers.Cookie = incomingCookie
+  }
+
   return headers
 }
 
-// =========================
-// GET — Attendance list
-// =========================
+// -------- GET: devamsızlık listeleme --------
+// parent:  /api/vbs/parent/students/{studentId}/attendance?month=YYYY-MM
+// teacher: /api/vbs/teacher/attendance?classId=...&month=YYYY-MM
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
-    const incoming = new URL(req.url)
 
+    const incoming = new URL(req.url)
     const studentId = incoming.searchParams.get("studentId")
     const classId = incoming.searchParams.get("classId")
 
-    // Parent bazı yerlerde boş sorgu atıyordu → boş başarılı dön
+    // 🔹 HİÇ studentId VE classId YOKSA:
+    // Parent panelde bazı yerler sadece parentId ile ping atıyor.
+    // Gerçek backend endpoint’i olmadığı için boş ama başarılı cevap dönüyoruz.
     if (!studentId && !classId) {
-      return noStore(
-        NextResponse.json({ items: [], count: 0 }, { status: 200 }),
+      const res = NextResponse.json(
+        {
+          items: [],
+          count: 0,
+        },
+        { status: 200 },
       )
+      return noStore(res)
     }
 
+    // Hedef URL’yi belirle
     let upstreamUrl: URL
-
     if (studentId) {
+      // Parent: belirli öğrencinin yoklaması
       upstreamUrl = new URL(u(`/api/vbs/parent/students/${studentId}/attendance`))
     } else {
+      // Teacher: sınıf yoklaması (classId zorunlu)
       upstreamUrl = new URL(u(`/api/vbs/teacher/attendance`))
       if (classId) upstreamUrl.searchParams.set("classId", classId)
     }
 
-    // Diğer query’leri aynen kopyala
+    // Diğer tüm query parametrelerini aynen geçir (örn. month, parentId vs.)
     incoming.searchParams.forEach((v, k) => {
       if (k !== "studentId" && k !== "classId") {
         upstreamUrl.searchParams.set(k, v)
@@ -99,7 +114,6 @@ export async function GET(req: NextRequest) {
     const res = NextResponse.json(data, { status: up.status })
     const ra = up.headers.get("Retry-After")
     if (ra) res.headers.set("Retry-After", ra)
-
     return noStore(res)
   } catch (e) {
     console.error("[proxy] /api/attendance GET", e)
@@ -107,16 +121,14 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// =========================
-// POST — Teacher creates attendance
-// =========================
+// -------- POST: devamsızlık oluştur (öğretmen) --------
+// teacher: POST /api/vbs/teacher/attendance
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
     headers["Content-Type"] = "application/json"
 
-    const body = await req.text()
-
+    const body = await req.text() // gövdeyi değiştirmeden ilet
     const up = await fetch(u("/api/vbs/teacher/attendance"), {
       method: "POST",
       cache: "no-store",
@@ -129,7 +141,6 @@ export async function POST(req: NextRequest) {
     const res = NextResponse.json(data, { status: up.status })
     const ra = up.headers.get("Retry-After")
     if (ra) res.headers.set("Retry-After", ra)
-
     return noStore(res)
   } catch (e) {
     console.error("[proxy] /api/attendance POST", e)
@@ -137,16 +148,14 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// =========================
-// PUT — Teacher updates attendance
-// =========================
+// -------- PUT: devamsızlık güncelle (öğretmen) --------
+// teacher: PUT /api/vbs/teacher/attendance
 export async function PUT(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
     headers["Content-Type"] = "application/json"
 
     const body = await req.text()
-
     const up = await fetch(u("/api/vbs/teacher/attendance"), {
       method: "PUT",
       cache: "no-store",
@@ -159,7 +168,6 @@ export async function PUT(req: NextRequest) {
     const res = NextResponse.json(data, { status: up.status })
     const ra = up.headers.get("Retry-After")
     if (ra) res.headers.set("Retry-After", ra)
-
     return noStore(res)
   } catch (e) {
     console.error("[proxy] /api/attendance PUT", e)

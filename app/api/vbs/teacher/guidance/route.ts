@@ -1,23 +1,38 @@
+// app/api/vbs/teacher/guidance/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-const BACKEND =
+
+
+// Env fallback
+function requiredEnv(name: string): string {
+  const val = process.env[name]
+  if (!val || !val.trim()) {
+    throw new Error(`Missing env: ${name}`)
+  }
+  return val
+}
+
+const BACKEND_API_BASE =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
 
-if (!BACKEND) {
+if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-const UPSTREAM = "/api/vbs/teacher/guidance"
+const UPSTREAM_PATH = "/api/vbs/teacher/guidance"
 
 const u = (p: string) =>
-  `${BACKEND}${p.startsWith("/") ? "" : "/"}${p}`
+  `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
 function noStore(res: NextResponse) {
-  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+  res.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  )
   res.headers.set("Pragma", "no-cache")
   res.headers.set("Expires", "0")
   return res
@@ -32,46 +47,58 @@ async function readJson(r: Response) {
   }
 }
 
-// Authorization builder — TOKEN MODE
 function buildAuthHeaders(req: NextRequest): Record<string, string> {
   const headers: Record<string, string> = {
-    Accept: "application/json"
+    Accept: "application/json",
   }
 
-  const hAuth = req.headers.get("authorization") || ""
-  const cookieToken = req.cookies.get("vbs_session")?.value
-
-  // 1) Eğer frontend explicit bearer gönderirse → öncelik
-  if (hAuth.toLowerCase().startsWith("bearer ")) {
-    headers.Authorization = hAuth
+  // Eğer Authorization varsa → kullan
+  const ah = req.headers.get("authorization") || ""
+  if (ah.toLowerCase().startsWith("bearer ")) {
+    headers.Authorization = ah
+  } else {
+    // HttpOnly cookie → vbs_session
+    const session = req.cookies.get("vbs_session")?.value
+    if (session) {
+      headers.Authorization = `Bearer ${session}`
+    }
   }
-  // 2) Yoksa → oturum çerezindeki token’ı Bearer’a çevir
-  else if (cookieToken) {
-    headers.Authorization = `Bearer ${cookieToken}`
+
+  // Normal Cookie header — bazı isteklerde boştur
+  const incomingCookie = req.headers.get("cookie")
+  if (incomingCookie) {
+    headers.Cookie = incomingCookie
   }
 
-  // Cookie forward — optional
-  const rawCookie = req.headers.get("cookie")
-  if (rawCookie) headers.Cookie = rawCookie
+  // ⭐ ZORUNLU FIX ⭐
+  // Next runtime cookie'yi POST/PUT sırasında saklıyor → biz zorla iletiyoruz
+  const raw = req.cookies.toString()
+  if (raw) {
+    headers["X-Forwarded-Cookie"] = raw
+  }
 
   return headers
 }
 
-// ----------------- GET -----------------
+
+
+// GET: Öğrenci rehberlik verileri
 export async function GET(req: NextRequest) {
+  
+
   try {
     const headers = buildAuthHeaders(req)
 
-    const upstreamUrl = new URL(u(UPSTREAM))
+    const upstreamUrl = new URL(u(UPSTREAM_PATH))
     req.nextUrl.searchParams.forEach((v, k) =>
-      upstreamUrl.searchParams.set(k, v)
+      upstreamUrl.searchParams.set(k, v),
     )
 
     const up = await fetch(upstreamUrl.toString(), {
       method: "GET",
-      credentials: "include",
       cache: "no-store",
-      headers
+      credentials: "include",
+      headers,
     })
 
     const data = await readJson(up)
@@ -82,26 +109,31 @@ export async function GET(req: NextRequest) {
 
     return noStore(res)
   } catch (e) {
-    console.error("[proxy] GET /api/teacher/guidance", e)
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
+    console.error("[proxy] /api/teacher/guidance GET", e)
+    return noStore(
+      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }),
+    )
   }
 }
 
-// ----------------- POST -----------------
+// POST: Yeni rehberlik notu ekleme
 export async function POST(req: NextRequest) {
+ 
+
   try {
     const headers = buildAuthHeaders(req)
+
     const ct = req.headers.get("content-type")
     if (ct) headers["Content-Type"] = ct
 
     const body = await req.text()
 
-    const up = await fetch(u(UPSTREAM), {
+    const up = await fetch(u(UPSTREAM_PATH), {
       method: "POST",
-      credentials: "include",
       cache: "no-store",
+      credentials: "include",
       headers,
-      body
+      body,
     })
 
     const data = await readJson(up)
@@ -112,26 +144,29 @@ export async function POST(req: NextRequest) {
 
     return noStore(res)
   } catch (e) {
-    console.error("[proxy] POST /api/teacher/guidance", e)
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
+    console.error("[proxy] /api/teacher/guidance POST", e)
+    return noStore(
+      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }),
+    )
   }
 }
 
-// ----------------- PUT -----------------
+// PUT: Rehberlik kaydı güncelleme
 export async function PUT(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
+
     const ct = req.headers.get("content-type")
     if (ct) headers["Content-Type"] = ct
 
     const body = await req.text()
 
-    const up = await fetch(u(UPSTREAM), {
+    const up = await fetch(u(UPSTREAM_PATH), {
       method: "PUT",
-      credentials: "include",
       cache: "no-store",
+      credentials: "include",
       headers,
-      body
+      body,
     })
 
     const data = await readJson(up)
@@ -142,7 +177,9 @@ export async function PUT(req: NextRequest) {
 
     return noStore(res)
   } catch (e) {
-    console.error("[proxy] PUT /api/teacher/guidance", e)
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
+    console.error("[proxy] /api/teacher/guidance PUT", e)
+    return noStore(
+      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }),
+    )
   }
 }

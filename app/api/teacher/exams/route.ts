@@ -1,3 +1,4 @@
+// app/api/teacher/exams/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -5,15 +6,12 @@ export const dynamic = "force-dynamic"
 
 const BACKEND =
   process.env.BACKEND_API_BASE ||
-  process.env.NEXT_PUBLIC_API_BASE
+  process.env.NEXT_PUBLIC_API_BASE ||
+  "http://localhost:5000"
 
-if (!BACKEND) {
-  throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
-}
+const UPSTREAM_PATH = "/api/vbs/teacher/exams"
 
-const UPSTREAM = "/api/vbs/teacher/exams"
-
-const u = (p: string) =>
+const buildUrl = (p: string) =>
   `${BACKEND}${p.startsWith("/") ? "" : "/"}${p}`
 
 function noStore(res: NextResponse) {
@@ -32,99 +30,95 @@ async function readJson(r: Response) {
   }
 }
 
-// ---------- AUTH HEADER + COOKIE ----------
 function buildAuthHeaders(req: NextRequest): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/json",
   }
 
-  // 1) Bearer var → direkt kullan
-  const ah = req.headers.get("authorization") || ""
-  if (ah.toLowerCase().startsWith("bearer ")) {
-    headers.Authorization = ah
-  } else {
-    // 2) Bearer yoksa → JWT cookie → Authorization: Bearer <token>
-    const token = req.cookies.get("vbs_session")?.value
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
+  // ✔ Backend'in istediği TEK cookie: vbs_session
+  const jwtCookie = req.cookies.get("vbs_session")?.value
+
+  if (jwtCookie) {
+    headers.Authorization = `Bearer ${jwtCookie}`
   }
 
-  // 3) Tüm çerezleri forward
-  const rawCookie = req.headers.get("cookie")
-  if (rawCookie) headers.Cookie = rawCookie
+  // ✔ Classes route ile aynı davranış – COOKIE'Yİ TAMAMEN FORWARD ET
+  const incomingCookie = req.headers.get("cookie")
+  if (incomingCookie) {
+    headers.Cookie = incomingCookie
+  }
 
   return headers
 }
 
-// ====================================================
-// GET → Öğretmene ait sınav listesi
-// ====================================================
+// ===============================
+// GET → Sınav listesi
+// ===============================
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
     const search = req.nextUrl.search || ""
+    const url = buildUrl(UPSTREAM_PATH + search)
 
-    const up = await fetch(u(UPSTREAM + search), {
+    const upstream = await fetch(url, {
       method: "GET",
       cache: "no-store",
       credentials: "include",
       headers,
     })
 
-    // Backend endpoint yoksa boş dönelim
-    if (up.status === 404) {
+    // Backend mevcut değilse (404) boş liste döndür
+    if (upstream.status === 404) {
       return noStore(
-        NextResponse.json({ exams: [] }, { status: 200 })
+        NextResponse.json(
+          { items: [] },
+          { status: 200 }
+        )
       )
     }
 
-    const data = await readJson(up)
-    const res = NextResponse.json(data, { status: up.status })
+    const data = await readJson(upstream)
+    const res = NextResponse.json(data, { status: upstream.status })
 
-    const ra = up.headers.get("Retry-After")
+    const ra = upstream.headers.get("Retry-After")
     if (ra) res.headers.set("Retry-After", ra)
 
     return noStore(res)
-
-  } catch (err) {
-    console.error("[proxy] GET /teacher/exams", err)
+  } catch (e) {
+    console.error("[proxy] GET /api/teacher/exams error:", e)
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
 
-// ====================================================
-// POST → Öğretmen yeni sınav yükler
-// ====================================================
+// ===============================
+// POST → Sınav / sınav sonucu yükleme
+// ===============================
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    // Content-Type forward
     const ct = req.headers.get("content-type")
     if (ct) headers["Content-Type"] = ct
 
-    // Body aynen forward
-    const body = await req.text()
+    const bodyText = await req.text()
 
-    const up = await fetch(u(UPSTREAM), {
+    const upstream = await fetch(buildUrl(UPSTREAM_PATH), {
       method: "POST",
       cache: "no-store",
       credentials: "include",
       headers,
-      body: body || undefined,
+      body: bodyText || undefined,
     })
 
-    const data = await readJson(up)
-    const res = NextResponse.json(data, { status: up.status })
+    const data = await readJson(upstream)
+    const res = NextResponse.json(data, { status: upstream.status })
 
-    const ra = up.headers.get("Retry-After")
+    const ra = upstream.headers.get("Retry-After")
     if (ra) res.headers.set("Retry-After", ra)
 
     return noStore(res)
-
-  } catch (err) {
-    console.error("[proxy] POST /teacher/exams", err)
+  } catch (e) {
+    console.error("[proxy] POST /api/teacher/exams error:", e)
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
