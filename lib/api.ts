@@ -165,7 +165,6 @@ const baseVbs = {
   },
 
   teacher: {
-  
   classes: "/api/teacher/classes",
   classStudents: (classId: string) =>
     `/api/teacher/classes/${classId}/students`,
@@ -176,12 +175,15 @@ const baseVbs = {
   guidance: "/api/vbs/teacher/guidance",
   guidanceParentNote: "/api/vbs/teacher/guidance/parent-note",
   notifications: "/api/vbs/teacher/notifications",
-  generalExams: "/api/vbs/teacher/exams",
-  generalExamAnalysis: "/api/vbs/teacher/exams/analysis",
+
+  // 🔥 Yeni doğru yollar
+  exams: "/api/vbs/teacher/exams",                       // GET + POST
+  examsUploadImage: "/api/vbs/teacher/exams/upload-image", // POST multipart
+  generalExamsDelete: "/api/vbs/teacher/exams/general",   // DELETE ?id=
+  generalExamAnalysis: "/api/vbs/teacher/exams/analysis", // POST
   totalStudents: "/api/vbs/teacher/total-students",
-  exams: "/api/vbs/teacher/exams",
-  examsUploadImage: "/api/vbs/teacher/exams/upload-image",
 },
+
 
 } as const
 

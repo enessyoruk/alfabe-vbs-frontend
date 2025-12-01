@@ -1,4 +1,3 @@
-// app/teacher/exam-upload/page.tsx
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -32,6 +31,7 @@ import {
   ArrowLeft,
   X,
 } from "lucide-react"
+
 import { http, endpoints } from "@/lib/api"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? ""
@@ -58,6 +58,7 @@ type GeneralExamItem = {
 
 export default function ExamUploadPage() {
   const router = useRouter()
+
   const user = useMemo(() => {
     if (typeof window === "undefined") return null
     try {
@@ -72,12 +73,12 @@ export default function ExamUploadPage() {
   const [classesLoading, setClassesLoading] = useState(true)
   const [classesError, setClassesError] = useState<string | null>(null)
 
-  // list
+  // exam list
   const [examResults, setExamResults] = useState<GeneralExamItem[]>([])
   const [listLoading, setListLoading] = useState(false)
   const [listError, setListError] = useState<string | null>(null)
 
-  // dialogs/forms
+  // dialogs
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false)
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false)
@@ -85,17 +86,18 @@ export default function ExamUploadPage() {
   const [isAnalysisViewOpen, setIsAnalysisViewOpen] = useState(false)
   const [viewAnalysisContent, setViewAnalysisContent] = useState("")
 
+  // form fields
   const [selectedGrade, setSelectedGrade] = useState("")
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([])
   const [examTitle, setExamTitle] = useState("")
   const [examDescription, setExamDescription] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [selectedFileBlobUrl, setSelectedFileBlobUrl] = useState<string>("")
-  const [selectedExamForAnalysis, setSelectedExamForAnalysis] = useState<string>("")
+  const [selectedFileBlobUrl, setSelectedFileBlobUrl] = useState("")
+  const [selectedExamForAnalysis, setSelectedExamForAnalysis] = useState("")
   const [analysisContent, setAnalysisContent] = useState("")
   const [busy, setBusy] = useState(false)
 
-  // Sınıf seviyeleri (5–8 sabit + DB’den gelenler)
+  // grade options
   const gradeOptions = useMemo(() => {
     const dynamic = Array.from(
       new Set(
@@ -112,7 +114,6 @@ export default function ExamUploadPage() {
     )
   }, [classes])
 
-  // Seçilen seviyeye göre dersleri filtrele
   const filteredClasses = useMemo(
     () =>
       classes.filter((c) =>
@@ -121,143 +122,131 @@ export default function ExamUploadPage() {
     [classes, selectedGrade],
   )
 
-  // Checkbox toggle
   function toggleClassSelection(id: string) {
     setSelectedClassIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     )
   }
 
-  // ==== load classes from backend (VBS) ====
-    useEffect(() => {
-  const ctrl = new AbortController();
+  // 🔥 LOAD CLASSES
+  useEffect(() => {
+    const ctrl = new AbortController()
 
-  (async () => {
+    ;(async () => {
+      try {
+        setClassesLoading(true)
+        setClassesError(null)
+
+        const res = await http.get<any>(endpoints.teacher.classes, {
+          signal: ctrl.signal,
+        })
+
+        const arr = Array.isArray(res)
+          ? res
+          : Array.isArray(res?.items)
+          ? res.items
+          : []
+
+        const mapped: ClassItem[] = arr.map((x: any) => ({
+          id: String(x.id ?? x.classId),
+          name: String(
+            x.name ??
+              x.className ??
+              x.dersAdi ??
+              `Ders #${x.id ?? x.classId}`
+          ),
+          grade: x.grade ?? x.sinifSeviyesi ?? x.classLevel ?? null,
+        }))
+
+        setClasses(mapped)
+      } catch (e: any) {
+        if (e?.name === "AbortError") return
+        setClassesError(e?.message || "Sınıf listesi alınamadı.")
+      } finally {
+        setClassesLoading(false)
+      }
+    })()
+
+    return () => ctrl.abort()
+  }, [])
+
+  // 🔥 LOAD EXAMS (CORRECT ENDPOINT!)
+  async function refreshExams() {
     try {
-      setClassesLoading(true);
-      setClassesError(null);
+      setListLoading(true)
+      setListError(null)
 
-      const res = await http.get<any>(endpoints.teacher.classes, {
-        signal: ctrl.signal,
-      });
+      const res = await fetch(endpoints.teacher.exams, {
+        method: "GET",
+        credentials: "include",
+      })
 
-      // gelen format teacher/classes → array veya items olabilir
-      const arr = Array.isArray(res)
-        ? res
-        : Array.isArray(res?.items)
-        ? res.items
-        : [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-      const mapped: ClassItem[] = arr.map((x: any) => ({
-        id: String(x.id ?? x.classId),
-        name: String(
-          x.name ??
+      const data = await res.json()
+
+      const raw = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data?.exams)
+        ? data.exams
+        : []
+
+      const list: GeneralExamItem[] = raw.map((x: any) => {
+        const rawPath =
+          x.fileUrl ?? x.filePath ?? x.file ?? x.imageUrl ?? undefined
+
+        const resolvedFileUrl = rawPath ?? ""
+
+        const fileName =
+          x.fileName ??
+          (rawPath ? rawPath.split(/[\\/]/).pop() : undefined)
+
+        const uploadDateStr =
+          x.uploadDate ?? x.createdAt ?? x.examDate ?? new Date().toISOString()
+
+        return {
+          id: x.id ?? x.examId ?? x.generalExamId ?? 0,
+          classId: Number(x.classId ?? x.dersId ?? 0),
+          className:
             x.className ??
             x.dersAdi ??
-            `Ders #${x.id ?? x.classId}`
-        ),
-        grade: x.grade ?? x.sinifSeviyesi ?? x.classLevel ?? null,
-      }));
+            `Ders #${x.classId ?? x.dersId ?? ""}`,
+          examTitle: x.examTitle ?? x.title ?? "",
+          description: x.description ?? null,
+          uploadDate: uploadDateStr,
+          fileName,
+          fileUrl: resolvedFileUrl,
+          studentCount: Number(x.studentCount ?? 0),
+          hasAnalysis: Boolean(
+            x.hasAnalysis ??
+              x.analysisExists ??
+              (typeof x.analysisCount === "number" && x.analysisCount > 0),
+          ),
+          analysis:
+            x.analysis ??
+            x.analysisSummary ??
+            x.latestAnalysis ??
+            null,
+        }
+      })
 
-      setClasses(mapped);
+      setExamResults(list)
     } catch (e: any) {
-      if (e?.name === "AbortError") return;
-      setClassesError(e?.message || "Sınıf listesi alınamadı.");
+      console.error("[exam-upload] refreshExams error", e)
+      setListError(e?.message || "Sınavlar yüklenemedi.")
+      setExamResults([])
     } finally {
-      setClassesLoading(false);
+      setListLoading(false)
     }
-  })();
-
-  return () => ctrl.abort();
-}, []);
-
-
-
-
-  async function refreshExams() {
-  try {
-    setListLoading(true)
-    setListError(null)
-
-    const res = await fetch(endpoints.teacher.exams, {
-      method: "GET",
-      credentials: "include",
-    })
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`)
-    }
-
-    const data = await res.json()
-
-    const raw: any[] = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data?.exams)
-      ? data.exams
-      : []
-
-    const list: GeneralExamItem[] = raw.map((x: any) => {
-      const rawPath: string | undefined =
-        x.fileUrl ?? x.filePath ?? x.file ?? x.imageUrl ?? undefined
-
-      const resolvedFileUrl = rawPath ?? ""
-
-      const fileName: string | undefined =
-        x.fileName ??
-        (rawPath ? rawPath.split(/[\\/]/).pop() : undefined) ??
-        undefined
-
-      const uploadDateStr: string =
-        x.uploadDate ?? x.createdAt ?? x.examDate ?? new Date().toISOString()
-
-      return {
-        id: x.id ?? x.examId ?? x.generalExamId ?? 0,
-        classId: Number(x.classId ?? x.dersId ?? 0),
-        className:
-          x.className ??
-          x.dersAdi ??
-          x.class ??
-          x.classTitle ??
-          `Ders #${x.classId ?? x.dersId ?? ""}`,
-        examTitle: x.examTitle ?? x.title ?? "",
-        description: x.description ?? x.aciklama ?? null,
-        uploadDate: uploadDateStr,
-        fileName,
-        fileUrl: resolvedFileUrl,
-        studentCount: Number(x.studentCount ?? x.ogrenciSayisi ?? 0),
-        hasAnalysis: Boolean(
-          x.hasAnalysis ??
-            x.analysisExists ??
-            (typeof x.analysisCount === "number" && x.analysisCount > 0),
-        ),
-        analysis:
-          x.analysis ??
-          x.analysisSummary ??
-          x.latestAnalysis ??
-          x.latestAnalysisSummary ??
-          null,
-      }
-    })
-
-    setExamResults(list)
-  } catch (e: any) {
-    console.error("[exam-upload] refreshExams error", e)
-    setListError(e?.message || "Sınavlar yüklenemedi.")
-    setExamResults([])
-  } finally {
-    setListLoading(false)
   }
-}
-
-
 
   useEffect(() => {
     refreshExams()
   }, [])
 
-  // ==== image upload (Next proxy → backend exams/upload-image) ====
+  // 🔥 IMAGE UPLOAD (correct proxy)
   async function uploadExamImage(file: File): Promise<string> {
     const form = new FormData()
     form.append("image", file)
@@ -274,112 +263,91 @@ export default function ExamUploadPage() {
     }
 
     const data = await res.json()
-    const fileUrl = data?.fileUrl as string | undefined
+    if (!data?.fileUrl) throw new Error("Sunucudan fileUrl dönmedi.")
 
-    if (!fileUrl) {
-      throw new Error("Sunucudan fileUrl dönmedi.")
-    }
-
-    return fileUrl
+    return data.fileUrl
   }
 
-  // ==== file input ====
-    // ==== file input ====
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Bazı ortamlarda MIME type boş gelebiliyor → uzantı ile de kontrol et
     const mimeOk = file.type?.startsWith("image/")
     const ext = file.name.split(".").pop()?.toLowerCase()
     const extOk = ext === "jpg" || ext === "jpeg" || ext === "png"
 
     if (!mimeOk && !extOk) {
-      // Geçersiz dosya → state ve input'u temizle
       setSelectedFile(null)
       setSelectedFileBlobUrl("")
       e.target.value = ""
-      alert("Lütfen yalnızca görüntü dosyası seçin (JPG/PNG).")
+      alert("Yalnızca JPG/PNG yükleyebilirsiniz.")
       return
     }
 
-    // Önceki blob URL varsa temizle
-    if (selectedFileBlobUrl) {
-      URL.revokeObjectURL(selectedFileBlobUrl)
-    }
+    if (selectedFileBlobUrl) URL.revokeObjectURL(selectedFileBlobUrl)
 
     setSelectedFile(file)
-    const blobUrl = URL.createObjectURL(file)
-    setSelectedFileBlobUrl(blobUrl)
+    setSelectedFileBlobUrl(URL.createObjectURL(file))
   }
 
-
-  // ==== create general exam (VBS, multi-class) ====
+  // 🔥 CREATE GENERAL EXAM
   async function handleUploadExam() {
-  if (selectedClassIds.length === 0 || !examTitle || !selectedFile) {
-    alert("En az bir ders, başlık ve dosya zorunlu.")
-    return
-  }
-
-  setBusy(true)
-  try {
-    // 1) Resmi upload et
-    const filePath = await uploadExamImage(selectedFile)
-
-    // 2) Kullanıcıyı oku
-    const raw = localStorage.getItem("vbs:user")
-    const parsed = raw ? JSON.parse(raw) : null
-    const user = parsed?.user || null
-
-    // 3) Backend'in istediği TeacherId (Ogretmenler.Id)
-    const teacherId = user?.teacherNumericId
-      ? Number(user.teacherNumericId)
-      : null
-
-    // 4) Payload (TEK teacherId)
-    const payload = {
-      classIds: selectedClassIds.map((id) => Number(id)),
-      examTitle,
-      description: examDescription || null,
-      fileUrl: filePath,
-      teacherId
-    }
-
-    await http.post(endpoints.teacher.generalExams, payload)
-
-    // Temizlik
-    setIsUploadDialogOpen(false)
-    setSelectedGrade("")
-    setSelectedClassIds([])
-    setExamTitle("")
-    setExamDescription("")
-    setSelectedFile(null)
-    setSelectedFileBlobUrl("")
-
-    await refreshExams()
-
-  } catch (e: any) {
-    console.error(e)
-    alert(e?.message || "Yükleme başarısız.")
-  } finally {
-    setBusy(false)
-  }
-}
-
-
-
-  // ==== create analysis for general exam (VBS) ====
-  async function handleCreateAnalysis() {
-    if (!selectedExamForAnalysis || !analysisContent.trim()) {
-      alert("Sınav seçin ve analiz içeriği girin.")
+    if (selectedClassIds.length === 0 || !examTitle || !selectedFile) {
+      alert("Ders, başlık ve dosya zorunlu.")
       return
     }
+
+    setBusy(true)
+    try {
+      const filePath = await uploadExamImage(selectedFile)
+
+      const raw = localStorage.getItem("vbs:user")
+      const parsed = raw ? JSON.parse(raw) : null
+      const user = parsed?.user || null
+
+      const teacherId = user?.teacherNumericId
+        ? Number(user.teacherNumericId)
+        : null
+
+      const payload = {
+        classIds: selectedClassIds.map((id) => Number(id)),
+        examTitle,
+        description: examDescription || null,
+        fileUrl: filePath,
+        teacherId,
+      }
+
+      await http.post(endpoints.teacher.exams, payload)
+
+      setIsUploadDialogOpen(false)
+      setSelectedGrade("")
+      setSelectedClassIds([])
+      setExamTitle("")
+      setExamDescription("")
+      setSelectedFile(null)
+      setSelectedFileBlobUrl("")
+
+      await refreshExams()
+    } catch (e: any) {
+      alert(e?.message || "Yükleme başarısız.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // 🔥 CREATE ANALYSIS
+  async function handleCreateAnalysis() {
+    if (!selectedExamForAnalysis || !analysisContent.trim()) {
+      alert("Sınav ve içerik zorunlu.")
+      return
+    }
+
     setBusy(true)
     try {
       const payload = {
         examId: Number(selectedExamForAnalysis),
         summary: analysisContent,
-        detailsJson: null as string | null,
+        detailsJson: null,
       }
 
       await http.post(endpoints.teacher.generalExamAnalysis, payload)
@@ -387,32 +355,27 @@ export default function ExamUploadPage() {
       setIsAnalysisDialogOpen(false)
       setSelectedExamForAnalysis("")
       setAnalysisContent("")
-
       await refreshExams()
     } catch (e: any) {
-      console.error(e)
       alert(e?.message || "Analiz oluşturulamadı.")
     } finally {
       setBusy(false)
     }
   }
 
-  // ==== delete general exam (VBS) ====
+  // 🔥 DELETE EXAM (correct endpoint)
   async function handleDeleteExam(id: string | number) {
-    if (!confirm("Bu sınavı silmek istediğinizden emin misiniz?")) return
+    if (!confirm("Silmek istediğinize emin misiniz?")) return
     try {
-      await http.delete(
-        `${endpoints.teacher.generalExams}?id=${encodeURIComponent(String(id))}`,
-      )
+      await http.delete(`${endpoints.teacher.generalExamsDelete}?id=${id}`)
       await refreshExams()
     } catch (e: any) {
-      console.error(e)
       alert(e?.message || "Silme başarısız.")
     }
   }
 
   function handleImagePreview(url: string) {
-    setPreviewImageUrl(url || "")
+    setPreviewImageUrl(url)
     setIsImagePreviewOpen(true)
   }
 
@@ -428,48 +391,36 @@ export default function ExamUploadPage() {
   }, [examResults])
 
   const totalUniqueStudents = useMemo(() => {
-  const map = new Map<number, number>();
-
-  for (const exam of examResults) {
-    const cid = Number(exam.classId);
-    const sc = Number(exam.studentCount || 0);
-
-    if (!map.has(cid)) {
-      map.set(cid, sc);
-    }
-  }
-
-  let total = 0;
-  map.forEach((count) => (total += count));
-  return total;
-}, [examResults]);
+    const map = new Map<number, number>()
+    examResults.forEach((e) => {
+      if (!map.has(e.classId)) map.set(e.classId, e.studentCount)
+    })
+    return Array.from(map.values()).reduce((a, b) => a + b, 0)
+  }, [examResults])
 
   return (
     <div className="space-y-6">
-      {/* header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
             size="sm"
             onClick={() => router.push("/teacher/classes")}
-            className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Geri Dön
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Sınav Sonuçları Yönetimi
-            </h1>
+            <h1 className="text-2xl font-bold">Sınav Sonuçları Yönetimi</h1>
             <p className="text-muted-foreground">
-              Sınıf geneli sınav sonuçlarını yükleyin ve isteğe bağlı analiz oluşturun
+              Sınıf geneli sonuçları yükleyin ve analiz oluşturun
             </p>
           </div>
         </div>
 
         <div className="flex gap-2">
-          {/* analysis */}
+          {/* ANALYSIS BUTTON */}
           <Dialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -477,81 +428,72 @@ export default function ExamUploadPage() {
                 Analiz Oluştur
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] w-full">
+
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Sınav Analizi Oluştur</DialogTitle>
-                <DialogDescription>
-                  Seçili sınav için öğrenci analizi oluşturun ve paylaşın.
-                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="exam-select">Sınav Seçin</Label>
-                  <Select
-  value={selectedExamForAnalysis}
-  onValueChange={setSelectedExamForAnalysis}
->
-  <SelectTrigger>
-    <SelectValue placeholder="Analiz oluşturulacak sınavı seçin" />
-  </SelectTrigger>
-  <SelectContent className="max-h-56 overflow-y-auto">
-    {examResults.map((exam) => (
-      <SelectItem key={exam.id} value={String(exam.id)}>
-        {exam.examTitle} - {exam.className}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
 
+              <div className="space-y-4 py-4">
+                <div>
+                  <Label>Sınav Seçin</Label>
+                  <Select
+                    value={selectedExamForAnalysis}
+                    onValueChange={setSelectedExamForAnalysis}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Bir sınav seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {examResults.map((exam) => (
+                        <SelectItem key={exam.id} value={String(exam.id)}>
+                          {exam.examTitle} - {exam.className}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="analysis">Analiz İçeriği</Label>
+
+                <div>
+                  <Label>Analiz İçeriği</Label>
                   <Textarea
-                    id="analysis"
-                    placeholder="Sınav analizi, öğrenci performansları, öneriler..."
                     rows={6}
                     value={analysisContent}
                     onChange={(e) => setAnalysisContent(e.target.value)}
+                    placeholder="Analiz detaylarını girin"
                   />
                 </div>
               </div>
+
               <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAnalysisDialogOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setIsAnalysisDialogOpen(false)}>
                   İptal
                 </Button>
-                <Button
-                  onClick={handleCreateAnalysis}
-                  disabled={!selectedExamForAnalysis || !analysisContent || busy}
-                >
-                  {busy ? "Oluşturuluyor..." : "Analiz Oluştur"}
+                <Button onClick={handleCreateAnalysis} disabled={busy}>
+                  {busy ? "Oluşturuluyor..." : "Oluştur"}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
 
-          {/* upload */}
+          {/* UPLOAD BUTTON */}
           <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button className="bg-primary text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Sınav Sonucu Yükle
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[650px] w-full max-h-[80vh] overflow-y-auto">
+
+            <DialogContent className="max-w-[650px]">
               <DialogHeader>
-                <DialogTitle>Sınıf Geneli Sınav Sonucu Yükle</DialogTitle>
-                <DialogDescription>
-                  Sınıf geneli sınav sonucu fotoğrafını bir veya birden fazla ders için paylaşın.
-                </DialogDescription>
+                <DialogTitle>Sınav Sonucu Yükle</DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4 py-4">
-                {/* Sınıf seviyesi */}
-                <div className="space-y-2">
-                  <Label htmlFor="grade">Sınıf Seviyesi</Label>
+                {/* GRADE */}
+                <div>
+                  <Label>Sınıf Seviyesi</Label>
                   <Select
                     value={selectedGrade}
                     onValueChange={(val) => {
@@ -560,11 +502,7 @@ export default function ExamUploadPage() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue
-                        placeholder={
-                          classesLoading ? "Yükleniyor..." : "Sınıf seviyesi seçin"
-                        }
-                      />
+                      <SelectValue placeholder="Seviye seçin" />
                     </SelectTrigger>
                     <SelectContent>
                       {gradeOptions.map((g) => (
@@ -576,262 +514,170 @@ export default function ExamUploadPage() {
                   </Select>
                 </div>
 
-                {/* Ders seçimi (multi) */}
-                <div className="space-y-2">
-                  <Label>Ders Seçin (Birden Fazla Seçebilirsiniz)</Label>
-                  {classesLoading && (
-                    <p className="text-sm text-muted-foreground">Sınıflar yükleniyor…</p>
-                  )}
-                  {!classesLoading && filteredClasses.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      Bu sınıf seviyesine bağlı ders bulunamadı.
-                    </p>
-                  )}
+                {/* CLASS MULTIPLE */}
+                <div>
+                  <Label>Ders Seçin</Label>
                   {!classesLoading && filteredClasses.length > 0 && (
-                    <div className="border rounded-md p-3 max-h-40 overflow-auto">
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div className="border p-3 rounded-md max-h-40 overflow-auto">
+                      <div className="grid grid-cols-2 gap-2">
                         {filteredClasses.map((c) => (
-                          <label
-                            key={c.id}
-                            className="inline-flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap"
-                          >
+                          <label key={c.id} className="flex items-center gap-2">
                             <input
                               type="checkbox"
-                              className="h-4 w-4 border rounded"
                               checked={selectedClassIds.includes(c.id)}
                               onChange={() => toggleClassSelection(c.id)}
                             />
-                            <span>{c.name}</span>
+                            {c.name}
                           </label>
                         ))}
                       </div>
                     </div>
                   )}
-
-                  {classesError && (
-                    <p className="text-sm text-red-600 mt-1">{classesError}</p>
-                  )}
                 </div>
 
-                {/* Sınav başlığı */}
-                <div className="space-y-2">
-                  <Label htmlFor="title">Sınav Başlığı</Label>
+                {/* TITLE */}
+                <div>
+                  <Label>Sınav Başlığı</Label>
                   <Input
-                    id="title"
-                    placeholder="Sınav adını girin (örn: 1. Yazılı - Fonksiyonlar)"
                     value={examTitle}
                     onChange={(e) => setExamTitle(e.target.value)}
+                    placeholder="Örn: 1. Yazılı"
                   />
                 </div>
 
-                {/* Açıklama */}
-                <div className="space-y-2">
-                  <Label htmlFor="description">Açıklama (İsteğe Bağlı)</Label>
+                {/* DESC */}
+                <div>
+                  <Label>Açıklama</Label>
                   <Textarea
-                    id="description"
-                    placeholder="Sınav hakkında genel bilgiler..."
                     rows={3}
                     value={examDescription}
                     onChange={(e) => setExamDescription(e.target.value)}
+                    placeholder="İsteğe bağlı açıklama..."
                   />
                 </div>
 
-                {/* Fotoğraf */}
-                <div className="space-y-2">
-                  <Label htmlFor="file">Sınav Sonucu Fotoğrafı (JPG/PNG)</Label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                {/* FILE */}
+                <div>
+                  <Label>Sonuç Fotoğrafı</Label>
+                  <div className="border-2 border-dashed p-6 text-center rounded-lg">
                     <input
                       id="file"
                       type="file"
+                      className="hidden"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="hidden"
                     />
-                    <label htmlFor="file" className="cursor-pointer">
-                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        {selectedFile
-                          ? selectedFile.name
-                          : "Sınıf geneli sonuç fotoğrafını seçin"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        JPG, PNG formatları desteklenir
-                      </p>
+                    <label htmlFor="file" className="cursor-pointer block">
+                      <Upload className="h-8 w-8 mx-auto mb-2" />
+                      <p>{selectedFile ? selectedFile.name : "Dosya seçin"}</p>
                     </label>
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsUploadDialogOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
                   İptal
                 </Button>
                 <Button
-                onClick={handleUploadExam}
-                  disabled={
-                  selectedClassIds.length === 0 ||
-                      !examTitle ||
-                      !selectedFile ||
-                        busy
-                    }
-                        >  {busy ? "Yükleniyor..." : "Yükle"}
-                      </Button>
-
+                  onClick={handleUploadExam}
+                  disabled={!selectedFile || busy || selectedClassIds.length === 0}
+                >
+                  {busy ? "Yükleniyor..." : "Yükle"}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* stats */}
+      {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Toplam Sınav
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {examResults.length}
-                </p>
-              </div>
-              <FileImage className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Bu Hafta
-                </p>
-                <p className="text-2xl font-bold text-green-600">{thisWeek}</p>
-              </div>
-              <Calendar className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Toplam Öğrenci
-                </p>
-                <p className="text-2xl font-bold text-secondary">
-  {totalUniqueStudents}
-</p>
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">Toplam Sınav</p>
+          <p className="text-2xl font-bold">{examResults.length}</p>
+        </CardContent></Card>
 
-              </div>
-              <Users className="h-8 w-8 text-secondary" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Analiz Oluşturulan
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {examResults.filter((e) => e.hasAnalysis).length}
-                </p>
-              </div>
-              <BarChart3 className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">Bu Hafta</p>
+          <p className="text-2xl font-bold text-green-600">{thisWeek}</p>
+        </CardContent></Card>
+
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">Toplam Öğrenci</p>
+          <p className="text-2xl font-bold">{totalUniqueStudents}</p>
+        </CardContent></Card>
+
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">Analiz Oluşturulan</p>
+          <p className="text-2xl font-bold">
+            {examResults.filter((e) => e.hasAnalysis).length}
+          </p>
+        </CardContent></Card>
       </div>
 
-      {/* list */}
+      {/* LIST */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileImage className="h-5 w-5" />
-            Sınıf Geneli Sınav Sonuçları
-          </CardTitle>
-          <CardDescription>
-            Yüklediğiniz sınav sonuçlarını görüntüleyin ve isteğe bağlı analiz
-            oluşturun
-          </CardDescription>
+          <CardTitle>Sınav Sonuçları</CardTitle>
+          <CardDescription>Yüklediğiniz sonuçlar</CardDescription>
         </CardHeader>
         <CardContent>
-          {listLoading && (
-            <p className="text-sm text-muted-foreground">Yükleniyor…</p>
-          )}
+          {listLoading && <p>Yükleniyor...</p>}
           {listError && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive">
               <AlertDescription>{listError}</AlertDescription>
             </Alert>
           )}
 
           {!listLoading && !listError && examResults.length === 0 ? (
             <div className="text-center py-8">
-              <FileImage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                Henüz sınav sonucu yüklenmemiş.
-              </p>
-              <Button
-                className="mt-4"
-                onClick={() => setIsUploadDialogOpen(true)}
-              >
-                İlk Sınav Sonucunu Yükle
-              </Button>
+              <FileImage className="h-12 w-12 mx-auto mb-4" />
+              <p className="text-muted-foreground">Henüz sınav yüklenmedi.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {examResults.map((exam) => (
-                <div
-                  key={exam.id}
-                  className="p-6 border border-border rounded-lg"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-foreground">
-                          {exam.examTitle}
-                        </h3>
-                        <Badge variant="outline">{exam.className}</Badge>
+                <div key={exam.id} className="p-6 border rounded-lg">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold">{exam.examTitle}</h3>
+                        <Badge>{exam.className}</Badge>
                         {exam.hasAnalysis && (
-                          <Badge className="bg-green-100 text-green-800 border-green-200">
-                            <BarChart3 className="h-3 w-3 mr-1" />
+                          <Badge className="bg-green-200 text-green-900">
                             Analiz Mevcut
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                        <span>{exam.studentCount} öğrenci</span>
-                        <span>
-                          {new Date(exam.uploadDate).toLocaleDateString("tr-TR")}
-                        </span>
-                      </div>
+
+                      <p className="text-sm text-muted-foreground">
+                        {exam.studentCount} öğrenci •{" "}
+                        {new Date(exam.uploadDate).toLocaleDateString("tr-TR")}
+                      </p>
+
                       {exam.description && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-1">
                           {exam.description}
                         </p>
                       )}
                     </div>
+
                     <div className="flex gap-2">
                       {exam.hasAnalysis && (
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="text-blue-600 bg-transparent"
+                          variant="outline"
                           onClick={() => handleAnalysisView(exam.analysis)}
                         >
                           <Share2 className="h-4 w-4" />
                         </Button>
                       )}
+
                       <Button
-                        variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-700 bg-transparent"
+                        variant="outline"
+                        className="text-red-600"
                         onClick={() => handleDeleteExam(exam.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -839,20 +685,17 @@ export default function ExamUploadPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-sm">
                       <FileImage className="h-4 w-4" />
                       <span>{exam.fileName ?? "dosya.jpg"}</span>
                     </div>
+
                     <div className="flex gap-2">
                       <Button
-                        variant="outline"
                         size="sm"
+                        variant="outline"
                         onClick={() => {
-                          if (!exam.fileUrl) {
-                            alert("Dosya yolu mevcut değil.")
-                            return
-                          }
                           const a = document.createElement("a")
                           a.href = exam.fileUrl
                           a.download = exam.fileName ?? "exam.jpg"
@@ -861,12 +704,11 @@ export default function ExamUploadPage() {
                       >
                         İndir
                       </Button>
+
                       <Button
-                        variant="outline"
                         size="sm"
-                        onClick={() =>
-                          handleImagePreview(exam.fileUrl || "/exam-result-document.jpg")
-                        }
+                        variant="outline"
+                        onClick={() => handleImagePreview(exam.fileUrl)}
                       >
                         Detayları Gör
                       </Button>
@@ -879,49 +721,38 @@ export default function ExamUploadPage() {
         </CardContent>
       </Card>
 
-      {/* image preview */}
+      {/* IMAGE PREVIEW */}
       <Dialog open={isImagePreviewOpen} onOpenChange={setIsImagePreviewOpen}>
-        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-hidden">
+        <DialogContent className="max-w-[900px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
+            <DialogTitle>
               Sınav Sonucu Önizleme
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsImagePreviewOpen(false)}
-              >
+              <Button variant="ghost" className="float-right" onClick={() => setIsImagePreviewOpen(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </DialogTitle>
           </DialogHeader>
-          <div className="flex justify-center items-center p-4 bg-muted/30 rounded-lg overflow-auto max-h-[75vh]">
+
+          <div className="p-4 bg-muted rounded-lg max-h-[75vh] overflow-auto">
             <img
-              src={previewImageUrl || "/exam-result-document.jpg"}
+              src={previewImageUrl}
               alt="Sınav Sonucu"
-              className="w-full h-auto object-contain rounded-lg max-w-full"
-              onError={(e) => {
-                e.currentTarget.src = "/exam-result-document.jpg"
-              }}
+              className="w-full h-auto rounded-lg"
             />
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* analysis view */}
+      {/* ANALYSIS VIEW */}
       <Dialog open={isAnalysisViewOpen} onOpenChange={setIsAnalysisViewOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Sınav Analizi</DialogTitle>
-            <DialogDescription>
-              Öğretmen tarafından oluşturulan sınav analizi
-            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                {viewAnalysisContent}
-              </p>
-            </div>
+          <div className="p-4 bg-muted rounded-lg">
+            <p className="whitespace-pre-wrap text-sm">
+              {viewAnalysisContent}
+            </p>
           </div>
         </DialogContent>
       </Dialog>
