@@ -20,20 +20,20 @@ export async function POST(req: NextRequest) {
   try {
     const cookieHeader = req.headers.get("cookie") ?? ""
 
-    // ✔ multipart'ı bozmadan body forward ediyoruz
+    // 🔥 multipart'ı bozmamak için body'ye dokunmuyoruz
     const upstream = await fetch(UPSTREAM_URL, {
       method: "POST",
       headers: {
-        Cookie: cookieHeader
+        // cookie forward
+        Cookie: cookieHeader,
       },
-      body: req.body,
-      // 🔥 TypeScript duplex'i tanımıyor → as any ile ekliyoruz
+      body: req.body,        // 🔥 gerçek stream
+      // TS duplex hatası için:
       ...( { duplex: "half" } as any )
     })
 
     const text = await upstream.text()
     let json: any
-
     try {
       json = JSON.parse(text)
     } catch {
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       NextResponse.json(json, { status: upstream.status })
     )
   } catch (err) {
-    console.error("[proxy] upload-image error:", err)
+    console.error("[proxy upload-image] error", err)
     return NextResponse.json(
       { error: "Sunucu hatası" },
       { status: 500 }
