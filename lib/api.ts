@@ -176,7 +176,7 @@ const baseVbs = {
   guidance: "/api/vbs/teacher/guidance",
   guidanceParentNote: "/api/vbs/teacher/guidance/parent-note",
   notifications: "/api/vbs/teacher/notifications",
-  generalExams: "/api/vbs/teacher/exams/general",
+  generalExams: "/api/vbs/teacher/exams",
   generalExamAnalysis: "/api/vbs/teacher/exams/analysis",
   totalStudents: "/api/vbs/teacher/total-students",
   exams: "/api/vbs/teacher/exams",

@@ -179,7 +179,7 @@ export default function ExamUploadPage() {
     setListLoading(true)
     setListError(null)
 
-    const res = await fetch(endpoints.teacher.generalExams, {
+    const res = await fetch(endpoints.teacher.exams, {
       method: "GET",
       credentials: "include",
     })
@@ -250,6 +250,7 @@ export default function ExamUploadPage() {
     setListLoading(false)
   }
 }
+
 
 
   useEffect(() => {
