@@ -174,84 +174,83 @@ export default function ExamUploadPage() {
 
 
 
-  // ==== list general exams (Next proxy) ====
   async function refreshExams() {
-    try {
-      setListLoading(true)
-      setListError(null)
+  try {
+    setListLoading(true)
+    setListError(null)
 
-      const res = await fetch("/api/teacher/exams", {
-        method: "GET",
-        credentials: "include",
-      })
+    const res = await fetch(endpoints.teacher.generalExams, {
+      method: "GET",
+      credentials: "include",
+    })
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`)
-      }
-
-      const data = await res.json()
-
-      const raw: any[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.items)
-        ? data.items
-        : Array.isArray(data?.exams)
-        ? data.exams
-        : []
-
-      const list: GeneralExamItem[] = raw.map((x: any) => {
-        const rawPath: string | undefined =
-          x.fileUrl ?? x.filePath ?? x.file ?? x.imageUrl ?? undefined
-
-        // Backend artık tam URL gönderiyor => direkt kullan
-        const resolvedFileUrl = rawPath ?? ""
-
-        const fileName: string | undefined =
-          x.fileName ??
-          (rawPath ? rawPath.split(/[\\/]/).pop() : undefined) ??
-          undefined
-
-        const uploadDateStr: string =
-          x.uploadDate ?? x.createdAt ?? x.examDate ?? new Date().toISOString()
-
-        return {
-          id: x.id ?? x.examId ?? x.generalExamId ?? 0,
-          classId: Number(x.classId ?? x.dersId ?? 0),
-          className:
-            x.className ??
-            x.dersAdi ??
-            x.class ??
-            x.classTitle ??
-            `Ders #${x.classId ?? x.dersId ?? ""}`,
-          examTitle: x.examTitle ?? x.title ?? "",
-          description: x.description ?? x.aciklama ?? null,
-          uploadDate: uploadDateStr,
-          fileName,
-          fileUrl: resolvedFileUrl,
-          studentCount: Number(x.studentCount ?? x.ogrenciSayisi ?? 0),
-          hasAnalysis: Boolean(
-            x.hasAnalysis ??
-              x.analysisExists ??
-              (typeof x.analysisCount === "number" && x.analysisCount > 0),
-          ),
-          analysis:
-            x.analysis ??
-            x.analysisSummary ??
-            x.latestAnalysis ??
-            x.latestAnalysisSummary ??
-            null,
-        }
-      })
-
-      setExamResults(list)
-    } catch (e: any) {
-      console.error("[exam-upload] refreshExams error", e)
-      setListError(e?.message || "Sınavlar yüklenemedi.")
-      setExamResults([])
-    } finally {
-      setListLoading(false)
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`)
     }
+
+    const data = await res.json()
+
+    const raw: any[] = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.items)
+      ? data.items
+      : Array.isArray(data?.exams)
+      ? data.exams
+      : []
+
+    const list: GeneralExamItem[] = raw.map((x: any) => {
+      const rawPath: string | undefined =
+        x.fileUrl ?? x.filePath ?? x.file ?? x.imageUrl ?? undefined
+
+      const resolvedFileUrl = rawPath ?? ""
+
+      const fileName: string | undefined =
+        x.fileName ??
+        (rawPath ? rawPath.split(/[\\/]/).pop() : undefined) ??
+        undefined
+
+      const uploadDateStr: string =
+        x.uploadDate ?? x.createdAt ?? x.examDate ?? new Date().toISOString()
+
+      return {
+        id: x.id ?? x.examId ?? x.generalExamId ?? 0,
+        classId: Number(x.classId ?? x.dersId ?? 0),
+        className:
+          x.className ??
+          x.dersAdi ??
+          x.class ??
+          x.classTitle ??
+          `Ders #${x.classId ?? x.dersId ?? ""}`,
+        examTitle: x.examTitle ?? x.title ?? "",
+        description: x.description ?? x.aciklama ?? null,
+        uploadDate: uploadDateStr,
+        fileName,
+        fileUrl: resolvedFileUrl,
+        studentCount: Number(x.studentCount ?? x.ogrenciSayisi ?? 0),
+        hasAnalysis: Boolean(
+          x.hasAnalysis ??
+            x.analysisExists ??
+            (typeof x.analysisCount === "number" && x.analysisCount > 0),
+        ),
+        analysis:
+          x.analysis ??
+          x.analysisSummary ??
+          x.latestAnalysis ??
+          x.latestAnalysisSummary ??
+          null,
+      }
+    })
+
+    setExamResults(list)
+  } catch (e: any) {
+    console.error("[exam-upload] refreshExams error", e)
+    setListError(e?.message || "Sınavlar yüklenemedi.")
+    setExamResults([])
+  } finally {
+    setListLoading(false)
   }
+}
+
 
   useEffect(() => {
     refreshExams()

@@ -280,12 +280,13 @@ export default function TeacherDashboardPage() {
       // =====================================================================
       let examItems: ExamSummary[] = []
       try {
-        const exRes = await fetch("/api/teacher/exams", {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-          signal: ctrl.signal,
-        })
+        const exRes = await fetch(endpoints.teacher.generalExams, {
+  method: "GET",
+  credentials: "include",
+  cache: "no-store",
+  signal: ctrl.signal,
+})
+
 
         if (exRes.ok) {
           const exJson = await exRes.json()
