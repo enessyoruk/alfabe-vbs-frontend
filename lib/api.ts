@@ -165,19 +165,24 @@ const baseVbs = {
   },
 
   teacher: {
-    classes: "/api/teacher/classes", // ✔️ proxy route
-    classStudents: (classId: string) =>
-      `/api/teacher/classes/${classId}/students`, // ✔️ proxy route
-    homework: "/api/vbs/teacher/homework",
-    examResultsUpload: "/api/vbs/teacher/exam-results",
-    analytics: "/api/vbs/teacher/dashboard-analytics",
-    guidance: "/api/vbs/teacher/guidance",
-    guidanceParentNote: "/api/vbs/teacher/guidance/parent-note",
-    notifications: "/api/vbs/teacher/notifications",
-    generalExams: "/api/vbs/teacher/exams/general",
-    generalExamAnalysis: "/api/vbs/teacher/exams/analysis",
-    totalStudents: "/api/vbs/teacher/total-students",
-  },
+  
+  classes: "/api/teacher/classes",
+  classStudents: (classId: string) =>
+    `/api/teacher/classes/${classId}/students`,
+
+  homework: "/api/vbs/teacher/homework",
+  examResultsUpload: "/api/vbs/teacher/exam-results",
+  analytics: "/api/vbs/teacher/dashboard-analytics",
+  guidance: "/api/vbs/teacher/guidance",
+  guidanceParentNote: "/api/vbs/teacher/guidance/parent-note",
+  notifications: "/api/vbs/teacher/notifications",
+  generalExams: "/api/vbs/teacher/exams/general",
+  generalExamAnalysis: "/api/vbs/teacher/exams/analysis",
+  totalStudents: "/api/vbs/teacher/total-students",
+  exams: "/api/vbs/teacher/exams",
+  examsUploadImage: "/api/vbs/teacher/exams/upload-image",
+},
+
 } as const
 
 export const endpoints = {
