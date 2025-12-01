@@ -367,7 +367,7 @@ export default function ExamUploadPage() {
   async function handleDeleteExam(id: string | number) {
     if (!confirm("Silmek istediğinize emin misiniz?")) return
     try {
-      await http.delete(`${endpoints.teacher.generalExamsDelete}?id=${id}`)
+      await http.delete(`${endpoints.teacher.generalExams}?id=${id}`)
       await refreshExams()
     } catch (e: any) {
       alert(e?.message || "Silme başarısız.")

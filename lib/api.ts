@@ -171,18 +171,22 @@ const baseVbs = {
 
   homework: "/api/vbs/teacher/homework",
   examResultsUpload: "/api/vbs/teacher/exam-results",
+
   analytics: "/api/vbs/teacher/dashboard-analytics",
+
+
   guidance: "/api/vbs/teacher/guidance",
   guidanceParentNote: "/api/vbs/teacher/guidance/parent-note",
   notifications: "/api/vbs/teacher/notifications",
 
-  // 🔥 Yeni doğru yollar
-  exams: "/api/teacher/exams",                       // GET + POST
-  examsUploadImage: "/api/vbs/teacher/exams/upload-image", // POST multipart
-  generalExamsDelete: "/api/vbs/teacher/exams/general",   // DELETE ?id=
-  generalExamAnalysis: "/api/vbs/teacher/exams/analysis", // POST
+  generalExams: "/api/vbs/teacher/exams/general",
+  generalExamAnalysis: "/api/vbs/teacher/exams/analysis",
   totalStudents: "/api/vbs/teacher/total-students",
+  exams: "/api/vbs/teacher/exams",
+  examsUploadImage: "/api/vbs/teacher/exams/upload-image",
 },
+
+
 
 
 } as const

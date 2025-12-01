@@ -1,4 +1,4 @@
-// app/api/teacher/analytics/route.ts  (mevcut dosyanın yerine uygula)
+// app/api/vbs/teacher/reports/route.ts  (mevcut dosyanın yerine)
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -19,8 +19,8 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
+const UPSTREAM_PATH = "/api/vbs/teacher/reports"
 
-const UPSTREAM_PATH = "/api/vbs/teacher/analytics"
 const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
 function noStore(res: NextResponse) {
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    // Query parametrelerini aynen forward et (classId, period vs.)
+    // Query parametrelerini aynen aktar (classId, type, period vs.)
     const upstreamUrl = new URL(u(UPSTREAM_PATH))
     req.nextUrl.searchParams.forEach((v, k) => upstreamUrl.searchParams.set(k, v))
 
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     if (ra) res.headers.set("Retry-After", ra)
     return noStore(res)
   } catch (e) {
-    console.error("[proxy] /api/teacher/analytics GET", e)
+    console.error("[proxy] /api/teacher/reports GET", e)
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
@@ -82,7 +82,9 @@ export async function POST(req: NextRequest) {
     const headers = buildAuthHeaders(req)
     headers["Content-Type"] = "application/json"
 
-    const body = await req.text() // gövdeyi değiştirmeden ilet
+    // Gövdeyi olduğu gibi ilet
+    const body = await req.text()
+
     const up = await fetch(u(UPSTREAM_PATH), {
       method: "POST",
       cache: "no-store",
@@ -97,7 +99,7 @@ export async function POST(req: NextRequest) {
     if (ra) res.headers.set("Retry-After", ra)
     return noStore(res)
   } catch (e) {
-    console.error("[proxy] /api/teacher/analytics POST", e)
+    console.error("[proxy] /api/teacher/reports POST", e)
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
