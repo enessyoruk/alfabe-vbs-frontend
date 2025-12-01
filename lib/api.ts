@@ -177,7 +177,7 @@ const baseVbs = {
   notifications: "/api/vbs/teacher/notifications",
 
   // 🔥 Yeni doğru yollar
-  exams: "/api/vbs/teacher/exams",                       // GET + POST
+  exams: "/api/teacher/exams",                       // GET + POST
   examsUploadImage: "/api/vbs/teacher/exams/upload-image", // POST multipart
   generalExamsDelete: "/api/vbs/teacher/exams/general",   // DELETE ?id=
   generalExamAnalysis: "/api/vbs/teacher/exams/analysis", // POST
