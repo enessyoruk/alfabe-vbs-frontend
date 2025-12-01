@@ -1,4 +1,3 @@
-// app/api/vbs/teacher/exams/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -23,27 +22,21 @@ function noStore(res: NextResponse) {
 
 async function readJson(r: Response) {
   const t = await r.text()
-  try {
-    return t ? JSON.parse(t) : {}
-  } catch {
-    return t ? { message: t } : {}
-  }
+  try { return t ? JSON.parse(t) : {} }
+  catch { return t ? { message: t } : {} }
 }
 
 function buildHeaders(req: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {
+  const h: Record<string, string> = {
     Accept: "application/json",
   }
 
-  // ✔ Doğru cookie → vbs_session
+  // 🔥 SADECE Authorization gönderiyoruz
   const jwt = req.cookies.get("vbs_session")?.value
-  if (jwt) headers.Authorization = `Bearer ${jwt}`
+  if (jwt) h.Authorization = `Bearer ${jwt}`
 
-  // ✔ Cookie forwarding → classes ile birebir
-  const incomingCookie = req.headers.get("cookie")
-  if (incomingCookie) headers.Cookie = incomingCookie
-
-  return headers
+  // ❌ Cookie header EKLEMİYORUZ (kritik)
+  return h
 }
 
 // GET — exam list
@@ -51,6 +44,7 @@ export async function GET(req: NextRequest) {
   try {
     const headers = buildHeaders(req)
     const search = req.nextUrl.search || ""
+
     const upstream = await fetch(u(UPSTREAM + search), {
       method: "GET",
       credentials: "include",
@@ -71,7 +65,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST — exam create or exam result upload
+// POST
 export async function POST(req: NextRequest) {
   try {
     const headers = buildHeaders(req)
