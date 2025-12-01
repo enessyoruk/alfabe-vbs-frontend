@@ -280,7 +280,8 @@ export default function TeacherDashboardPage() {
       // =====================================================================
       let examItems: ExamSummary[] = []
       try {
-        const exRes = await fetch(endpoints.teacher.generalExams, {
+        const exRes = await fetch(endpoints.teacher.exams, {
+
   method: "GET",
   credentials: "include",
   cache: "no-store",
