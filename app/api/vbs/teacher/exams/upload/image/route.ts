@@ -8,28 +8,21 @@ const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
 
-// Backend endpoint artık BURASI
 const UPSTREAM = `${BACKEND}/api/vbs/teacher/exams/upload/image`
 
 export async function POST(req: NextRequest) {
   try {
     const cookieHeader = req.headers.get("cookie") ?? ""
-
-    // Next → FormData oku
     const form = await req.formData()
 
-    // frontend: "image"
-    // backend : "Image"
     const file = form.get("image") || form.get("Image")
-
     if (!file) {
       return NextResponse.json(
-        { error: "Image not found in form" },
+        { error: "Image not found" },
         { status: 400 }
       )
     }
 
-    // Temiz form
     const clean = new FormData()
     clean.append("Image", file as any)
 
@@ -43,6 +36,7 @@ export async function POST(req: NextRequest) {
 
     const text = await upstream.text()
     let json: any = {}
+
     try {
       json = JSON.parse(text)
     } catch {
@@ -52,10 +46,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(json, { status: upstream.status })
   } catch (err: any) {
     return NextResponse.json(
-      {
-        error: "Proxy error",
-        detail: err.message,
-      },
+      { error: "Proxy error", detail: err.message },
       { status: 500 }
     )
   }
