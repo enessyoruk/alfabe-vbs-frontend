@@ -225,10 +225,12 @@ export default function ExamUploadPage() {
               (typeof x.analysisCount === "number" && x.analysisCount > 0),
           ),
           analysis:
-            x.analysis ??
-            x.analysisSummary ??
-            x.latestAnalysis ??
-            null,
+    x.latestAnalysisSummary ??
+    x.analysis ??
+    x.analysisSummary ??
+    x.latestAnalysis ??
+    null,
+
         }
       })
 
