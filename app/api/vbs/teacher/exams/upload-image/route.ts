@@ -10,41 +10,38 @@ const BACKEND =
 
 const UPSTREAM = `${BACKEND}/api/vbs/teacher/exams/upload-image`
 
-function noStore(res: NextResponse) {
-  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate")
-  res.headers.set("Pragma", "no-cache")
-  res.headers.set("Expires", "0")
-  return res
-}
-
 export async function POST(req: NextRequest) {
   try {
     const cookieHeader = req.headers.get("cookie") ?? ""
+    const form = await req.formData()
 
-    // STREAM FORWARD
+    // Form default: image → backend: Image
+    const file = form.get("image") || form.get("Image")
+    if (!file) {
+      return NextResponse.json(
+        { error: "File missing" },
+        { status: 400 }
+      )
+    }
+
+    // Yeni form: Sadece doğru key ile tekrar oluştur
+    const clean = new FormData()
+    clean.append("Image", file as any)
+
     const upstream = await fetch(UPSTREAM, {
       method: "POST",
       headers: {
         Cookie: cookieHeader,
       },
-      body: req.body,               // 🔥 STREAM — asıl çözüm
-      ...( { duplex: "half" } as any ),
+      body: clean,
     })
 
-    const text = await upstream.text()
-    let json: any
-    try { json = JSON.parse(text) } catch { json = { raw: text } }
-
-    return noStore(
-      NextResponse.json(json, { status: upstream.status })
-    )
+    const data = await upstream.json()
+    return NextResponse.json(data, { status: upstream.status })
   } catch (err: any) {
-    console.error("[upload-image proxy] error", err)
-    return noStore(
-      NextResponse.json(
-        { error: "Proxy error", detail: err.message },
-        { status: 500 }
-      )
+    return NextResponse.json(
+      { error: "Proxy error", detail: err.message },
+      { status: 500 }
     )
   }
 }
