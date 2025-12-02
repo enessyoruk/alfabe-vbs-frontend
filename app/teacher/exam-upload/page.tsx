@@ -700,17 +700,19 @@ export default function ExamUploadPage() {
   size="sm"
   variant="outline"
   onClick={() => {
+    // /uploads/... kısmını çıkar (tam yol → relative path)
     const cleanPath = exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
-    const url = `/api/vbs/teacher/exams/download?path=${encodeURIComponent(cleanPath)}`
 
-    const a = document.createElement("a")
-    a.href = url
-    a.download = exam.fileName ?? "exam.jpg"
-    a.click()
+    // tam backend endpoint
+    const url = `${process.env.NEXT_PUBLIC_API_BASE}/api/vbs/teacher/exams/download?path=${encodeURIComponent(cleanPath)}`
+
+    // direkt download tetikleme → cross-domain için tek çalışan yöntem
+    window.location.href = url
   }}
 >
   İndir
 </Button>
+
 
 
 
