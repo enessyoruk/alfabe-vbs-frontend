@@ -700,19 +700,17 @@ export default function ExamUploadPage() {
   size="sm"
   variant="outline"
   onClick={() => {
-    const link = document.createElement("a")
-    link.href = exam.fileUrl.startsWith("http")
-      ? exam.fileUrl
-      : `https://alfabeakademi.online${exam.fileUrl}`
-
-    link.setAttribute("download", exam.fileName ?? "exam.jpg")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    const a = document.createElement("a")
+    a.href = `${process.env.NEXT_PUBLIC_API_BASE}/api/vbs/teacher/exams/download?path=${encodeURIComponent(
+      exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
+    )}`
+    a.download = exam.fileName ?? "exam.jpg"
+    a.click()
   }}
 >
   İndir
 </Button>
+
 
 
                       <Button
