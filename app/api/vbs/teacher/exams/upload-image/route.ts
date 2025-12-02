@@ -1,3 +1,4 @@
+// app/api/teacher/exams/upload-image/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -7,46 +8,33 @@ const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
 
-const UPSTREAM_URL = `${BACKEND}/api/vbs/teacher/exams/upload-image`
-
-function noStore(res: NextResponse) {
-  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate")
-  res.headers.set("Pragma", "no-cache")
-  res.headers.set("Expires", "0")
-  return res
-}
+const UPSTREAM = "/api/vbs/teacher/exams/upload-image"
 
 export async function POST(req: NextRequest) {
+  const url = `${BACKEND}${UPSTREAM}`
+
   try {
-    const cookieHeader = req.headers.get("cookie") ?? ""
+    // 🔥 FormData — backend'in istediği IFormFile (Image)
+    const form = await req.formData()
 
-    // 🔥 multipart'ı bozmamak için body'ye dokunmuyoruz
-    const upstream = await fetch(UPSTREAM_URL, {
-      method: "POST",
-      headers: {
-        // cookie forward
-        Cookie: cookieHeader,
-      },
-      body: req.body,        // 🔥 gerçek stream
-      // TS duplex hatası için:
-      ...( { duplex: "half" } as any )
-    })
-
-    const text = await upstream.text()
-    let json: any
-    try {
-      json = JSON.parse(text)
-    } catch {
-      json = { raw: text }
+    // Alan adı backend DTO: "Image"
+    const file = form.get("image") || form.get("Image")
+    if (file) {
+      form.delete("image")
+      form.set("Image", file as any)
     }
 
-    return noStore(
-      NextResponse.json(json, { status: upstream.status })
-    )
-  } catch (err) {
-    console.error("[proxy upload-image] error", err)
+    const upstream = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      body: form,
+    })
+
+    return upstream
+  } catch (err: any) {
     return NextResponse.json(
-      { error: "Sunucu hatası" },
+      { error: "Upload proxy error", detail: err.message },
       { status: 500 }
     )
   }
