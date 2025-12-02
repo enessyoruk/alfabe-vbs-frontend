@@ -699,23 +699,16 @@ export default function ExamUploadPage() {
                       <Button
   size="sm"
   variant="outline"
-  onClick={async () => {
-    try {
-      const res = await fetch(exam.fileUrl)
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
+  onClick={() => {
+    const link = document.createElement("a")
+    link.href = exam.fileUrl.startsWith("http")
+      ? exam.fileUrl
+      : `https://alfabeakademi.online${exam.fileUrl}`
 
-      const a = document.createElement("a")
-      a.href = url
-      a.download = exam.fileName ?? "exam.jpg"
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      alert("Dosya indirilemedi.")
-    }
+    link.setAttribute("download", exam.fileName ?? "exam.jpg")
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }}
 >
   İndir
