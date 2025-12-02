@@ -679,13 +679,36 @@ export default function ExamUploadPage() {
                       )}
 
                       <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600"
-                        onClick={() => handleDeleteExam(exam.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+  size="sm"
+  variant="outline"
+  className="text-red-600"
+  onClick={async () => {
+    if (!confirm("Bu sınavı silmek istediğinize emin misiniz?")) return;
+
+    try {
+      const res = await fetch(
+        `/api/vbs/teacher/exams?id=${exam.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        alert("Silme başarısız: " + text);
+        return;
+      }
+
+      await refreshExams(); // listeyi yenile
+    } catch (err: any) {
+      alert("Silme hatası: " + err.message);
+    }
+  }}
+>
+  <Trash2 className="h-4 w-4" />
+</Button>
+
                     </div>
                   </div>
 

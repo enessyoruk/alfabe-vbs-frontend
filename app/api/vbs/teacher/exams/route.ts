@@ -54,7 +54,7 @@ function buildAuthHeaders(req: NextRequest): Record<string, string> {
     if (token) headers.Authorization = `Bearer ${token}`
   }
 
-  // 3) Browser cookie → direkt forward (çok kritik)
+  // 3) Browser cookie → direkt forward
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) headers.Cookie = incomingCookie
 
@@ -102,7 +102,6 @@ export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    // Content-Type forward
     const ct = req.headers.get("content-type")
     if (ct) headers["Content-Type"] = ct
 
@@ -125,6 +124,37 @@ export async function POST(req: NextRequest) {
     return noStore(res)
   } catch (err) {
     console.error("[proxy exams POST]", err)
+    return noStore(
+      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
+    )
+  }
+}
+
+// ===============================
+// DELETE → sınav silme (EKLENEN BLOK)
+// ===============================
+export async function DELETE(req: NextRequest) {
+  try {
+    const headers = buildAuthHeaders(req)
+
+    const upstreamUrl = new URL(u("/api/vbs/teacher/exams/general"))
+    req.nextUrl.searchParams.forEach((v, k) =>
+      upstreamUrl.searchParams.set(k, v),
+    )
+
+    const up = await fetch(upstreamUrl.toString(), {
+      method: "DELETE",
+      cache: "no-store",
+      credentials: "include",
+      headers,
+    })
+
+    const data = await readJson(up)
+    const res = NextResponse.json(data, { status: up.status })
+    return noStore(res)
+
+  } catch (err) {
+    console.error("[proxy exams DELETE]", err)
     return noStore(
       NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
     )
