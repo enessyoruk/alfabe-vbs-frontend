@@ -44,17 +44,17 @@ function buildAuthHeaders(req: NextRequest): Record<string, string> {
     Accept: "application/json",
   }
 
-  // 1) Authorization header → varsa kullan
+  // 1) Authorization → Bearer varsa
   const ah = req.headers.get("authorization") || ""
   if (ah.toLowerCase().startsWith("bearer ")) {
     headers.Authorization = ah
   } else {
-    // 2) HttpOnly cookie → vbs_session
+    // 2) Cookie → vbs_session
     const token = req.cookies.get("vbs_session")?.value
     if (token) headers.Authorization = `Bearer ${token}`
   }
 
-  // 3) Browser cookie → direkt forward
+  // 3) Kullanıcı Cookie’lerini aynen yansıt
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) headers.Cookie = incomingCookie
 
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
 }
 
 // ===============================
-// POST → yeni sınav oluştur (JSON)
+// POST → yeni sınav oluştur
 // ===============================
 export async function POST(req: NextRequest) {
   try {
@@ -131,15 +131,20 @@ export async function POST(req: NextRequest) {
 }
 
 // ===============================
-// DELETE → sınav silme (EKLENEN BLOK)
+// DELETE → sınav sil
 // ===============================
 export async function DELETE(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    const upstreamUrl = new URL(u("/api/vbs/teacher/exams/general"))
+    // Backend delete URL
+    const upstreamUrl = new URL(
+      u("/api/vbs/teacher/exams/general")
+    )
+
+    // id parametresini backend’e geçir
     req.nextUrl.searchParams.forEach((v, k) =>
-      upstreamUrl.searchParams.set(k, v),
+      upstreamUrl.searchParams.set(k, v)
     )
 
     const up = await fetch(upstreamUrl.toString(), {
@@ -150,9 +155,9 @@ export async function DELETE(req: NextRequest) {
     })
 
     const data = await readJson(up)
+
     const res = NextResponse.json(data, { status: up.status })
     return noStore(res)
-
   } catch (err) {
     console.error("[proxy exams DELETE]", err)
     return noStore(
