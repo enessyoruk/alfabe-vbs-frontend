@@ -249,7 +249,7 @@ export default function ExamUploadPage() {
   // 🔥 IMAGE UPLOAD (correct proxy)
   async function uploadExamImage(file: File): Promise<string> {
     const form = new FormData()
-    form.append("image", file)
+    form.append("Image", file)
 
     const res = await fetch("/api/vbs/teacher/exams/upload-image", {
   method: "POST",
