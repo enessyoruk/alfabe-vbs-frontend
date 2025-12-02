@@ -1,4 +1,4 @@
-// app/api/vbs/teacher/exams/upload-image/route.ts
+// app/api/vbs/teacher/exams/upload/image/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -8,23 +8,28 @@ const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
 
-const UPSTREAM = `${BACKEND}/api/vbs/teacher/exams/upload-image`
+// Backend endpoint artık BURASI
+const UPSTREAM = `${BACKEND}/api/vbs/teacher/exams/upload/image`
 
 export async function POST(req: NextRequest) {
   try {
     const cookieHeader = req.headers.get("cookie") ?? ""
+
+    // Next → FormData oku
     const form = await req.formData()
 
-    // Form default: image → backend: Image
+    // frontend: "image"
+    // backend : "Image"
     const file = form.get("image") || form.get("Image")
+
     if (!file) {
       return NextResponse.json(
-        { error: "File missing" },
+        { error: "Image not found in form" },
         { status: 400 }
       )
     }
 
-    // Yeni form: Sadece doğru key ile tekrar oluştur
+    // Temiz form
     const clean = new FormData()
     clean.append("Image", file as any)
 
@@ -36,11 +41,21 @@ export async function POST(req: NextRequest) {
       body: clean,
     })
 
-    const data = await upstream.json()
-    return NextResponse.json(data, { status: upstream.status })
+    const text = await upstream.text()
+    let json: any = {}
+    try {
+      json = JSON.parse(text)
+    } catch {
+      json = { raw: text }
+    }
+
+    return NextResponse.json(json, { status: upstream.status })
   } catch (err: any) {
     return NextResponse.json(
-      { error: "Proxy error", detail: err.message },
+      {
+        error: "Proxy error",
+        detail: err.message,
+      },
       { status: 500 }
     )
   }

@@ -251,11 +251,12 @@ export default function ExamUploadPage() {
     const form = new FormData()
     form.append("Image", file)
 
-    const res = await fetch("/api/vbs/teacher/exams/upload-image", {
+    const res = await fetch("/api/vbs/teacher/exams/upload/image", {
   method: "POST",
   credentials: "include",
   body: form,
 })
+
 
 
     if (!res.ok) {
