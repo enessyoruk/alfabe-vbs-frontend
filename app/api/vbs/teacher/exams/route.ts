@@ -4,123 +4,129 @@ import { NextRequest, NextResponse } from "next/server"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-// Backend base
+// ===============================
+// ENV
+// ===============================
 const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
 
-// Backend endpoint
-const UPSTREAM = "/api/vbs/teacher/exams"
+if (!BACKEND) {
+  throw new Error("BACKEND_API_BASE / NEXT_PUBLIC_API_BASE missing")
+}
 
-// no-store helper
+const UPSTREAM_PATH = "/api/vbs/teacher/exams"
+
+const u = (p: string) =>
+  `${BACKEND}${p.startsWith("/") ? "" : "/"}${p}`
+
+// ===============================
+// HELPERS
+// ===============================
 function noStore(res: NextResponse) {
-  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate")
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
   res.headers.set("Pragma", "no-cache")
   res.headers.set("Expires", "0")
   return res
 }
 
-// Cookie + Authorization forward
-function buildHeaders(req: NextRequest): Record<string, string> {
-  const h: Record<string, string> = {
+async function readJson(r: Response) {
+  const t = await r.text()
+  try {
+    return t ? JSON.parse(t) : {}
+  } catch {
+    return t ? { message: t } : {}
+  }
+}
+
+function buildAuthHeaders(req: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = {
     Accept: "application/json",
   }
 
-  // HttpOnly jwt cookie → token
-  const jwt = req.cookies.get("vbs_session")?.value
-  if (jwt) h.Authorization = `Bearer ${jwt}`
+  // 1) Authorization header → varsa kullan
+  const ah = req.headers.get("authorization") || ""
+  if (ah.toLowerCase().startsWith("bearer ")) {
+    headers.Authorization = ah
+  } else {
+    // 2) HttpOnly cookie → vbs_session
+    const token = req.cookies.get("vbs_session")?.value
+    if (token) headers.Authorization = `Bearer ${token}`
+  }
 
-  // Browser cookie → forward
-  const ck = req.headers.get("cookie")
-  if (ck) h.Cookie = ck
+  // 3) Browser cookie → direkt forward (çok kritik)
+  const incomingCookie = req.headers.get("cookie")
+  if (incomingCookie) headers.Cookie = incomingCookie
 
-  return h
+  return headers
 }
 
-// =====================================================================
-// GET
-// =====================================================================
+// ===============================
+// GET → sınav listesini getir
+// ===============================
 export async function GET(req: NextRequest) {
-  const search = req.nextUrl.search ?? ""
-  const url = `${BACKEND}${UPSTREAM}${search}`
-
   try {
-    const headers = buildHeaders(req)
+    const headers = buildAuthHeaders(req)
 
-    const upstream = await fetch(url, {
+    const upstreamUrl = new URL(u(UPSTREAM_PATH))
+    req.nextUrl.searchParams.forEach((v, k) =>
+      upstreamUrl.searchParams.set(k, v),
+    )
+
+    const up = await fetch(upstreamUrl.toString(), {
       method: "GET",
       cache: "no-store",
       credentials: "include",
       headers,
     })
 
-    const text = await upstream.text()
-    let json: any = {}
+    const data = await readJson(up)
+    const res = NextResponse.json(data, { status: up.status })
 
-    try {
-      json = text ? JSON.parse(text) : {}
-    } catch {
-      json = { raw: text }
-    }
+    const ra = up.headers.get("Retry-After")
+    if (ra) res.headers.set("Retry-After", ra)
 
-    return noStore(
-      NextResponse.json(json, { status: upstream.status })
-    )
-  } catch (err: any) {
+    return noStore(res)
+  } catch (err) {
     console.error("[proxy exams GET]", err)
     return noStore(
-      NextResponse.json(
-        { error: "Upstream GET error", detail: err.message },
-        { status: 500 }
-      )
+      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
     )
   }
 }
 
-// =====================================================================
-// POST
-// =====================================================================
+// ===============================
+// POST → yeni sınav oluştur (JSON)
+// ===============================
 export async function POST(req: NextRequest) {
-  const url = `${BACKEND}${UPSTREAM}`
-
   try {
-    const headers = buildHeaders(req)
+    const headers = buildAuthHeaders(req)
 
     // Content-Type forward
     const ct = req.headers.get("content-type")
     if (ct) headers["Content-Type"] = ct
 
-    // Body → Stream bozulmadan aktarılır
-    const bodyStream = req.body as any
+    const bodyText = await req.text()
 
-    const upstream = await fetch(url, {
+    const up = await fetch(u(UPSTREAM_PATH), {
       method: "POST",
       cache: "no-store",
       credentials: "include",
       headers,
-      body: bodyStream,
-      ...( { duplex: "half" } as any )  // nodejs stream fix
+      body: bodyText || undefined,
     })
 
-    const text = await upstream.text()
-    let json: any = {}
+    const data = await readJson(up)
+    const res = NextResponse.json(data, { status: up.status })
 
-    try {
-      json = text ? JSON.parse(text) : {}
-    } catch {
-      json = { raw: text }
-    }
+    const ra = up.headers.get("Retry-After")
+    if (ra) res.headers.set("Retry-After", ra)
 
-    return noStore(
-      NextResponse.json(json, { status: upstream.status })
-    )
-  } catch (err: any) {
+    return noStore(res)
+  } catch (err) {
     console.error("[proxy exams POST]", err)
     return noStore(
-      NextResponse.json(
-        { error: "Upstream POST error", detail: err.message },
-        { status: 500 }
-      )
+      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
     )
   }
 }
