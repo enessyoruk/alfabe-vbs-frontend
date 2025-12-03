@@ -686,19 +686,9 @@ export default function ExamUploadPage() {
     if (!confirm("Bu sınavı silmek istediğinize emin misiniz?")) return
 
     try {
-      const res = await fetch(
-        `/api/vbs/teacher/exams/delete?id=${exam.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
+      await http.delete(
+        `${endpoints.teacher.examsDelete}?id=${exam.id}`
       )
-
-      if (!res.ok) {
-        const text = await res.text()
-        alert("Silme başarısız: " + text)
-        return
-      }
 
       await refreshExams()
     } catch (err: any) {
@@ -708,6 +698,7 @@ export default function ExamUploadPage() {
 >
   <Trash2 className="h-4 w-4" />
 </Button>
+
 
 
 

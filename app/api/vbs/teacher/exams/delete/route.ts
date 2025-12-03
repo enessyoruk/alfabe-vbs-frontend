@@ -1,4 +1,4 @@
-//app/api/vbs/teacher/exams/delete/route.ts
+// app/api/vbs/teacher/exams/delete/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -7,10 +7,6 @@ export const dynamic = "force-dynamic"
 const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
-
-if (!BACKEND) {
-  throw new Error("BACKEND_API_BASE / NEXT_PUBLIC_API_BASE missing")
-}
 
 const u = (p: string) =>
   `${BACKEND}${p.startsWith("/") ? "" : "/"}${p}`
@@ -21,16 +17,16 @@ async function readJson(r: Response) {
   catch { return { raw: t } }
 }
 
-function buildAuthHeaders(req: NextRequest): Record<string, string> {
-  const headers: any = { Accept: "application/json" }
+function buildAuthHeaders(req: NextRequest) {
+  const h: any = { Accept: "application/json" }
 
   const token = req.cookies.get("vbs_session")?.value
-  if (token) headers.Authorization = `Bearer ${token}`
+  if (token) h.Authorization = `Bearer ${token}`
 
   const cookies = req.headers.get("cookie")
-  if (cookies) headers.Cookie = cookies
+  if (cookies) h.Cookie = cookies
 
-  return headers
+  return h
 }
 
 export async function DELETE(req: NextRequest) {
@@ -39,18 +35,18 @@ export async function DELETE(req: NextRequest) {
 
     const upstreamUrl = new URL(
       u("/api/vbs/teacher/exams/delete")
-
     )
 
+    // id parametresini backend'e geçir
     req.nextUrl.searchParams.forEach((v, k) =>
       upstreamUrl.searchParams.set(k, v)
     )
 
     const up = await fetch(upstreamUrl.toString(), {
       method: "DELETE",
+      headers,
       credentials: "include",
       cache: "no-store",
-      headers
     })
 
     const data = await readJson(up)
