@@ -91,7 +91,6 @@ function getStatusIcon(status: string) {
     case "absent":
       return <XCircle className="h-5 w-5 text-red-600" />
     case "late":
-      // Mazeretli de olsa ikon aynı kalsın, metni aşağıda değiştiriyoruz
       return <Clock className="h-5 w-5 text-orange-600" />
     default:
       return <Clock className="h-5 w-5 text-gray-400" />
@@ -105,7 +104,6 @@ function getStatusBadge(status: string) {
     case "absent":
       return <Badge className="bg-red-100 text-red-800">Katılmadı</Badge>
     case "late":
-      // UI'de "Mazeretli" olarak göster
       return <Badge className="bg-orange-100 text-orange-800">Mazeretli</Badge>
     default:
       return <Badge variant="secondary">Bilinmiyor</Badge>
@@ -215,7 +213,6 @@ export default function AttendancePage() {
         params.set("studentId", selectedStudent)
         params.set("month", selectedMonth)
 
-        // 🔴 BURASI DEĞİŞTİ: /api/parent/attendance yerine /api/attendance
         const res = await fetch(`/api/attendance?${params.toString()}`, {
           credentials: "include",
           signal: ac.signal,
@@ -254,17 +251,26 @@ export default function AttendancePage() {
     (rec) => rec.date.slice(0, 7) === selectedMonth,
   )
 
+  // 🔥 BACKEND ile birebir aynı hesaplama
   const stats = useMemo(() => {
-    const total = filtered.length
-    const present = filtered.filter((r) => r.status === "present").length
-    const absent = filtered.filter((r) => r.status === "absent").length
+    const valid = filtered.filter(
+      (r) => r.status === "present" || r.status === "absent",
+    )
+
+    const total = valid.length
+    const present = valid.filter((r) => r.status === "present").length
+    const absent = valid.filter((r) => r.status === "absent").length
+
+    // late (mazeretli) UI’da gösterilecek ama rate’e dahil değil
     const late = filtered.filter((r) => r.status === "late").length
 
     return { total, present, absent, late }
   }, [filtered])
 
   const attendanceRate =
-    stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 0
+    stats.total > 0
+      ? Math.round((stats.present / stats.total) * 100)
+      : 0
 
   const selectedStudentObj = students.find((s) => s.id === selectedStudent)
 
@@ -305,8 +311,6 @@ export default function AttendancePage() {
             <SelectContent>
               {students.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                  {/* "- Test" gibi sınıf adlarını gizlemek için:
-                      class "Test" ise sadece adı göster */}
                   {s.name}
                   {s.class &&
                     s.class.toLowerCase() !== "test" &&
@@ -342,7 +346,7 @@ export default function AttendancePage() {
         </Card>
       ) : (
         <>
-          {/* Stats - ikonlu kutucuklar */}
+          {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Devam Oranı */}
             <Card className="shadow-sm">
@@ -424,7 +428,7 @@ export default function AttendancePage() {
             </Card>
           </div>
 
-          {/* Detaylar + sayfalama */}
+          {/* Detaylar */}
           <Card>
             <CardHeader>
               <CardTitle>
@@ -469,7 +473,7 @@ export default function AttendancePage() {
                     ))}
                   </div>
 
-                  {/* Sayfalama kontrolü */}
+                  {/* Sayfalama */}
                   {pageCount > 1 && (
                     <div className="flex items-center justify-between pt-4 border-t mt-4">
                       <p className="text-xs text-muted-foreground">
