@@ -687,7 +687,7 @@ export default function ExamUploadPage() {
 
     try {
       const res = await fetch(
-        `/api/vbs/teacher/exams/delete?id=${exam.id}`,
+        `/api/vbs/teacher/exams?id=${exam.id}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -708,6 +708,7 @@ export default function ExamUploadPage() {
 >
   <Trash2 className="h-4 w-4" />
 </Button>
+
 
 
                     </div>
