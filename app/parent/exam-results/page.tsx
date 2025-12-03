@@ -498,7 +498,15 @@ const subjects = useMemo(() => {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredResults.map((result) => (
+              {[...filteredResults]
+  .sort((a, b) => {
+    return (
+      new Date(b.examDate + "T00:00:00").getTime() -
+      new Date(a.examDate + "T00:00:00").getTime()
+    )
+  })
+  .map((result) => (
+
                 <div
                   key={result.id}
                   className="p-6 border border-border rounded-lg transition-colors"
@@ -526,9 +534,7 @@ const subjects = useMemo(() => {
                         
                         
                         <span>
-                          {new Date(result.examDate).toLocaleDateString(
-                            "tr-TR",
-                          )}
+                          {new Date(result.examDate + "T00:00:00").toLocaleDateString("tr-TR" )}
                         </span>
                       </div>
 
