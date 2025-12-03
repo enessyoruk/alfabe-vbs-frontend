@@ -26,9 +26,7 @@ type ClassItem = {
 
 type TopPerformer = {
   name: string
-  // backend: genel skor (devam ağırlıklı, sınav küçük katsayı)
   homeworkCompletion: number
-  // ekstra alanlar: devam + sınav katılımı
   attendanceRate?: number
   examParticipation?: number
 }
@@ -68,7 +66,6 @@ type ClassAnalyticsResponse = {
   examHistory?: ExamHistoryItem[]
 }
 
-// Ortak: Abort / navigation kaynaklı hataları tespit eden helper
 function isAbortError(e: any): boolean {
   const name = e?.name || ""
   const msg: string = String(e?.message || "")
@@ -91,7 +88,7 @@ export default function AnalyticsPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
   const [analyticsError, setAnalyticsError] = useState<string | null>(null)
 
-  // ==== Sınıf listesini backend'den çek ====
+  // ==== Sınıfları Yükle ====
   useEffect(() => {
     const ctrl = new AbortController()
     ;(async () => {
@@ -99,11 +96,10 @@ export default function AnalyticsPage() {
         setClassesLoading(true)
         setClassesError(null)
 
-        const res = await http.get<any>(endpoints.teacher.classes, {
-          signal: ctrl.signal,
-        })
+        const res = await http.get<any>(endpoints.teacher.classes, { signal: ctrl.signal })
 
         const arr = Array.isArray(res) ? res : Array.isArray(res?.items) ? res.items : []
+
         const mapped: ClassItem[] = arr.map((x: any) => ({
           id: String(x.id ?? x.classId),
           name: String(x.name ?? x.className ?? x.dersAdi ?? `Ders #${x.id ?? x.classId}`),
@@ -116,36 +112,31 @@ export default function AnalyticsPage() {
           setSelectedClass(mapped[0].id)
         }
       } catch (e: any) {
-        if (isAbortError(e)) {
-          console.warn("[AnalyticsPage] classes fetch aborted:", e)
-          return
+        if (!isAbortError(e)) {
+          console.error("[AnalyticsPage] class fetch error", e)
+          setClassesError("Sınıf listesi alınamadı.")
         }
-        console.error("[AnalyticsPage] classes fetch error:", e)
-        setClassesError("Sınıf listesi alınamadı.")
       } finally {
         setClassesLoading(false)
       }
     })()
 
     return () => ctrl.abort()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ==== Seçili sınıf için analitik veriyi çek ====
-    // ==== Seçili sınıf için analitik veriyi çek ====
+  // ==== Analiz Yükle ====
   useEffect(() => {
     if (!selectedClass) return
 
     const ctrl = new AbortController()
+
     ;(async () => {
       try {
         setAnalyticsLoading(true)
         setAnalyticsError(null)
         setAnalytics(null)
 
-        const url = `${endpoints.teacher.analytics}?classId=${encodeURIComponent(
-          selectedClass,
-        )}`
+        const url = `${endpoints.teacher.analytics}?classId=${encodeURIComponent(selectedClass)}`
         const res = await http.get<any>(url, { signal: ctrl.signal })
 
         const data: ClassAnalyticsResponse = {
@@ -154,11 +145,7 @@ export default function AnalyticsPage() {
             res.className ??
             classes.find((c) => c.id === selectedClass)?.name ??
             `Sınıf #${selectedClass}`,
-          studentCount: Number(
-            res.studentCount ??
-              classes.find((c) => c.id === selectedClass)?.studentCount ??
-              0,
-          ),
+          studentCount: Number(res.studentCount ?? 0),
           attendanceRate: Number(res.attendanceRate ?? 0),
           homeworkCompletionRate: Number(res.homeworkCompletionRate ?? 0),
           topPerformers: Array.isArray(res.topPerformers) ? res.topPerformers : [],
@@ -169,16 +156,10 @@ export default function AnalyticsPage() {
 
         setAnalytics(data)
       } catch (e: any) {
-        if (isAbortError(e)) {
-          if (process.env.NODE_ENV !== "production") {
-            console.debug("[AnalyticsPage] analytics fetch aborted")
-          }
-          return
+        if (!isAbortError(e)) {
+          console.error("[AnalyticsPage] analytics fetch error:", e)
+          setAnalyticsError("Analiz verisi alınamadı.")
         }
-
-        console.error("[AnalyticsPage] analytics fetch error:", e)
-        setAnalyticsError("Analiz verisi alınamadı.")
-        setAnalytics(null)
       } finally {
         setAnalyticsLoading(false)
       }
@@ -187,48 +168,19 @@ export default function AnalyticsPage() {
     return () => ctrl.abort()
   }, [selectedClass, classes])
 
-
-  const getInsightIcon = (iconType: string) => {
-    switch (iconType) {
-      case "homework":
-        return <BookOpen className="h-5 w-5 text-blue-600" />
-      case "exam":
-        return <BarChart3 className="h-5 w-5 text-green-600" />
-      case "attendance":
-        return <UserCheck className="h-5 w-5 text-purple-600" />
-      case "trend":
-        return <Clock className="h-5 w-5 text-orange-600" />
-      default:
-        return <BarChart3 className="h-5 w-5" />
-    }
+  // ============================================
+  // 🚀 PREMIUM LOADER (REHBER ÖĞRETMEN MODELİ)
+  // ============================================
+  if (analyticsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Analiz verileri hazırlanıyor...</p>
+        </div>
+      </div>
+    )
   }
-
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case "excellent":
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-200">
-            Mükemmel
-          </Badge>
-        )
-      case "good":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-            İyi
-          </Badge>
-        )
-      case "warning":
-        return (
-          <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-            Dikkat
-          </Badge>
-        )
-      default:
-        return <Badge variant="secondary">Normal</Badge>
-    }
-  }
-
-  const examHistory: ExamHistoryItem[] = analytics?.examHistory ?? []
 
   return (
     <div className="space-y-6">
@@ -241,57 +193,18 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        <Select
-  value={selectedClass}
-  onValueChange={(val) => setSelectedClass(val)}
->
-  <SelectTrigger
-    className="
-      w-48 
-      rounded-lg 
-      border 
-      border-gray-300 
-      bg-white 
-      shadow-sm 
-      text-foreground
-      focus:ring-0
-      focus:border-gray-400
-    "
-  >
-    <SelectValue
-      placeholder={
-        classesLoading ? "Sınıflar yükleniyor..." : "Sınıf seçin"
-      }
-    />
-  </SelectTrigger>
-
-  <SelectContent
-    className="
-      rounded-lg
-      border 
-      border-gray-300 
-      bg-white 
-      shadow-md
-    "
-  >
-    {classes.map((classItem) => (
-      <SelectItem
-        key={classItem.id}
-        value={classItem.id}
-        className="
-          cursor-pointer 
-          rounded-md
-          text-foreground 
-          hover:bg-gray-100
-          focus:bg-gray-100
-        "
-      >
-        {classItem.name}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-
+        <Select value={selectedClass} onValueChange={(val) => setSelectedClass(val)}>
+          <SelectTrigger className="w-48 rounded-lg border bg-white shadow-sm">
+            <SelectValue placeholder="Sınıf seçin" />
+          </SelectTrigger>
+          <SelectContent>
+            {classes.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {classesError && (
@@ -306,164 +219,121 @@ export default function AnalyticsPage() {
         </Alert>
       )}
 
-      {!analyticsLoading && !analytics && !analyticsError && (
+      {!analytics && !analyticsError && (
         <p className="text-sm text-muted-foreground">
           Analiz verisi bulunamadı. İlgili sınıf için henüz veri üretilmemiş olabilir.
         </p>
       )}
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Öğrenci Sayısı
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {analytics?.studentCount ?? "-"}
-                </p>
-              </div>
-              <Users className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Devam Oranı
-                </p>
-                <p className="text-2xl font-bold text-secondary">
-                  {typeof analytics?.attendanceRate === "number"
-                    ? `%${analytics.attendanceRate.toFixed(1)}`
-                    : "-"}
-                </p>
-              </div>
-              <UserCheck className="h-8 w-8 text-secondary" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Ödev Tamamlama
-                </p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {typeof analytics?.homeworkCompletionRate === "number"
-                    ? `%${analytics.homeworkCompletionRate.toFixed(1)}`
-                    : "-"}
-                </p>
-              </div>
-              <Calendar className="h-8 w-8 text-orange-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Overview Cards */}
+      {analytics && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Öğrenci Sayısı */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Öğrenci Sayısı</p>
+                    <p className="text-2xl font-bold">{analytics.studentCount}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Performers */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-yellow-600" />
-              En Başarılı Öğrenciler
-            </CardTitle>
-            <CardDescription>
-              Devam ve sınav katılımına göre öne çıkan öğrenciler
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {analyticsLoading && (
-              <p className="text-sm text-muted-foreground">Yükleniyor…</p>
-            )}
-            {!analyticsLoading &&
-              analytics?.topPerformers?.map((student, index) => {
-                const attendance =
-                  typeof student.attendanceRate === "number"
-                    ? student.attendanceRate
-                    : student.homeworkCompletion
+            {/* Devam Oranı */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Devam Oranı</p>
+                    <p className="text-2xl font-bold text-secondary">
+                      %{analytics.attendanceRate.toFixed(1)}
+                    </p>
+                  </div>
+                  <UserCheck className="h-8 w-8 text-secondary" />
+                </div>
+              </CardContent>
+            </Card>
 
-                const exam =
-                  typeof student.examParticipation === "number"
-                    ? student.examParticipation
-                    : undefined
+            {/* Ödev Tamamlama */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Ödev Tamamlama</p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      %{analytics.homeworkCompletionRate.toFixed(1)}
+                    </p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                const score =
-                  typeof student.homeworkCompletion === "number"
-                    ? student.homeworkCompletion
-                    : attendance
+          {/* En Başarılı Öğrenciler */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-yellow-600" />
+                  En Başarılı Öğrenciler
+                </CardTitle>
+              </CardHeader>
 
-                return (
+              <CardContent className="space-y-4">
+                {analytics.topPerformers.length === 0 && (
+                  <p className="text-muted-foreground text-sm">
+                    Bu sınıf için henüz üst performans verisi yok.
+                  </p>
+                )}
+
+                {analytics.topPerformers.map((s, i) => (
                   <div
-                    key={index}
+                    key={i}
                     className="flex items-center justify-between p-3 bg-green-50 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-yellow-800">
-                          #{index + 1}
-                        </span>
+                        <span className="font-bold text-yellow-800 text-sm">#{i + 1}</span>
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">
-                          {student.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Devam: %{attendance.toFixed(1)}
-                          {typeof exam === "number" && (
-                            <> · Sınav: %{exam.toFixed(1)}</>
-                          )}
+                        <p className="font-medium">{s.name}</p>
+                        <p className="text-muted-foreground text-sm">
+                          Devam %{s.attendanceRate?.toFixed(1) ?? "—"}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                        Skor: %{score.toFixed(0)}
-                      </Badge>
-                    </div>
+
+                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                      Skor %{s.homeworkCompletion.toFixed(0)}
+                    </Badge>
                   </div>
-                )
-              })}
-            {!analyticsLoading &&
-              (!analytics?.topPerformers ||
-                analytics.topPerformers.length === 0) && (
-                <p className="text-sm text-muted-foreground">
-                  Bu sınıf için henüz üst performans verisi yok.
-                </p>
-              )}
-          </CardContent>
-        </Card>
+                ))}
+              </CardContent>
+            </Card>
 
-        {/* Students Needing Attention */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingDown className="h-5 w-5 text-red-600" />
-              Dikkat Gereken Öğrenciler
-            </CardTitle>
-            <CardDescription>
-              Özellikle devamsızlık ve sınav katılımına göre riskli görülen öğrenciler
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {analyticsLoading && (
-              <p className="text-sm text-muted-foreground">Yükleniyor…</p>
-            )}
-            {!analyticsLoading &&
-              analytics?.needsAttention?.map((student, index) => {
-                const attendance =
-                  typeof student.attendanceRate === "number"
-                    ? student.attendanceRate
-                    : student.homeworkCompletion ?? 0
+            {/* Dikkat Gereken Öğrenciler */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5 text-red-600" />
+                  Dikkat Gereken Öğrenciler
+                </CardTitle>
+              </CardHeader>
 
-                return (
+              <CardContent className="space-y-4">
+                {analytics.needsAttention.length === 0 && (
+                  <p className="text-muted-foreground text-sm">
+                    Bu sınıf için özel dikkat gerektiren öğrenci görünmüyor.
+                  </p>
+                )}
+
+                {analytics.needsAttention.map((s, i) => (
                   <div
-                    key={index}
+                    key={i}
                     className="flex items-center justify-between p-3 bg-red-50 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
@@ -471,125 +341,91 @@ export default function AnalyticsPage() {
                         <TrendingDown className="h-4 w-4 text-red-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">
-                          {student.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {student.reason || "Dikkat gerektiren durum"}
-                        </p>
+                        <p className="font-medium">{s.name}</p>
+                        <p className="text-muted-foreground text-sm">{s.reason || ""}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-red-100 text-red-800 border-red-200">
-                        Devam: %{attendance.toFixed(1)}
-                      </Badge>
-                    </div>
+
+                    <Badge className="bg-red-100 text-red-800 border-red-200">
+                      Devam %{s.attendanceRate?.toFixed(1) ?? 0}
+                    </Badge>
                   </div>
-                )
-              })}
-            {!analyticsLoading &&
-              (!analytics?.needsAttention ||
-                analytics.needsAttention.length === 0) && (
-                <p className="text-sm text-muted-foreground">
-                  Bu sınıf için özel dikkat gerektiren öğrenci görünmüyor.
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* İçgörüler */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Sınıf İçgörüleri</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              {analytics.classInsights.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  Bu sınıf için henüz içgörü oluşturulmamış.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {analytics.classInsights.map((ins, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 border rounded-lg flex flex-col gap-2"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5" />
+                          <h4 className="font-medium">{ins.title}</h4>
+                        </div>
+
+                        <Badge>{ins.status ?? "Normal"}</Badge>
+                      </div>
+
+                      <p className="text-muted-foreground text-sm">{ins.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Sınav Geçmişi */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Sınav Geçmişi</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              {(!analytics.examHistory || analytics.examHistory.length === 0) && (
+                <p className="text-muted-foreground text-sm">
+                  Bu sınıf için henüz sınav geçmişi yok.
                 </p>
               )}
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Class Insights */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Sınıf İçgörüleri
-          </CardTitle>
-          <CardDescription>
-            Sınıfın genel durumu ve performans analizi
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {analyticsLoading && (
-            <p className="text-sm text-muted-foreground">Yükleniyor…</p>
-          )}
-          {!analyticsLoading && analytics?.classInsights?.length ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {analytics.classInsights.map((insight, index) => (
-                <div
-                  key={index}
-                  className="p-4 border border-border rounded-lg flex flex-col gap-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {getInsightIcon(insight.icon)}
-                      <h4 className="font-medium text-foreground">
-                        {insight.title}
-                      </h4>
-                    </div>
-                    {getStatusBadge(insight.status)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {insight.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            !analyticsLoading && (
-              <p className="text-sm text-muted-foreground">
-                Bu sınıf için henüz içgörü oluşturulmamış.
-              </p>
-            )
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Exam History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Sınav Geçmişi
-          </CardTitle>
-          <CardDescription>Geçmiş sınavların listesi</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {analyticsLoading && (
-            <p className="text-sm text-muted-foreground">Yükleniyor…</p>
-          )}
-          {!analyticsLoading && examHistory.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Bu sınıf için henüz sınav geçmişi bulunmuyor.
-            </p>
-          )}
-          {!analyticsLoading && examHistory.length > 0 && (
-            <div className="space-y-4">
-              {examHistory.map((exam) => (
+              {analytics.examHistory?.map((exam) => (
                 <div
                   key={exam.id}
-                  className="flex items-center justify-between p-4 border border-border rounded-lg"
+                  className="flex justify-between items-center p-4 border rounded-lg mb-2"
                 >
                   <div>
-                    <h4 className="font-medium text-foreground">
-                      {exam.title}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="font-medium">{exam.title}</h4>
+                    <p className="text-muted-foreground text-sm">
                       {new Date(exam.date).toLocaleDateString("tr-TR")}
                     </p>
                   </div>
-                  {typeof exam.participation === "number" &&
-                    typeof exam.total === "number" && (
-                      <p className="text-sm text-muted-foreground">
-                        Katılım: {exam.participation}/{exam.total}
-                      </p>
-                    )}
+
+                  {typeof exam.participation === "number" && (
+                    <p className="text-muted-foreground text-sm">
+                      Katılım: {exam.participation}/{exam.total}
+                    </p>
+                  )}
                 </div>
               ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   )
 }
