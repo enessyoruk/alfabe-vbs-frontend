@@ -3,14 +3,6 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-function requiredEnv(name: string): string {
-  const val = process.env[name]
-  if (!val || !val.trim()) {
-    throw new Error(`Missing env: ${name}`)
-  }
-  return val
-}
-
 const BACKEND_API_BASE =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
@@ -18,7 +10,6 @@ const BACKEND_API_BASE =
 if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
-
 
 const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
@@ -31,38 +22,28 @@ function noStore(res: NextResponse) {
 
 async function readJson(r: Response) {
   const t = await r.text()
-  try {
-    return t ? JSON.parse(t) : {}
-  } catch {
-    return t ? { message: t } : {}
-  }
+  try { return t ? JSON.parse(t) : {} } catch { return t ? { message: t } : {} }
 }
 
-// 🔹 Eksik olan fonksiyon buydu
+// 🔥 DOĞRU AUTH — vbs_session
 function buildAuthHeaders(req: NextRequest) {
   const headers: Record<string, string> = { Accept: "application/json" }
 
-  // Authorization header öncelikli; yoksa cookie token (opsiyonel)
   const ah = req.headers.get("authorization") || ""
-  const cookieToken = req.cookies.get("authToken")?.value
-  if (ah.toLowerCase().startsWith("bearer ")) {
-    headers.Authorization = ah
-  } else if (cookieToken) {
-    headers.Authorization = `Bearer ${cookieToken}`
-  }
+  const cookieToken = req.cookies.get("vbs_session")?.value
 
-  // Cookie-based oturum varsa çerezi upstream’e geçir
+  if (ah.toLowerCase().startsWith("bearer "))
+    headers.Authorization = ah
+  else if (cookieToken)
+    headers.Authorization = `Bearer ${cookieToken}`
+
   const incomingCookie = req.headers.get("cookie")
-  if (incomingCookie) {
-    headers.Cookie = incomingCookie
-  }
+  if (incomingCookie) headers.Cookie = incomingCookie
 
   return headers
 }
 
-// -------- GET: devamsızlık listeleme --------
-// parent:  /api/vbs/parent/students/{studentId}/attendance?month=YYYY-MM
-// teacher: /api/vbs/teacher/attendance?classId=...&month=YYYY-MM
+// ------------------ GET ------------------
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
@@ -71,36 +52,22 @@ export async function GET(req: NextRequest) {
     const studentId = incoming.searchParams.get("studentId")
     const classId = incoming.searchParams.get("classId")
 
-    // 🔹 HİÇ studentId VE classId YOKSA:
-    // Parent panelde bazı yerler sadece parentId ile ping atıyor.
-    // Gerçek backend endpoint’i olmadığı için boş ama başarılı cevap dönüyoruz.
     if (!studentId && !classId) {
-      const res = NextResponse.json(
-        {
-          items: [],
-          count: 0,
-        },
-        { status: 200 },
-      )
+      const res = NextResponse.json({ items: [], count: 0 }, { status: 200 })
       return noStore(res)
     }
 
-    // Hedef URL’yi belirle
     let upstreamUrl: URL
     if (studentId) {
-      // Parent: belirli öğrencinin yoklaması
       upstreamUrl = new URL(u(`/api/vbs/parent/students/${studentId}/attendance`))
     } else {
-      // Teacher: sınıf yoklaması (classId zorunlu)
       upstreamUrl = new URL(u(`/api/vbs/teacher/attendance`))
       if (classId) upstreamUrl.searchParams.set("classId", classId)
     }
 
-    // Diğer tüm query parametrelerini aynen geçir (örn. month, parentId vs.)
     incoming.searchParams.forEach((v, k) => {
-      if (k !== "studentId" && k !== "classId") {
+      if (k !== "studentId" && k !== "classId")
         upstreamUrl.searchParams.set(k, v)
-      }
     })
 
     const up = await fetch(upstreamUrl.toString(), {
@@ -121,14 +88,13 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// -------- POST: devamsızlık oluştur (öğretmen) --------
-// teacher: POST /api/vbs/teacher/attendance
+// ------------------ POST (teacher) ------------------
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
     headers["Content-Type"] = "application/json"
 
-    const body = await req.text() // gövdeyi değiştirmeden ilet
+    const body = await req.text()
     const up = await fetch(u("/api/vbs/teacher/attendance"), {
       method: "POST",
       cache: "no-store",
@@ -148,8 +114,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// -------- PUT: devamsızlık güncelle (öğretmen) --------
-// teacher: PUT /api/vbs/teacher/attendance
+// ------------------ PUT (teacher) ------------------
 export async function PUT(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)

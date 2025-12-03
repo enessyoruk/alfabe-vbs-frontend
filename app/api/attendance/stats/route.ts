@@ -1,15 +1,7 @@
-// app/api/attendance/stats/route.ts  (mevcut dosyanın yerine uygula)
+// app/api/attendance/stats/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
-
-function requiredEnv(name: string): string {
-  const val = process.env[name]
-  if (!val || !val.trim()) {
-    throw new Error(`Missing env: ${name}`)
-  }
-  return val
-}
 
 const BACKEND_API_BASE =
   process.env.BACKEND_API_BASE ||
@@ -18,7 +10,6 @@ const BACKEND_API_BASE =
 if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
-
 
 const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
@@ -34,16 +25,18 @@ async function readJson(r: Response) {
   try { return t ? JSON.parse(t) : {} } catch { return t ? { message: t } : {} }
 }
 
+// 🔥 DOĞRU AUTH
 function buildAuthHeaders(req: NextRequest) {
   const headers: Record<string, string> = { Accept: "application/json" }
 
-  // Authorization header öncelikli; yoksa cookie token (opsiyonel)
   const ah = req.headers.get("authorization") || ""
-  const cookieToken = req.cookies.get("authToken")?.value
-  if (ah.toLowerCase().startsWith("bearer ")) headers.Authorization = ah
-  else if (cookieToken) headers.Authorization = `Bearer ${cookieToken}`
+  const cookieToken = req.cookies.get("vbs_session")?.value
 
-  // Cookie-based oturum varsa çerezi upstream’e geçir
+  if (ah.toLowerCase().startsWith("bearer "))
+    headers.Authorization = ah
+  else if (cookieToken)
+    headers.Authorization = `Bearer ${cookieToken}`
+
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) headers.Cookie = incomingCookie
 
@@ -57,26 +50,24 @@ export async function GET(req: NextRequest) {
     const incoming = new URL(req.url)
     const studentId = incoming.searchParams.get("studentId")
 
-// studentId yoksa hata yerine boş / sıfır istatistik döndür
-if (!studentId) {
-  const res = NextResponse.json(
-    {
-      totalLessons: 0,
-      presentCount: 0,
-      absentCount: 0,
-      lateCount: 0,
-      attendanceRate: 0,
-    },
-    { status: 200 },
-  )
-  return noStore(res)
-}
+    if (!studentId) {
+      const res = NextResponse.json(
+        {
+          totalLessons: 0,
+          presentCount: 0,
+          absentCount: 0,
+          lateCount: 0,
+          attendanceRate: 0,
+        },
+        { status: 200 },
+      )
+      return noStore(res)
+    }
 
+    const upstreamUrl = new URL(
+      u(`/api/vbs/parent/students/${studentId}/attendance/stats`)
+    )
 
-    // Varsayılan upstream şablonu: /api/vbs/parent/students/{studentId}/attendance/stats
-    const upstreamUrl = new URL(u(`/api/vbs/parent/students/${studentId}/attendance/stats`))
-
-    // Tüm diğer query parametrelerini aynen aktar (örn. month)
     incoming.searchParams.forEach((v, k) => {
       if (k !== "studentId") upstreamUrl.searchParams.set(k, v)
     })
