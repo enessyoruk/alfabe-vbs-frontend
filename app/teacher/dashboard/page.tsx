@@ -562,15 +562,7 @@ export default function TeacherDashboardPage() {
                               {c.pendingHomework} ödev
                             </span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Upload className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              Son sınavlar:
-                            </span>
-                            <span className="font-medium text-foreground">
-                              {c.recentExams}
-                            </span>
-                          </div>
+                        
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <Link
