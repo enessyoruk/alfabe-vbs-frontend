@@ -44,17 +44,17 @@ function buildAuthHeaders(req: NextRequest): Record<string, string> {
     Accept: "application/json",
   }
 
-  // 1) Authorization → Bearer varsa
+  // Bearer varsa
   const ah = req.headers.get("authorization") || ""
   if (ah.toLowerCase().startsWith("bearer ")) {
     headers.Authorization = ah
   } else {
-    // 2) Cookie → vbs_session
+    // Cookie → vbs_session
     const token = req.cookies.get("vbs_session")?.value
     if (token) headers.Authorization = `Bearer ${token}`
   }
 
-  // 3) Kullanıcı Cookie’lerini aynen yansıt
+  // Kullanıcı cookie’lerini aynen backend'e geçir
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) headers.Cookie = incomingCookie
 
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     const upstreamUrl = new URL(u(UPSTREAM_PATH))
     req.nextUrl.searchParams.forEach((v, k) =>
-      upstreamUrl.searchParams.set(k, v),
+      upstreamUrl.searchParams.set(k, v)
     )
 
     const up = await fetch(upstreamUrl.toString(), {
@@ -124,42 +124,6 @@ export async function POST(req: NextRequest) {
     return noStore(res)
   } catch (err) {
     console.error("[proxy exams POST]", err)
-    return noStore(
-      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
-    )
-  }
-}
-
-// ===============================
-// DELETE → sınav sil
-// ===============================
-export async function DELETE(req: NextRequest) {
-  try {
-    const headers = buildAuthHeaders(req)
-
-    // Backend delete URL
-    const upstreamUrl = new URL(
-      u("/api/vbs/teacher/exams/general")
-    )
-
-    // id parametresini backend’e geçir
-    req.nextUrl.searchParams.forEach((v, k) =>
-      upstreamUrl.searchParams.set(k, v)
-    )
-
-    const up = await fetch(upstreamUrl.toString(), {
-      method: "DELETE",
-      cache: "no-store",
-      credentials: "include",
-      headers,
-    })
-
-    const data = await readJson(up)
-
-    const res = NextResponse.json(data, { status: up.status })
-    return noStore(res)
-  } catch (err) {
-    console.error("[proxy exams DELETE]", err)
     return noStore(
       NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
     )
