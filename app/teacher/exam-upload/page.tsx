@@ -683,28 +683,29 @@ export default function ExamUploadPage() {
   variant="outline"
   className="text-red-600"
   onClick={async () => {
-    if (!confirm("Bu sınavı silmek istediğinize emin misiniz?")) return;
+  if (!confirm("Bu sınavı silmek istediğinize emin misiniz?")) return;
 
-    try {
-      const res = await fetch(
-        `/api/vbs/teacher/exams?id=${exam.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (!res.ok) {
-        const text = await res.text();
-        alert("Silme başarısız: " + text);
-        return;
+  try {
+    const res = await fetch(
+      `/api/vbs/teacher/exams/general?id=${exam.id}`,
+      {
+        method: "DELETE",
+        credentials: "include",
       }
+    );
 
-      await refreshExams();
-    } catch (err: any) {
-      alert("Silme hatası: " + err.message);
+    if (!res.ok) {
+      const text = await res.text();
+      alert("Silme başarısız: " + text);
+      return;
     }
-  }}
+
+    await refreshExams();
+  } catch (err: any) {
+    alert("Silme hatası: " + err.message);
+  }
+}}
+
 >
   <Trash2 className="h-4 w-4" />
 </Button>
