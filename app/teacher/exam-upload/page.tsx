@@ -128,7 +128,7 @@ export default function ExamUploadPage() {
     )
   }
 
-  // 🔥 LOAD CLASSES
+  // LOAD CLASSES
   useEffect(() => {
     const ctrl = new AbortController()
 
@@ -153,7 +153,7 @@ export default function ExamUploadPage() {
             x.name ??
               x.className ??
               x.dersAdi ??
-              `Ders #${x.id ?? x.classId}`
+              `Ders #${x.id ?? x.classId}`,
           ),
           grade: x.grade ?? x.sinifSeviyesi ?? x.classLevel ?? null,
         }))
@@ -170,7 +170,7 @@ export default function ExamUploadPage() {
     return () => ctrl.abort()
   }, [])
 
-  // 🔥 LOAD EXAMS (CORRECT ENDPOINT!)
+  // LOAD EXAMS
   async function refreshExams() {
     try {
       setListLoading(true)
@@ -225,18 +225,16 @@ export default function ExamUploadPage() {
               (typeof x.analysisCount === "number" && x.analysisCount > 0),
           ),
           analysis:
-    x.latestAnalysisSummary ??
-    x.analysis ??
-    x.analysisSummary ??
-    x.latestAnalysis ??
-    null,
-
+            x.latestAnalysisSummary ??
+            x.analysis ??
+            x.analysisSummary ??
+            x.latestAnalysis ??
+            null,
         }
       })
 
       setExamResults(list)
     } catch (e: any) {
-      console.error("[exam-upload] refreshExams error", e)
       setListError(e?.message || "Sınavlar yüklenemedi.")
       setExamResults([])
     } finally {
@@ -248,30 +246,7 @@ export default function ExamUploadPage() {
     refreshExams()
   }, [])
 
-  // 🔥 IMAGE UPLOAD (correct proxy)
-  async function uploadExamImage(file: File): Promise<string> {
-    const form = new FormData()
-    form.append("Image", file)
-
-    const res = await fetch("/api/vbs/teacher/exams/upload/image", {
-  method: "POST",
-  credentials: "include",
-  body: form,
-})
-
-
-
-    if (!res.ok) {
-      const text = await res.text()
-      throw new Error(text || `Upload HTTP ${res.status}`)
-    }
-
-    const data = await res.json()
-    if (!data?.fileUrl) throw new Error("Sunucudan fileUrl dönmedi.")
-
-    return data.fileUrl
-  }
-
+  // File change
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -294,7 +269,7 @@ export default function ExamUploadPage() {
     setSelectedFileBlobUrl(URL.createObjectURL(file))
   }
 
-  // 🔥 CREATE GENERAL EXAM
+  // UPLOAD NEW EXAM
   async function handleUploadExam() {
     if (selectedClassIds.length === 0 || !examTitle || !selectedFile) {
       alert("Ders, başlık ve dosya zorunlu.")
@@ -303,18 +278,31 @@ export default function ExamUploadPage() {
 
     setBusy(true)
     try {
-      const filePath = await uploadExamImage(selectedFile)
+      // upload image
+      const form = new FormData()
+      form.append("Image", selectedFile)
 
-      const raw = localStorage.getItem("vbs:user")
-      const parsed = raw ? JSON.parse(raw) : null
-      const user = parsed?.user || null
+      const uploadRes = await fetch("/api/vbs/teacher/exams/upload/image", {
+        method: "POST",
+        credentials: "include",
+        body: form,
+      })
 
-      const teacherId = user?.teacherNumericId
-        ? Number(user.teacherNumericId)
+      if (!uploadRes.ok) throw new Error(`Upload HTTP ${uploadRes.status}`)
+
+      const uploadJson = await uploadRes.json()
+      if (!uploadJson?.fileUrl) throw new Error("fileUrl dönmedi.")
+
+      const filePath = uploadJson.fileUrl
+
+      // teacher id
+      const parsed = JSON.parse(localStorage.getItem("vbs:user") || "{}")
+      const teacherId = parsed?.user?.teacherNumericId
+        ? Number(parsed.user.teacherNumericId)
         : null
 
       const payload = {
-        classIds: selectedClassIds.map((id) => Number(id)),
+        classIds: selectedClassIds.map((x) => Number(x)),
         examTitle,
         description: examDescription || null,
         fileUrl: filePath,
@@ -339,7 +327,7 @@ export default function ExamUploadPage() {
     }
   }
 
-  // 🔥 CREATE ANALYSIS
+  // CREATE ANALYSIS
   async function handleCreateAnalysis() {
     if (!selectedExamForAnalysis || !analysisContent.trim()) {
       alert("Sınav ve içerik zorunlu.")
@@ -368,18 +356,15 @@ export default function ExamUploadPage() {
   }
 
   async function handleDeleteExam(id: string | number) {
-  if (!confirm("Silmek istediğinize emin misiniz?")) return
+    if (!confirm("Silmek istediğinize emin misiniz?")) return
 
-  try {
-    await http.delete(`${endpoints.teacher.examsDelete}?id=${id}`)
-    await refreshExams()
-  } catch (e: any) {
-    alert(e?.message || "Silme başarısız.")
+    try {
+      await http.delete(`${endpoints.teacher.examsDelete}?id=${id}`)
+      await refreshExams()
+    } catch (e: any) {
+      alert(e?.message || "Silme başarısız.")
+    }
   }
-}
-
-
-
 
   function handleImagePreview(url: string) {
     setPreviewImageUrl(url)
@@ -405,6 +390,23 @@ export default function ExamUploadPage() {
     return Array.from(map.values()).reduce((a, b) => a + b, 0)
   }, [examResults])
 
+  // ======================================================
+  // 🚀 PREMIUM LOADER
+  // ======================================================
+  if (classesLoading || listLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[380px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Sınav verileri yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // ======================================================
+  // NORMAL RENDER
+  // ======================================================
   return (
     <div className="space-y-6">
       {/* HEADER */}
@@ -427,7 +429,7 @@ export default function ExamUploadPage() {
         </div>
 
         <div className="flex gap-2">
-          {/* ANALYSIS BUTTON */}
+          {/* ANALYSIS */}
           <Dialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -483,7 +485,7 @@ export default function ExamUploadPage() {
             </DialogContent>
           </Dialog>
 
-          {/* UPLOAD BUTTON */}
+          {/* UPLOAD */}
           <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary text-white">
@@ -521,25 +523,23 @@ export default function ExamUploadPage() {
                   </Select>
                 </div>
 
-                {/* CLASS MULTIPLE */}
+                {/* CLASSES MULTIPLE */}
                 <div>
                   <Label>Ders Seçin</Label>
-                  {!classesLoading && filteredClasses.length > 0 && (
-                    <div className="border p-3 rounded-md max-h-40 overflow-auto">
-                      <div className="grid grid-cols-2 gap-2">
-                        {filteredClasses.map((c) => (
-                          <label key={c.id} className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedClassIds.includes(c.id)}
-                              onChange={() => toggleClassSelection(c.id)}
-                            />
-                            {c.name}
-                          </label>
-                        ))}
-                      </div>
+                  <div className="border p-3 rounded-md max-h-40 overflow-auto">
+                    <div className="grid grid-cols-2 gap-2">
+                      {filteredClasses.map((c) => (
+                        <label key={c.id} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedClassIds.includes(c.id)}
+                            onChange={() => toggleClassSelection(c.id)}
+                          />
+                          {c.name}
+                        </label>
+                      ))}
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* TITLE */}
@@ -552,7 +552,7 @@ export default function ExamUploadPage() {
                   />
                 </div>
 
-                {/* DESC */}
+                {/* DESCRIPTION */}
                 <div>
                   <Label>Açıklama</Label>
                   <Textarea
@@ -630,14 +630,13 @@ export default function ExamUploadPage() {
           <CardDescription>Yüklediğiniz sonuçlar</CardDescription>
         </CardHeader>
         <CardContent>
-          {listLoading && <p>Yükleniyor...</p>}
           {listError && (
             <Alert variant="destructive">
               <AlertDescription>{listError}</AlertDescription>
             </Alert>
           )}
 
-          {!listLoading && !listError && examResults.length === 0 ? (
+          {!listError && examResults.length === 0 ? (
             <div className="text-center py-8">
               <FileImage className="h-12 w-12 mx-auto mb-4" />
               <p className="text-muted-foreground">Henüz sınav yüklenmedi.</p>
@@ -682,19 +681,13 @@ export default function ExamUploadPage() {
                       )}
 
                       <Button
-  size="sm"
-  variant="outline"
-  className="text-red-600"
-  onClick={() => handleDeleteExam(exam.id)}
->
-  <Trash2 className="h-4 w-4" />
-</Button>
-
-
-
-
-
-
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600"
+                        onClick={() => handleDeleteExam(exam.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
 
@@ -706,32 +699,21 @@ export default function ExamUploadPage() {
 
                     <div className="flex gap-2">
                       <Button
-  size="sm"
-  variant="outline"
-  onClick={() => {
-    // tam relative path → /uploads/general-exams/xxx.jpg
-    const clean = exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
-
-    // FE → kendi API proxy download route'u
-    const url = `/api/vbs/teacher/exams/download?path=${encodeURIComponent(clean)}`
-
-    // tarayıcıya kesin download yaptır
-    const a = document.createElement("a")
-    a.href = url
-    a.download = exam.fileName ?? "exam.jpg"
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-  }}
->
-  İndir
-</Button>
-
-
-
-
-
-
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const clean = exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
+                          const url = `/api/vbs/teacher/exams/download?path=${encodeURIComponent(clean)}`
+                          const a = document.createElement("a")
+                          a.href = url
+                          a.download = exam.fileName ?? "exam.jpg"
+                          document.body.appendChild(a)
+                          a.click()
+                          a.remove()
+                        }}
+                      >
+                        İndir
+                      </Button>
 
                       <Button
                         size="sm"
