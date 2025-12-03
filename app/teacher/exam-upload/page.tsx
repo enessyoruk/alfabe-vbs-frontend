@@ -685,21 +685,32 @@ export default function ExamUploadPage() {
   variant="outline"
   className="text-red-600"
   onClick={async () => {
-    if (!confirm("Bu sınavı silmek istediğinize emin misiniz?")) return
+    if (!confirm("Bu sınavı silmek istediğinize emin misiniz?")) return;
 
     try {
-      await http.delete(
-        `${endpoints.teacher.examsDelete}?id=${exam.id}`
-      )
+      const res = await fetch(
+        `/api/vbs/teacher/exams/delete-exam?id=${exam.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
-      await refreshExams()
+      if (!res.ok) {
+        const text = await res.text();
+        alert("Silme başarısız: " + text);
+        return;
+      }
+
+      await refreshExams();
     } catch (err: any) {
-      alert("Silme hatası: " + err.message)
+      alert("Silme hatası: " + err.message);
     }
   }}
 >
   <Trash2 className="h-4 w-4" />
 </Button>
+
 
 
 
