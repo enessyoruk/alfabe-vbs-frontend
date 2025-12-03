@@ -380,6 +380,7 @@ export default function ExamUploadPage() {
 
 
 
+
   function handleImagePreview(url: string) {
     setPreviewImageUrl(url)
     setIsImagePreviewOpen(true)
@@ -684,29 +685,7 @@ export default function ExamUploadPage() {
   size="sm"
   variant="outline"
   className="text-red-600"
-  onClick={async () => {
-    if (!confirm("Bu sınavı silmek istediğinize emin misiniz?")) return;
-
-    try {
-      const res = await fetch(
-        `/api/vbs/teacher/exams/delete-exam?id=${exam.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (!res.ok) {
-        const text = await res.text();
-        alert("Silme başarısız: " + text);
-        return;
-      }
-
-      await refreshExams();
-    } catch (err: any) {
-      alert("Silme hatası: " + err.message);
-    }
-  }}
+  onClick={() => handleDeleteExam(exam.id)}
 >
   <Trash2 className="h-4 w-4" />
 </Button>
