@@ -1,4 +1,3 @@
-// app/api/parent/students/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -6,75 +5,40 @@ export const dynamic = "force-dynamic"
 
 const BACKEND =
   process.env.BACKEND_API_BASE ||
-  process.env.NEXT_PUBLIC_API_BASE ||
-  ""
+  process.env.NEXT_PUBLIC_API_BASE
 
-function noStore(res: NextResponse) {
-  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
-  res.headers.set("Pragma", "no-cache")
-  res.headers.set("Expires", "0")
-  return res
-}
-
-async function readJson(r: Response) {
-  const txt = await r.text()
-  try {
-    return txt ? JSON.parse(txt) : {}
-  } catch {
-    return txt ? { message: txt } : {}
-  }
-}
+const UPSTREAM = `${BACKEND}/api/vbs/parent/students`
 
 export async function GET(req: NextRequest) {
   try {
-    // TARAYICIDAN GELEN COOKIE → VAR
-    const token = req.cookies.get("vbs_session")?.value || ""
-    const rawCookie = req.headers.get("cookie") || ""
+    // Tarayıcıdan gelen cookie'yi backend'e forward et
+    const cookieHeader = req.headers.get("cookie") ?? ""
 
-    const headers: Record<string, string> = {
-      Accept: "application/json",
+    const upstream = await fetch(UPSTREAM, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Cookie: cookieHeader,
+      },
+      // güvenli
+      cache: "no-store",
+    })
+
+    const text = await upstream.text()
+
+    let data: any
+    try {
+      data = text ? JSON.parse(text) : {}
+    } catch {
+      data = { raw: text }
     }
 
-    // (1) JWT → AUTH HEADER
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-
-    // (2) COOKIE → BACKEND'E FORWARD
-    if (rawCookie) {
-      headers.Cookie = rawCookie
-    } else if (token) {
-      headers.Cookie = `vbs_session=${token}`
-    }
-
-    const upstream = await fetch(
-      `${BACKEND}/api/vbs/parent/students`,
-      {
-        method: "GET",
-        cache: "no-store",
-        credentials: "include",
-        headers,
-      }
-    )
-
-    const data = await readJson(upstream)
-
-    return noStore(
-      NextResponse.json(
-        upstream.ok
-          ? data
-          : { items: [], count: 0 },
-        { status: 200 }
-      )
-    )
-
-  } catch (err) {
-    console.error("proxy /parent/students", err)
-    return noStore(
-      NextResponse.json(
-        { items: [], count: 0, error: "Sunucu hatası" },
-        { status: 200 }
-      )
+    return NextResponse.json(data, { status: upstream.status })
+  } catch (err: any) {
+    console.error("[parent/students proxy] error", err)
+    return NextResponse.json(
+      { items: [], count: 0, error: "Proxy error" },
+      { status: 500 }
     )
   }
 }
