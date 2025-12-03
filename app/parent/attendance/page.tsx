@@ -41,8 +41,10 @@ type UiStudent = {
 type ApiAttendanceRecord = {
   id: string | number
   date?: string
+  tarih?: string // backend farklı isim kullanırsa tolere et
   course?: string
   status?: string
+  durum?: string
   teacher?: string
   notes?: string
 }
@@ -66,29 +68,34 @@ function normalizeStudent(x: ApiStudent): UiStudent {
   }
 }
 
-function normalizeAttendance(x: any): UiAttendanceRecord {
+function normalizeAttendance(x: ApiAttendanceRecord): UiAttendanceRecord {
+  // Backend farklı property isimleri kullanırsa hepsini yakala
+  const rawDate =
+    (x.date as string | undefined) ??
+    (x.tarih as string | undefined) ??
+    new Date().toISOString()
 
-  // status mapping
+  const rawStatus =
+    (x.status as string | undefined) ??
+    (x.durum as string | undefined) ??
+    ""
+
+  const statusText = rawStatus.toLowerCase().trim()
+
   let status: UiAttendanceRecord["status"] = "unknown"
-  if (x.devamDurumuId === 1) status = "present"
-  else if (x.devamDurumuId === 2) status = "absent"
-  else if (x.devamDurumuId === 3) status = "late"
-
-  // tarih alanı backend’de "tarih"
-  const date = x.tarih
-    ? x.tarih.slice(0, 10)
-    : new Date().toISOString().slice(0, 10)
+  if (["present", "var", "devam"].includes(statusText)) status = "present"
+  else if (["absent", "yok", "gelmedi"].includes(statusText)) status = "absent"
+  else if (["late", "geç", "gec", "mazeretli"].includes(statusText)) status = "late"
 
   return {
     id: String(x.id ?? ""),
-    date,
-    course: "Genel Yoklama",
+    date: rawDate,
+    course: x.course || "Genel Yoklama",
     status,
-    teacher: "Alfa-β Akademi",
+    teacher: x.teacher || "Alfa-β Akademi",
     notes: x.notes || undefined,
   }
 }
-
 
 function getStatusIcon(status: string) {
   switch (status) {
@@ -253,30 +260,23 @@ export default function AttendancePage() {
 
   /* ---------------- Derived ---------------- */
 
-  // ⛔ AY FİLTRESİNİ FRONTEND’DEN KALDIRDIK
-  // Backend zaten month=YYYY-MM ile filtreliyor.
+  // ✅ Backend zaten month ile filtreliyor → biz yeniden filtrelemiyoruz
   const filtered = attendance
 
-  // 🔥 BACKEND ile birebir aynı hesaplama
+  // ✅ BACKEND mantığına paralel ama mazeretliyi rate’e dahil etmiyoruz
   const stats = useMemo(() => {
-    const valid = filtered.filter(
-      (r) => r.status === "present" || r.status === "absent",
-    )
+    const totalLessons = filtered.length
 
-    const total = valid.length
-    const present = valid.filter((r) => r.status === "present").length
-    const absent = valid.filter((r) => r.status === "absent").length
-
-    // late (mazeretli) UI’da gösterilecek ama rate’e dahil değil
+    const present = filtered.filter((r) => r.status === "present").length
+    const absent = filtered.filter((r) => r.status === "absent").length
     const late = filtered.filter((r) => r.status === "late").length
 
-    return { total, present, absent, late }
-  }, [filtered])
+    const validForRate = present + absent
+    const attendanceRate =
+      validForRate > 0 ? Math.round((present / validForRate) * 100) : 0
 
-  const attendanceRate =
-    stats.total > 0
-      ? Math.round((stats.present / stats.total) * 100)
-      : 0
+    return { totalLessons, present, absent, late, attendanceRate }
+  }, [filtered])
 
   const selectedStudentObj = students.find((s) => s.id === selectedStudent)
 
@@ -364,7 +364,7 @@ export default function AttendancePage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {attendanceRate}
+                  {stats.attendanceRate}
                   <span className="text-base font-normal text-muted-foreground">
                     %
                   </span>
@@ -384,7 +384,9 @@ export default function AttendancePage() {
                 <Calendar className="h-5 w-5 text-blue-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.total}</div>
+                <div className="text-2xl font-bold">
+                  {stats.totalLessons}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Seçili ayda işlenen ders sayısı
                 </p>
@@ -440,7 +442,9 @@ export default function AttendancePage() {
               <CardTitle>
                 Devamsızlık Kayıtları — {selectedStudentObj?.name || ""}
               </CardTitle>
-              <CardDescription>{formatMonthLabel(selectedMonth)}</CardDescription>
+              <CardDescription>
+                {formatMonthLabel(selectedMonth)}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {loadingAttendance ? (
