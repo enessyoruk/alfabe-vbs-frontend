@@ -170,20 +170,12 @@ export default function ParentDashboardPage() {
         const sJson = await sRes.json()
         const nJson = nRes.ok ? await nRes.json() : { items: [] }
 
-        
-
-        // ---- Öğrenci listesini esnek parse et ----
         let sItemsRaw: any[] = []
 
-        if (Array.isArray((sJson as any)?.items)) {
-          sItemsRaw = (sJson as any).items
-        } else if (Array.isArray((sJson as any)?.data)) {
-          sItemsRaw = (sJson as any).data
-        } else if (Array.isArray(sJson)) {
-          sItemsRaw = sJson as any[]
-        } else {
-          sItemsRaw = []
-        }
+        if (Array.isArray(sJson.items)) sItemsRaw = sJson.items
+        else if (Array.isArray(sJson.data)) sItemsRaw = sJson.data
+        else if (Array.isArray(sJson)) sItemsRaw = sJson
+        else sItemsRaw = []
 
         const sItems: ApiStudent[] = sItemsRaw as ApiStudent[]
 
@@ -247,7 +239,6 @@ export default function ParentDashboardPage() {
     ]
   }, [students])
 
-  // Bildirimleri tarihe göre sırala + en fazla 10 tanesini göster
   const latestNotifications = useMemo(() => {
     if (!notifications.length) return []
     return [...notifications]
@@ -257,6 +248,19 @@ export default function ParentDashboardPage() {
       )
       .slice(0, 3)
   }, [notifications])
+
+  /* ================== PREMIUM LOADER ================== */
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm z-50">
+        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-muted-foreground text-sm">
+          Anasayfa yükleniyor...
+        </p>
+      </div>
+    )
+  }
 
   /* ================== UI ================== */
 
@@ -289,208 +293,179 @@ export default function ParentDashboardPage() {
         </div>
       </div>
 
-      {/* Loading Skeleton */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-6 w-24 bg-muted mb-2" />
-                <div className="h-8 w-16 bg-muted" />
-              </CardContent>
-            </Card>
-          ))}
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {quickStats.map((s, i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    {s.title}
+                  </p>
+                  <p className="text-2xl font-bold">{s.value}</p>
+                </div>
+                <div className={`p-3 rounded-full ${s.bg}`}>
+                  <s.icon className={`h-6 w-6 ${s.color}`} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Students */}
+
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Öğrencilerim</h2>
+
+          {students.length === 0 ? (
+            <Alert>
+              <AlertDescription>
+                Öğrenci verisi bulunamadı.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-4">
+              {students.map((st) => (
+                <Card key={st.id} className="hover:shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={st.photo || "/placeholder.svg"} />
+                        <AvatarFallback>
+                          <User className="h-8 w-8" />
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-base">
+                            {st.name}
+                          </h3>
+                          <Badge variant="secondary">
+                            {st.class}
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            Devamsızlık:
+                            <span
+                              className={
+                                st.attendance >= 90
+                                  ? "text-green-600"
+                                  : "text-orange-600"
+                              }
+                            >
+                              %{st.attendance}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <BookOpen className="h-4 w-4 text-muted-foreground" />
+                            Bekleyen:
+                            <span
+                              className={
+                                st.pendingHomework > 0
+                                  ? "text-orange-600"
+                                  : "text-green-600"
+                              }
+                            >
+                              {st.pendingHomework} ödev
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 mt-4">
+                          <Link href={`/parent/attendance?student=${st.id}`}>
+                            <Button variant="outline" size="sm">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              Devamsızlık
+                            </Button>
+                          </Link>
+
+                          <Link href={`/parent/homework?student=${st.id}`}>
+                            <Button variant="outline" size="sm">
+                              <BookOpen className="h-4 w-4 mr-1" />
+                              Ödevler
+                            </Button>
+                          </Link>
+
+                          <Link href={`/parent/exam-results?student=${st.id}`}>
+                            <Button variant="outline" size="sm">
+                              <FileText className="h-4 w-4 mr-1" />
+                              Sınavlar
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <>
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickStats.map((s, i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {s.title}
-                      </p>
-                      <p className="text-2xl font-bold">{s.value}</p>
-                    </div>
-                    <div className={`p-3 rounded-full ${s.bg}`}>
-                      <s.icon className={`h-6 w-6 ${s.color}`} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+
+        {/* Notifications */}
+
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Son Aktiviteler</h2>
+            <Link href="/parent/notifications">
+              <Button size="sm" variant="outline">
+                Tümünü Gör
+              </Button>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* ================================== */}
-            {/* Students */}
-            {/* ================================== */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Öğrencilerim</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Güncel Bildirimler</CardTitle>
+              <CardDescription>Son eklenen duyuru ve tatiller</CardDescription>
+            </CardHeader>
 
-              {students.length === 0 ? (
+            <CardContent className="space-y-3">
+              {latestNotifications.length === 0 ? (
                 <Alert>
                   <AlertDescription>
-                    Öğrenci verisi bulunamadı.
+                    Bildirim bulunamadı.
                   </AlertDescription>
                 </Alert>
               ) : (
-                <div className="space-y-4">
-                  {students.map((st) => (
-                    <Card key={st.id} className="hover:shadow-lg">
-                      <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-16 w-16">
-                            <AvatarImage
-                              src={st.photo || "/placeholder.svg"}
-                            />
-                            <AvatarFallback>
-                              <User className="h-8 w-8" />
-                            </AvatarFallback>
-                          </Avatar>
-
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-base">
-                                {st.name}
-                              </h3>
-                              <Badge variant="secondary">
-                                {st.class}
-                              </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                Devamsızlık:{" "}
-                                <span
-                                  className={
-                                    st.attendance >= 90
-                                      ? "text-green-600"
-                                      : "text-orange-600"
-                                  }
-                                >
-                                  %{st.attendance}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-1">
-                                <BookOpen className="h-4 w-4 text-muted-foreground" />
-                                Bekleyen:{" "}
-                                <span
-                                  className={
-                                    st.pendingHomework > 0
-                                      ? "text-orange-600"
-                                      : "text-green-600"
-                                  }
-                                >
-                                  {st.pendingHomework} ödev
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex gap-2 mt-4">
-                              <Link href={`/parent/attendance?student=${st.id}`}>
-                                <Button variant="outline" size="sm">
-                                  <Calendar className="h-4 w-4 mr-1" />
-                                  Devamsızlık
-                                </Button>
-                              </Link>
-
-                              <Link href={`/parent/homework?student=${st.id}`}>
-                                <Button variant="outline" size="sm">
-                                  <BookOpen className="h-4 w-4 mr-1" />
-                                  Ödevler
-                                </Button>
-                              </Link>
-
-                              <Link href={`/parent/exam-results?student=${st.id}`}>
-                                <Button variant="outline" size="sm">
-                                  <FileText className="h-4 w-4 mr-1" />
-                                  Sınavlar
-                                </Button>
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* ================================== */}
-            {/* Notifications */}
-            {/* ================================== */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Son Aktiviteler</h2>
-                <Link href="/parent/notifications">
-                  <Button
-                    size="sm"
-                    variant="outline"
+                latestNotifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className="flex items-start gap-3 p-3 hover:bg-accent/40 rounded-lg transition border border-border/60"
                   >
-                    Tümünü Gör
-                  </Button>
-                </Link>
-              </div>
+                    <div className="p-2 bg-accent/30 rounded-full">
+                      {n.type === "holiday" ? (
+                        <Calendar className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <User className="h-4 w-4 text-blue-600" />
+                      )}
+                    </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Güncel Bildirimler
-                  </CardTitle>
-                  <CardDescription>
-                    Son eklenen duyuru ve tatiller
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-3">
-                  {latestNotifications.length === 0 ? (
-                    <Alert>
-                      <AlertDescription>
-                        Bildirim bulunamadı.
-                      </AlertDescription>
-                    </Alert>
-                  ) : (
-                    latestNotifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className="flex items-start gap-3 p-3 hover:bg-accent/40 rounded-lg transition border border-border/60"
-                      >
-                        <div className="p-2 bg-accent/30 rounded-full">
-                          {n.type === "holiday" ? (
-                            <Calendar className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <User className="h-4 w-4 text-blue-600" />
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">
-                            {n.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                            {n.message}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {new Date(n.date).toLocaleDateString("tr-TR")}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </>
-      )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{n.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                        {n.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(n.date).toLocaleDateString("tr-TR")}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
