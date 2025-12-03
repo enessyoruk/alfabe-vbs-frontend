@@ -36,6 +36,7 @@ type UiStudent = {
   id: string
   name: string
   class: string
+  subjects: string[]
 }
 
 type ApiAttendanceRecord = {
@@ -65,8 +66,12 @@ function normalizeStudent(x: ApiStudent): UiStudent {
     id: String(x.id ?? ""),
     name: String(x.name ?? x.fullName ?? "Öğrenci"),
     class: String(x.class ?? x.className ?? "-"),
+    subjects: Array.isArray((x as any).subjects)
+      ? (x as any).subjects.map((s: any) => s.name || s)
+      : [],                          // 🔥 BACKEND'DEN GELEN DERSLER
   }
 }
+
 
 function normalizeAttendance(x: ApiAttendanceRecord): UiAttendanceRecord {
   // Backend farklı property isimleri kullanırsa hepsini yakala
@@ -279,6 +284,10 @@ export default function AttendancePage() {
   }, [filtered])
 
   const selectedStudentObj = students.find((s) => s.id === selectedStudent)
+  const totalCourses = selectedStudentObj
+  ? (selectedStudentObj as any)?.subjects?.length ?? 0
+  : 0
+
 
   // Sayfalama hesapları
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
@@ -376,22 +385,23 @@ export default function AttendancePage() {
             </Card>
 
             {/* Toplam Ders */}
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Toplam Ders
-                </CardTitle>
-                <Calendar className="h-5 w-5 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.totalLessons}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Seçili ayda işlenen ders sayısı
-                </p>
-              </CardContent>
-            </Card>
+<Card className="shadow-sm">
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium">
+      Toplam Ders
+    </CardTitle>
+    <Calendar className="h-5 w-5 text-blue-600" />
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {selectedStudentObj?.subjects?.length ?? 0}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      Öğrencinin aldığı toplam ders sayısı
+    </p>
+  </CardContent>
+</Card>
+
 
             {/* Katıldığı Dersler */}
             <Card className="shadow-sm">
