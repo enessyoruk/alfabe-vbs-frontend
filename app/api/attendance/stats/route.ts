@@ -1,11 +1,20 @@
 // app/api/attendance/stats/route.ts
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
-const BACKEND =
+const BACKEND_API_BASE =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
+
+if (!BACKEND_API_BASE) {
+  throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
+}
+
+const u = (p: string) =>
+  `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
 function noStore(res: NextResponse) {
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
@@ -16,12 +25,30 @@ function noStore(res: NextResponse) {
 
 async function readJson(r: Response) {
   const t = await r.text()
-  try { return JSON.parse(t) } catch { return { raw: t } }
+  try { return t ? JSON.parse(t) : {} } catch { return t ? { message: t } : {} }
+}
+
+function buildAuthHeaders(req: NextRequest) {
+  const headers: Record<string, string> = { Accept: "application/json" }
+
+  const ah = req.headers.get("authorization") || ""
+  const cookieToken = req.cookies.get("vbs_session")?.value
+
+  if (ah.toLowerCase().startsWith("bearer "))
+    headers.Authorization = ah
+  else if (cookieToken)
+    headers.Authorization = `Bearer ${cookieToken}`
+
+  const incomingCookie = req.headers.get("cookie")
+  if (incomingCookie) headers.Cookie = incomingCookie
+
+  return headers
 }
 
 export async function GET(req: NextRequest) {
   try {
-    const cookieHeader = req.headers.get("cookie") ?? ""
+    const headers = buildAuthHeaders(req)
+
     const incoming = new URL(req.url)
     const studentId = incoming.searchParams.get("studentId")
 
@@ -41,7 +68,7 @@ export async function GET(req: NextRequest) {
     }
 
     const upstreamUrl = new URL(
-      `${BACKEND}/api/vbs/parent/students/${studentId}/attendance/stats`
+      u(`/api/vbs/parent/students/${studentId}/attendance/stats`)
     )
 
     incoming.searchParams.forEach((v, k) => {
@@ -50,20 +77,18 @@ export async function GET(req: NextRequest) {
 
     const up = await fetch(upstreamUrl.toString(), {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-        Cookie: cookieHeader, // 🔥
-      },
       cache: "no-store",
+      credentials: "include",
+      headers,
     })
 
     const data = await readJson(up)
-    return noStore(NextResponse.json(data, { status: up.status }))
-
+    const res = NextResponse.json(data, { status: up.status })
+    const ra = up.headers.get("Retry-After")
+    if (ra) res.headers.set("Retry-After", ra)
+    return noStore(res)
   } catch (e) {
-    console.error("[attendance/stats] error", e)
-    return noStore(
-      NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
-    )
+    console.error("[proxy] /api/attendance/stats GET", e)
+    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
