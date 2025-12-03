@@ -247,9 +247,9 @@ export default function AttendancePage() {
 
   /* ---------------- Derived ---------------- */
 
-  const filtered = attendance.filter(
-    (rec) => rec.date.slice(0, 7) === selectedMonth,
-  )
+  // ⛔ AY FİLTRESİNİ FRONTEND’DEN KALDIRDIK
+  // Backend zaten month=YYYY-MM ile filtreliyor.
+  const filtered = attendance
 
   // 🔥 BACKEND ile birebir aynı hesaplama
   const stats = useMemo(() => {
