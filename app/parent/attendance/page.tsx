@@ -66,23 +66,29 @@ function normalizeStudent(x: ApiStudent): UiStudent {
   }
 }
 
-function normalizeAttendance(x: ApiAttendanceRecord): UiAttendanceRecord {
-  const statusText = (x.status || "").toLowerCase().trim()
+function normalizeAttendance(x: any): UiAttendanceRecord {
 
+  // status mapping
   let status: UiAttendanceRecord["status"] = "unknown"
-  if (["present", "var", "devam"].includes(statusText)) status = "present"
-  else if (["absent", "yok", "gelmedi"].includes(statusText)) status = "absent"
-  else if (["late", "geç", "gec"].includes(statusText)) status = "late"
+  if (x.devamDurumuId === 1) status = "present"
+  else if (x.devamDurumuId === 2) status = "absent"
+  else if (x.devamDurumuId === 3) status = "late"
+
+  // tarih alanı backend’de "tarih"
+  const date = x.tarih
+    ? x.tarih.slice(0, 10)
+    : new Date().toISOString().slice(0, 10)
 
   return {
     id: String(x.id ?? ""),
-    date: x.date || new Date().toISOString().slice(0, 10),
-    course: x.course || "Genel Yoklama",
+    date,
+    course: "Genel Yoklama",
     status,
-    teacher: x.teacher || "Öğretmen",
+    teacher: "Alfa-β Akademi",
     notes: x.notes || undefined,
   }
 }
+
 
 function getStatusIcon(status: string) {
   switch (status) {
