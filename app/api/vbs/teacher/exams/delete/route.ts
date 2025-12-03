@@ -1,3 +1,4 @@
+//app/api/vbs/teacher/exams/delete/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -37,7 +38,8 @@ export async function DELETE(req: NextRequest) {
     const headers = buildAuthHeaders(req)
 
     const upstreamUrl = new URL(
-      u("/api/vbs/teacher/exams/general")
+      u("/api/vbs/teacher/exams/delete")
+
     )
 
     req.nextUrl.searchParams.forEach((v, k) =>
