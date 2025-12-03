@@ -174,7 +174,6 @@ const baseVbs = {
 
   analytics: "/api/vbs/teacher/dashboard-analytics",
 
-
   guidance: "/api/vbs/teacher/guidance",
   guidanceParentNote: "/api/vbs/teacher/guidance/parent-note",
   notifications: "/api/vbs/teacher/notifications",
@@ -184,7 +183,9 @@ const baseVbs = {
   totalStudents: "/api/vbs/teacher/total-students",
   exams: "/api/vbs/teacher/exams",
   examsUploadImage: "/api/vbs/teacher/exams/upload-image",
-},
+  examsDelete: "/api/vbs/teacher/exams/delete",
+}
+
 
 
 

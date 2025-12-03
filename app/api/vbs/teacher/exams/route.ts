@@ -117,39 +117,3 @@ export async function POST(req: NextRequest) {
     return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
   }
 }
-
-// ===============================
-// DELETE → sınav sil (FINAL)
-// ===============================
-export async function DELETE(req: NextRequest) {
-  try {
-    const headers = buildAuthHeaders(req)
-
-    // Backend’in gerçek DELETE endpoint'i
-    const upstreamUrl = new URL(
-      u("/api/vbs/teacher/exams/general")
-    )
-
-    // id parametresini geçir
-    req.nextUrl.searchParams.forEach((v, k) =>
-      upstreamUrl.searchParams.set(k, v)
-    )
-
-    const up = await fetch(upstreamUrl.toString(), {
-      method: "DELETE",
-      cache: "no-store",
-      credentials: "include",
-      headers,
-    })
-
-    const data = await readJson(up)
-
-    const res = NextResponse.json(data, { status: up.status })
-    return noStore(res)
-  } catch (err: any) {
-    console.error("[proxy exams DELETE]", err)
-    return noStore(
-      NextResponse.json({ error: "Sunucu hatası", detail: err.message }, { status: 500 })
-    )
-  }
-}
