@@ -1,6 +1,8 @@
+// 🔥 TAM VE HIZLANDIRILMIŞ DASHBOARD
+
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { StudentCard } from "@/components/parent/student-card"
@@ -71,7 +73,7 @@ type UiNotification = {
 
 /* ================== HELPERS ================== */
 
-function parseStoredUser(raw: string | null): VbsUser | null {
+const parseStoredUser = (raw: string | null): VbsUser | null => {
   if (!raw) return null
   try {
     const v = JSON.parse(raw)
@@ -81,41 +83,17 @@ function parseStoredUser(raw: string | null): VbsUser | null {
   }
 }
 
-function getDisplayName(user: VbsUser | null) {
-  return (user?.name || user?.email || "Kullanıcı").trim()
-}
+const getDisplayName = (user: VbsUser | null) =>
+  (user?.name || user?.email || "Kullanıcı").trim()
 
-function getInitials(name: string) {
+const getInitials = (name: string) => {
   const parts = name.split(" ").filter(Boolean)
-  if (parts.length === 1) return (parts[0][0] || "U").toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  return parts.length === 1
+    ? (parts[0][0] || "U").toUpperCase()
+    : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-function normalizeStudent(x: ApiStudent): UiStudent {
-  return {
-    id: String(x.id ?? ""),
-    name: String(x.name ?? x.fullName ?? "Öğrenci"),
-    class: String(x.class ?? x.className ?? "-"),
-    branch: x.branch,
-    photo: x.photo,
-    attendance: typeof x.attendance === "number" ? x.attendance : 0,
-    pendingHomework:
-      typeof x.pendingHomework === "number" ? x.pendingHomework : 0,
-    lastExam: x.lastExam,
-  }
-}
-
-function normalizeNotification(n: ApiNotification): UiNotification {
-  return {
-    id: String(n.id),
-    title: n.title,
-    message: n.message,
-    type: n.type === "holiday" ? "holiday" : "announcement",
-    date: n.date,
-  }
-}
-
-/* ================== MAIN COMPONENT ================== */
+/* ================== MAIN PAGE ================== */
 
 export default function ParentDashboardPage() {
   const router = useRouter()
@@ -131,7 +109,7 @@ export default function ParentDashboardPage() {
   useEffect(() => {
     const raw = localStorage.getItem("vbs:user")
     const u = parseStoredUser(raw)
-    const roles = Array.isArray(u?.roles) ? u!.roles : []
+    const roles = Array.isArray(u?.roles) ? u.roles : []
 
     if (!u || !roles.includes("Parent")) {
       router.replace("/login")
@@ -141,7 +119,36 @@ export default function ParentDashboardPage() {
     setUser(u)
   }, [router])
 
-  /* -------- LOAD DATA -------- */
+  /* -------- NORMALIZERS (memoized) -------- */
+
+  const normalizeStudent = useCallback((x: ApiStudent): UiStudent => {
+    return {
+      id: String(x.id ?? ""),
+      name: String(x.name ?? x.fullName ?? "Öğrenci"),
+      class: String(x.class ?? x.className ?? "-"),
+      branch: x.branch,
+      photo: x.photo,
+      attendance: typeof x.attendance === "number" ? x.attendance : 0,
+      pendingHomework:
+        typeof x.pendingHomework === "number" ? x.pendingHomework : 0,
+      lastExam: x.lastExam,
+    }
+  }, [])
+
+  const normalizeNotification = useCallback(
+    (n: ApiNotification): UiNotification => {
+      return {
+        id: String(n.id),
+        title: n.title,
+        message: n.message,
+        type: n.type === "holiday" ? "holiday" : "announcement",
+        date: n.date,
+      }
+    },
+    []
+  )
+
+  /* -------- DATA LOAD -------- */
 
   useEffect(() => {
     if (!user) return
@@ -165,58 +172,44 @@ export default function ParentDashboardPage() {
         ])
 
         if (sRes.status === 401) {
-
-  toast.error("Oturum süreniz sona erdi. Lütfen tekrar giriş yapın.", {
-    duration: 2500,
-    position: "bottom-right",
-  })
-
-  router.replace("/login")
-  return
-}
-
+          toast.error("Oturum süreniz sona erdi. Lütfen tekrar giriş yapın.")
+          router.replace("/login")
+          return
+        }
 
         const sJson = await sRes.json()
         const nJson = nRes.ok ? await nRes.json() : { items: [] }
 
-        let sItemsRaw: any[] = []
+        const sArr: ApiStudent[] =
+          Array.isArray(sJson.items)
+            ? sJson.items
+            : Array.isArray(sJson)
+            ? sJson
+            : []
 
-        if (Array.isArray(sJson.items)) sItemsRaw = sJson.items
-        else if (Array.isArray(sJson.data)) sItemsRaw = sJson.data
-        else if (Array.isArray(sJson)) sItemsRaw = sJson
-        else sItemsRaw = []
+        const nArr: ApiNotification[] =
+          Array.isArray(nJson.items)
+            ? nJson.items
+            : Array.isArray(nJson)
+            ? nJson
+            : []
 
-        const sItems: ApiStudent[] = sItemsRaw as ApiStudent[]
-
-        const nItems: ApiNotification[] = Array.isArray(nJson.items)
-          ? nJson.items
-          : Array.isArray(nJson)
-          ? (nJson as ApiNotification[])
-          : []
-
-        setStudents(sItems.map(normalizeStudent))
-        setNotifications(nItems.map(normalizeNotification))
+        setStudents(sArr.map(normalizeStudent))
+        setNotifications(nArr.map(normalizeNotification))
       } catch (err: any) {
-
-    
-    if (err?.name !== "AbortError") {
-      toast.error("Veriler yüklenirken bir hata oluştu!", {
-        duration: 2500,
-        position: "bottom-right",
-      })
-
-      setError("Veriler yüklenirken bir hata oluştu.")
-    }
-
-  } finally {
-    setIsLoading(false)
-  }
-})()
+        if (err?.name !== "AbortError") {
+          toast.error("Veriler yüklenirken bir hata oluştu!")
+          setError("Veriler yüklenirken bir hata oluştu.")
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    })()
 
     return () => ac.abort()
-  }, [user, router])
+  }, [user, router, normalizeStudent, normalizeNotification])
 
-  /* -------- DERIVED VALUES -------- */
+  /* -------- DERIVED VALUES (memo) -------- */
 
   const displayName = getDisplayName(user)
   const initials = getInitials(displayName)
@@ -227,7 +220,8 @@ export default function ParentDashboardPage() {
     const avgAtt =
       students.length > 0
         ? Math.round(
-            students.reduce((a, s) => a + s.attendance, 0) / students.length,
+            students.reduce((a, s) => a + s.attendance, 0) /
+              students.length
           )
         : 0
 
@@ -257,16 +251,15 @@ export default function ParentDashboardPage() {
   }, [students])
 
   const latestNotifications = useMemo(() => {
-    if (!notifications.length) return []
     return [...notifications]
       .sort(
         (a, b) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime(),
+          new Date(b.date).getTime() - new Date(a.date).getTime()
       )
       .slice(0, 3)
   }, [notifications])
 
-  /* ================== PREMIUM LOADER ================== */
+  /* -------- LOADING -------- */
 
   if (isLoading) {
     return (
@@ -333,7 +326,6 @@ export default function ParentDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Students */}
-
         <div className="space-y-6">
           <h2 className="text-xl font-semibold">Öğrencilerim</h2>
 
@@ -346,23 +338,21 @@ export default function ParentDashboardPage() {
           ) : (
             <div className="space-y-4">
               {students.map((st) => (
-  <StudentCard
-    key={st.id}
-    id={st.id}
-    name={st.name}
-    classValue={st.class}
-    attendance={st.attendance}
-    pendingHomework={st.pendingHomework}
-    photo={st.photo}
-  />
-))}
-
+                <StudentCard
+                  key={st.id}
+                  id={st.id}
+                  name={st.name}
+                  classValue={st.class}
+                  attendance={st.attendance}
+                  pendingHomework={st.pendingHomework}
+                  photo={st.photo}
+                />
+              ))}
             </div>
           )}
         </div>
 
         {/* Notifications */}
-
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Son Aktiviteler</h2>

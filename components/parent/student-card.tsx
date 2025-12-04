@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { memo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -16,7 +17,7 @@ export interface StudentCardProps {
   photo?: string
 }
 
-export function StudentCard({
+function StudentCardComponent({
   id,
   name,
   classValue,
@@ -24,12 +25,18 @@ export function StudentCard({
   pendingHomework,
   photo,
 }: StudentCardProps) {
+  const attendanceColor =
+    attendance >= 90 ? "text-green-600" : "text-orange-600"
+
+  const homeworkColor =
+    pendingHomework > 0 ? "text-orange-600" : "text-green-600"
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
 
-          {/* Fotoğraf */}
+          {/* FOTOĞRAF */}
           <Avatar className="h-16 w-16">
             <AvatarImage
               src={photo || "/student-placeholder.png"}
@@ -40,7 +47,7 @@ export function StudentCard({
             </AvatarFallback>
           </Avatar>
 
-          {/* Sağ taraf içerik */}
+          {/* SAĞ TARAF */}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="font-semibold text-base">{name}</h3>
@@ -51,29 +58,17 @@ export function StudentCard({
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 Devamsızlık:
-                <span
-                  className={
-                    attendance >= 90 ? "text-green-600" : "text-orange-600"
-                  }
-                >
-                  %{attendance}
-                </span>
+                <span className={attendanceColor}>%{attendance}</span>
               </div>
 
               <div className="flex items-center gap-1">
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                 Bekleyen:
-                <span
-                  className={
-                    pendingHomework > 0 ? "text-orange-600" : "text-green-600"
-                  }
-                >
-                  {pendingHomework} ödev
-                </span>
+                <span className={homeworkColor}>{pendingHomework} ödev</span>
               </div>
             </div>
 
-            {/* Butonlar */}
+            {/* BUTONLAR */}
             <div className="flex gap-2 mt-4">
               <Link href={`/parent/attendance?student=${id}`}>
                 <Button variant="outline" size="sm">
@@ -103,3 +98,5 @@ export function StudentCard({
     </Card>
   )
 }
+
+export const StudentCard = memo(StudentCardComponent)
