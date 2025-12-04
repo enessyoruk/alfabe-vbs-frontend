@@ -386,7 +386,7 @@ export default function HomePage() {
             {[
               {
                 question: "Sisteme nasıl giriş yapabilirim?",
-                answer: "Telefon numaranız ve size verilen şifre ile giriş yapabilirsiniz.",
+                answer: "Üyeliğiniz onaylandıktan sonra sisteme kayıtlı olduğunuz e-mail ve şifre ile giriş yapabilirsiniz.",
               },
               {
                 question: "Ödev takibi nasıl yapılır?",
