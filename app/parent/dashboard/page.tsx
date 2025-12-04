@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { StudentCard } from "@/components/parent/student-card"
 
 import {
   Card,
@@ -345,87 +346,17 @@ export default function ParentDashboardPage() {
           ) : (
             <div className="space-y-4">
               {students.map((st) => (
-                <Card key={st.id} className="hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-16 w-16">
-  <AvatarImage
-    src={st.photo || "/student-placeholder.png"}
-    className="object-cover"
+  <StudentCard
+    key={st.id}
+    id={st.id}
+    name={st.name}
+    classValue={st.class}
+    attendance={st.attendance}
+    pendingHomework={st.pendingHomework}
+    photo={st.photo}
   />
-  <AvatarFallback>
-    <User className="h-8 w-8" />
-  </AvatarFallback>
-</Avatar>
+))}
 
-
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-base">
-                            {st.name}
-                          </h3>
-                          <Badge variant="secondary">
-                            {st.class}
-                          </Badge>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            Devamsızlık:
-                            <span
-                              className={
-                                st.attendance >= 90
-                                  ? "text-green-600"
-                                  : "text-orange-600"
-                              }
-                            >
-                              %{st.attendance}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1">
-                            <BookOpen className="h-4 w-4 text-muted-foreground" />
-                            Bekleyen:
-                            <span
-                              className={
-                                st.pendingHomework > 0
-                                  ? "text-orange-600"
-                                  : "text-green-600"
-                              }
-                            >
-                              {st.pendingHomework} ödev
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2 mt-4">
-                          <Link href={`/parent/attendance?student=${st.id}`}>
-                            <Button variant="outline" size="sm">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              Devamsızlık
-                            </Button>
-                          </Link>
-
-                          <Link href={`/parent/homework?student=${st.id}`}>
-                            <Button variant="outline" size="sm">
-                              <BookOpen className="h-4 w-4 mr-1" />
-                              Ödevler
-                            </Button>
-                          </Link>
-
-                          <Link href={`/parent/exam-results?student=${st.id}`}>
-                            <Button variant="outline" size="sm">
-                              <FileText className="h-4 w-4 mr-1" />
-                              Sınavlar
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           )}
         </div>
