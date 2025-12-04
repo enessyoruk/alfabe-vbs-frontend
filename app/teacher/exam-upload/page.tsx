@@ -279,90 +279,115 @@ const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(nul
   }
 
   // UPLOAD NEW EXAM
-  async function handleUploadExam() {
-    if (selectedClassIds.length === 0 || !examTitle || !selectedFile) {
-      alert("Ders, başlık ve dosya zorunlu.")
-      return
-    }
-
-    setBusy(true)
-    try {
-      // upload image
-      const form = new FormData()
-      form.append("Image", selectedFile)
-
-      const uploadRes = await fetch("/api/vbs/teacher/exams/upload/image", {
-        method: "POST",
-        credentials: "include",
-        body: form,
-      })
-
-      if (!uploadRes.ok) throw new Error(`Upload HTTP ${uploadRes.status}`)
-
-      const uploadJson = await uploadRes.json()
-      if (!uploadJson?.fileUrl) throw new Error("fileUrl dönmedi.")
-
-      const filePath = uploadJson.fileUrl
-
-      // teacher id
-      const parsed = JSON.parse(localStorage.getItem("vbs:user") || "{}")
-      const teacherId = parsed?.user?.teacherNumericId
-        ? Number(parsed.user.teacherNumericId)
-        : null
-
-      const payload = {
-        classIds: selectedClassIds.map((x) => Number(x)),
-        examTitle,
-        description: examDescription || null,
-        fileUrl: filePath,
-        teacherId,
-      }
-
-      await http.post(endpoints.teacher.exams, payload)
-
-      setIsUploadDialogOpen(false)
-      setSelectedGrade("")
-      setSelectedClassIds([])
-      setExamTitle("")
-      setExamDescription("")
-      setSelectedFile(null)
-      setSelectedFileBlobUrl("")
-
-      await refreshExams()
-    } catch (e: any) {
-      alert(e?.message || "Yükleme başarısız.")
-    } finally {
-      setBusy(false)
-    }
+async function handleUploadExam() {
+  if (selectedClassIds.length === 0 || !examTitle || !selectedFile) {
+    toast.error("Ders, başlık ve dosya zorunludur.", {
+      duration: 2200,
+      position: "bottom-right",
+    })
+    return
   }
 
-  // CREATE ANALYSIS
-  async function handleCreateAnalysis() {
-    if (!selectedExamForAnalysis || !analysisContent.trim()) {
-      alert("Sınav ve içerik zorunlu.")
-      return
+  setBusy(true)
+  try {
+    // upload image
+    const form = new FormData()
+    form.append("Image", selectedFile)
+
+    const uploadRes = await fetch("/api/vbs/teacher/exams/upload/image", {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    })
+
+    if (!uploadRes.ok) throw new Error(`Upload HTTP ${uploadRes.status}`)
+
+    const uploadJson = await uploadRes.json()
+    if (!uploadJson?.fileUrl) throw new Error("Dosya URL'i alınamadı.")
+
+    const filePath = uploadJson.fileUrl
+
+    // teacher id
+    const parsed = JSON.parse(localStorage.getItem("vbs:user") || "{}")
+    const teacherId = parsed?.user?.teacherNumericId
+      ? Number(parsed.user.teacherNumericId)
+      : null
+
+    const payload = {
+      classIds: selectedClassIds.map((x) => Number(x)),
+      examTitle,
+      description: examDescription || null,
+      fileUrl: filePath,
+      teacherId,
     }
 
-    setBusy(true)
-    try {
-      const payload = {
-        examId: Number(selectedExamForAnalysis),
-        summary: analysisContent,
-        detailsJson: null,
-      }
+    await http.post(endpoints.teacher.exams, payload)
 
-      await http.post(endpoints.teacher.generalExamAnalysis, payload)
+    toast.success("Sınav sonucu başarıyla yüklendi!", {
+      duration: 1800,
+      position: "bottom-right",
+    })
 
-      setIsAnalysisDialogOpen(false)
-      setSelectedExamForAnalysis("")
-      setAnalysisContent("")
-      await refreshExams()
-    } catch (e: any) {
-      alert(e?.message || "Analiz oluşturulamadı.")
-    } finally {
-      setBusy(false)
-    }
+    // Reset UI
+    setIsUploadDialogOpen(false)
+    setSelectedGrade("")
+    setSelectedClassIds([])
+    setExamTitle("")
+    setExamDescription("")
+    setSelectedFile(null)
+    setSelectedFileBlobUrl("")
+
+    await refreshExams()
+  } catch (e: any) {
+    toast.error("Yükleme başarısız. Lütfen tekrar deneyin.", {
+      duration: 2500,
+      position: "bottom-right",
+    })
+  } finally {
+    setBusy(false)
   }
+}
+
+// CREATE ANALYSIS
+async function handleCreateAnalysis() {
+  if (!selectedExamForAnalysis || !analysisContent.trim()) {
+    toast.error("Sınav ve analiz içeriği zorunludur.", {
+      duration: 2200,
+      position: "bottom-right",
+    })
+    return
+  }
+
+  setBusy(true)
+  try {
+    const payload = {
+      examId: Number(selectedExamForAnalysis),
+      summary: analysisContent,
+      detailsJson: null,
+    }
+
+    await http.post(endpoints.teacher.generalExamAnalysis, payload)
+
+    toast.success("Analiz başarıyla oluşturuldu!", {
+      duration: 1800,
+      position: "bottom-right",
+    })
+
+    setIsAnalysisDialogOpen(false)
+    setSelectedExamForAnalysis("")
+    setAnalysisContent("")
+
+    await refreshExams()
+  } catch (e: any) {
+    toast.error("Analiz oluşturulamadı. Lütfen tekrar deneyin.", {
+      duration: 2500,
+      position: "bottom-right",
+    })
+  } finally {
+    setBusy(false)
+  }
+}
+
 
   async function handleDeleteExam() {
   if (!deleteTargetId) return
@@ -790,26 +815,7 @@ const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(nul
           </div>
         </DialogContent>
       </Dialog>
-    {/* DELETE CONFIRM DIALOG — BURAYA EKLE */}
-<Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-  <DialogContent className="max-w-sm">
-    <DialogHeader>
-      <DialogTitle>Sınavı Sil</DialogTitle>
-      <DialogDescription>
-        Bu sınavı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
-      </DialogDescription>
-    </DialogHeader>
-
-    <div className="flex justify-end gap-2 mt-4">
-      <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
-        İptal
-      </Button>
-      <Button variant="destructive" onClick={handleDeleteExam}>
-        Evet, Sil
-      </Button>
-    </div>
-  </DialogContent>
-</Dialog>
+    
     
     </div>
 
