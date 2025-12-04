@@ -68,7 +68,7 @@ export default function HomePage() {
                 Hakkımızda
               </a>
               <a href="#ogretmenler" className="text-foreground hover:text-primary transition-colors">
-                Öğretmenler
+                Öğretmenlerimiz
               </a>
               <a href="#sss" className="text-foreground hover:text-primary transition-colors">
                 S.S.S
