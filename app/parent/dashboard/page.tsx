@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import {
   Card,
@@ -163,9 +164,16 @@ export default function ParentDashboardPage() {
         ])
 
         if (sRes.status === 401) {
-          router.replace("/login")
-          return
-        }
+
+  toast.error("Oturum süreniz sona erdi. Lütfen tekrar giriş yapın.", {
+    duration: 2500,
+    position: "bottom-right",
+  })
+
+  router.replace("/login")
+  return
+}
+
 
         const sJson = await sRes.json()
         const nJson = nRes.ok ? await nRes.json() : { items: [] }
@@ -188,13 +196,21 @@ export default function ParentDashboardPage() {
         setStudents(sItems.map(normalizeStudent))
         setNotifications(nItems.map(normalizeNotification))
       } catch (err: any) {
-        if (err?.name !== "AbortError") {
-          setError("Veriler yüklenirken bir hata oluştu.")
-        }
-      } finally {
-        setIsLoading(false)
-      }
-    })()
+
+    
+    if (err?.name !== "AbortError") {
+      toast.error("Veriler yüklenirken bir hata oluştu!", {
+        duration: 2500,
+        position: "bottom-right",
+      })
+
+      setError("Veriler yüklenirken bir hata oluştu.")
+    }
+
+  } finally {
+    setIsLoading(false)
+  }
+})()
 
     return () => ac.abort()
   }, [user, router])

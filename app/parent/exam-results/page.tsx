@@ -38,6 +38,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
 
 type ExamResult = {
   id: string
@@ -140,7 +141,6 @@ export default function ParentExamResultsPage() {
             credentials: "include",
           }),
           fetch("/api/vbs/parent/exams", {
-
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
@@ -148,13 +148,17 @@ export default function ParentExamResultsPage() {
           }),
         ])
 
-        // Yetki sorunu varsa login'e at
+        // Yetki sorunu = login
         if (
           studentsRes.status === 401 ||
           studentsRes.status === 403 ||
           examsRes.status === 401 ||
           examsRes.status === 403
         ) {
+          toast.error("Oturum süreniz sona erdi. Lütfen tekrar giriş yapın.", {
+            duration: 2200,
+            position: "bottom-right",
+          })
           router.replace("/login")
           return
         }
@@ -162,14 +166,14 @@ export default function ParentExamResultsPage() {
         if (!studentsRes.ok) {
           const t = await studentsRes.text().catch(() => "")
           throw new Error(
-            t || `Öğrenci listesi alınamadı (HTTP ${studentsRes.status}).`,
+            t || `Öğrenci listesi alınamadı (HTTP ${studentsRes.status}).`
           )
         }
 
         if (!examsRes.ok) {
           const t = await examsRes.text().catch(() => "")
           throw new Error(
-            t || `Sınav sonuçları alınamadı (HTTP ${examsRes.status}).`,
+            t || `Sınav sonuçları alınamadı (HTTP ${examsRes.status}).`
           )
         }
 
@@ -180,22 +184,19 @@ export default function ParentExamResultsPage() {
           : []
 
         const students: ParentStudent[] = studentsItems.map((s: any) => ({
-  id: String(s.id),
-  name: String(s.fullName ?? s.name ?? "Öğrenci"),
-  className: String(s.className ?? s.branch ?? "-"),
-  subjects: Array.isArray(s.subjects)
-    ? s.subjects.map((sub: any) => ({
-        name: String(sub.name),
-        teacherName: sub.teacherName ?? null,
-      }))
-    : [],
-}))
-
-
+          id: String(s.id),
+          name: String(s.fullName ?? s.name ?? "Öğrenci"),
+          className: String(s.className ?? s.branch ?? "-"),
+          subjects: Array.isArray(s.subjects)
+            ? s.subjects.map((sub: any) => ({
+                name: String(sub.name),
+                teacherName: sub.teacherName ?? null,
+              }))
+            : [],
+        }))
 
         setParentStudents(students)
 
-        // Eğer seçili öğrenci yoksa ve bir tane varsa default ona çek
         if (selectedStudent === "all" && students.length === 1) {
           setSelectedStudent(students[0].id)
         }
@@ -208,12 +209,11 @@ export default function ParentExamResultsPage() {
             const cleanClassName = String(exam.className ?? "")
               .replace(
                 /\s*(Matematik|Fen|İngilizce|Türkçe|Tarih|Coğrafya|Fizik|Kimya|Biyoloji)\s*/gi,
-                "",
+                ""
               )
               .trim()
 
             return {
-              // her öğrenci-sınav satırı için uniq key
               id: `${exam.id}-${exam.studentId}`,
               studentId: String(exam.studentId),
               studentName: String(exam.studentName ?? "Öğrenci"),
@@ -227,16 +227,27 @@ export default function ParentExamResultsPage() {
               teacherAnalysis: exam.feedback,
               topics: Array.isArray(exam.topics) ? exam.topics : [],
             }
-          },
+          }
         )
 
         setExamResults(transformedData)
       } catch (err: any) {
         console.error("[parent] Failed to fetch exams/students:", err)
+
+        toast.error(
+          err?.message ||
+            "Veriler yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
+          {
+            duration: 2500,
+            position: "bottom-right",
+          }
+        )
+
         setError(
           err?.message ||
-            "Sınav sonuçları yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+            "Sınav sonuçları yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin."
         )
+
         setExamResults([])
       } finally {
         setLoading(false)
@@ -270,37 +281,29 @@ export default function ParentExamResultsPage() {
 
   const stats = getExamStats()
 
-  // 🎯 Ders listesini SEÇİLİ ÖĞRENCİYE göre çıkar
-  // 🎯 Tüm çocukların derslerini toplayan yeni sistem
-// 🎯 Ders listesi öğrencilerin backend'ten gönderdiği "subjects" listesinden oluşturulur
-const subjects = useMemo(() => {
-  const allSubjects: string[] = []
+  const subjects = useMemo(() => {
+    const allSubjects: string[] = []
 
-  if (selectedStudent === "all") {
-    // Tüm öğrencilerin tüm dersleri
-    parentStudents.forEach((st) => {
-      if (Array.isArray(st.subjects)) {
+    if (selectedStudent === "all") {
+      parentStudents.forEach((st) => {
+        if (Array.isArray(st.subjects)) {
+          st.subjects.forEach((sub) => {
+            if (sub.name) allSubjects.push(sub.name)
+          })
+        }
+      })
+    } else {
+      const st = parentStudents.find((x) => x.id === selectedStudent)
+      if (st && Array.isArray(st.subjects)) {
         st.subjects.forEach((sub) => {
           if (sub.name) allSubjects.push(sub.name)
         })
       }
-    })
-  } else {
-    // Tek öğrenci seçiliyse sadece o öğrencinin dersleri
-    const st = parentStudents.find((x) => x.id === selectedStudent)
-    if (st && Array.isArray(st.subjects)) {
-      st.subjects.forEach((sub) => {
-        if (sub.name) allSubjects.push(sub.name)
-      })
     }
-  }
 
-  return [...new Set(allSubjects)]
-}, [parentStudents, selectedStudent])
+    return [...new Set(allSubjects)]
+  }, [parentStudents, selectedStudent])
 
-
-
-  // Öğrenci filtresi: öncelik backend student listesi, yoksa examResults fallback
   const studentOptions: StudentOption[] = useMemo(() => {
     if (parentStudents.length > 0) {
       return parentStudents.map((s) => ({
@@ -310,7 +313,6 @@ const subjects = useMemo(() => {
       }))
     }
 
-    // fallback: sadece sınavı olan çocuklardan üret
     const map = new Map<string, StudentOption>()
     for (const r of examResults) {
       if (!map.has(r.studentId)) {
@@ -330,33 +332,36 @@ const subjects = useMemo(() => {
   }
 
   const handleDownloadPhoto = async (photoUrl: string, examTitle: string) => {
-  try {
-    const response = await fetch(
-      `/api/parent/exam-photo?url=${encodeURIComponent(photoUrl)}`,
-      {
-        credentials: "include",
+    try {
+      const response = await fetch(
+        `/api/parent/exam-photo?url=${encodeURIComponent(photoUrl)}`,
+        {
+          credentials: "include",
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`Fotoğraf indirilemedi (HTTP ${response.status})`)
       }
-    )
 
-    if (!response.ok) {
-      throw new Error(`Fotoğraf indirilemedi (HTTP ${response.status})`)
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = downloadUrl
+      link.download = `${examTitle.replace(/\s+/g, "_")}_sinav_sonucu.jpg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      console.error("Fotoğraf indirme hatası:", error)
+
+      toast.error("Fotoğraf indirilemedi. Lütfen tekrar deneyin.", {
+        duration: 2500,
+        position: "bottom-right",
+      })
     }
-
-    const blob = await response.blob()
-    const downloadUrl = window.URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = downloadUrl
-    link.download = `${examTitle.replace(/\s+/g, "_")}_sinav_sonucu.jpg`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(downloadUrl)
-  } catch (error) {
-    console.error("Fotoğraf indirme hatası:", error)
-    alert("Fotoğraf indirilemedi. Lütfen tekrar deneyin.")
   }
-}
-
 
   if (loading) {
     return (
@@ -452,12 +457,10 @@ const subjects = useMemo(() => {
               </div>
             </div>
 
-            {/* Öğrenci filtresi */}
             <Select
               value={selectedStudent}
               onValueChange={(val) => {
                 setSelectedStudent(val)
-                // Öğrenci değişince ders filtresini resetlemek daha mantıklı
                 setSubjectFilter("all")
               }}
             >
@@ -468,18 +471,13 @@ const subjects = useMemo(() => {
                 <SelectItem value="all">Tüm Çocuklar</SelectItem>
                 {studentOptions.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {/* Sadece ad-soyad */}
                     {s.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {/* Ders filtresi */}
-            <Select
-              value={subjectFilter}
-              onValueChange={setSubjectFilter}
-            >
+            <Select value={subjectFilter} onValueChange={setSubjectFilter}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Ders" />
               </SelectTrigger>
@@ -523,127 +521,120 @@ const subjects = useMemo(() => {
           ) : (
             <div className="space-y-4">
               {[...filteredResults]
-  .sort((a, b) => {
-    return (
-      parseExamDate(b.examDate).getTime() -
-      parseExamDate(a.examDate).getTime()
-    )
-  })
-  .map((result) => (
-
-
-                <div
-                  key={result.id}
-                  className="p-6 border border-border rounded-lg transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-foreground">
-                          {result.examTitle}
-                        </h3>
-                        <Badge variant="outline" className="text-xs">
-                          {result.subject}
-                        </Badge>
-                        {result.hasTeacherAnalysis && (
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                            <MessageSquare className="h-3 w-3 mr-1" />
-                            Analiz Var
+                .sort(
+                  (a, b) =>
+                    parseExamDate(b.examDate).getTime() -
+                    parseExamDate(a.examDate).getTime()
+                )
+                .map((result) => (
+                  <div
+                    key={result.id}
+                    className="p-6 border border-border rounded-lg transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold text-foreground">
+                            {result.examTitle}
+                          </h3>
+                          <Badge variant="outline" className="text-xs">
+                            {result.subject}
                           </Badge>
+                          {result.hasTeacherAnalysis && (
+                            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                              <MessageSquare className="h-3 w-3 mr-1" />
+                              Analiz Var
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                          <span className="font-medium">
+                            {result.studentName}
+                          </span>
+
+                          <span>
+                            {parseExamDate(result.examDate).toLocaleDateString(
+                              "tr-TR"
+                            )}
+                          </span>
+                        </div>
+
+                        {result.topics && result.topics.length > 0 && (
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <span className="flex items-center text-xs text-muted-foreground gap-1">
+                              <Tag className="h-3 w-3" />
+                              Çalışılan konular:
+                            </span>
+                            {result.topics.map((t, idx) => (
+                              <Badge
+                                key={`${result.id}-topic-${idx}`}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {t}
+                              </Badge>
+                            ))}
+                          </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                        <span className="font-medium">
-                          {result.studentName}
-                        </span>
-                        
-                        
-                        <span>
-                          {parseExamDate(result.examDate).toLocaleDateString("tr-TR")}
+                    </div>
 
-                        </span>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleViewPhoto(result.examPhoto, result.examTitle)
+                        }
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Sınav Fotoğrafını Görüntüle
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleDownloadPhoto(
+                            result.examPhoto,
+                            result.examTitle
+                          )
+                        }
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Fotoğrafı İndir
+                      </Button>
+                    </div>
+
+                    {result.hasTeacherAnalysis && result.teacherAnalysis && (
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4" />
+                          Öğretmen Analizi
+                        </h4>
+                        <p className="text-sm text-blue-700">
+                          {result.teacherAnalysis}
+                        </p>
                       </div>
+                    )}
 
-                      {/* Konu / kazanım etiketleri */}
-                      {result.topics && result.topics.length > 0 && (
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <span className="flex items-center text-xs text-muted-foreground gap-1">
-                            <Tag className="h-3 w-3" />
-                            Çalışılan konular:
-                          </span>
-                          {result.topics.map((t, idx) => (
-                            <Badge
-                              key={`${result.id}-topic-${idx}`}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {t}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {!result.hasTeacherAnalysis && (
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600 flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" />
+                          Bu sınav için sadece fotoğraf yüklenmiş, öğretmen
+                          analizi bulunmuyor.
+                        </p>
+                      </div>
+                    )}
                   </div>
-
-                  <div className="flex items-center gap-2 mb-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        handleViewPhoto(result.examPhoto, result.examTitle)
-                      }
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Sınav Fotoğrafını Görüntüle
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        handleDownloadPhoto(
-                          result.examPhoto,
-                          result.examTitle,
-                        )
-                      }
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Fotoğrafı İndir
-                    </Button>
-                  </div>
-
-                  {result.hasTeacherAnalysis && result.teacherAnalysis && (
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        Öğretmen Analizi
-                      </h4>
-                      <p className="text-sm text-blue-700">
-                        {result.teacherAnalysis}
-                      </p>
-                    </div>
-                  )}
-
-                  {!result.hasTeacherAnalysis && (
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
-                        <ImageIcon className="h-4 w-4" />
-                        Bu sınav için sadece fotoğraf yüklenmiş, öğretmen
-                        analizi bulunmuyor.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Fotoğraf Modalı */}
-      <Dialog
-        open={!!selectedPhoto}
-        onOpenChange={() => setSelectedPhoto(null)}
-      >
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
