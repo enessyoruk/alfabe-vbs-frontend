@@ -10,6 +10,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { AuthBackground } from "@/components/auth/auth-background"
+import { toast } from "sonner"
+
 
 // --------------------------------------------------------
 // Helpers
@@ -158,19 +160,25 @@ export default function LoginPage() {
         data = raw ? (JSON.parse(raw) as LoginResponse) : undefined
       } catch {}
 
-      // ❗❗ HATA DURUMUNDA MESAJI GÖSTER ❗❗
       if (!res.ok) {
-        let message = "Giriş yapılamadı."
+  let message = "Giriş yapılamadı."
 
-        try {
-          const parsed = raw ? JSON.parse(raw) : null
-          if (parsed?.error) message = parsed.error
-          else if (parsed?.message) message = parsed.message
-        } catch {}
+  try {
+    const parsed = raw ? JSON.parse(raw) : null
+    if (parsed?.error) message = parsed.error
+    else if (parsed?.message) message = parsed.message
+  } catch {}
 
-        setErrorMsg(message)
-        return
-      }
+  
+  toast.error(message, {
+    duration: 2500,
+    position: "bottom-right",
+  })
+
+  setErrorMsg(message)
+  return
+}
+
 
       const user = pickUser(data)
       if (!user) {

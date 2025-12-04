@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-
+import { toast } from "sonner"
 import {
   Card,
   CardContent,
@@ -249,16 +249,22 @@ export default function StudentInfoPage() {
           setStudent(selected ?? null)
         }
       } catch (e: any) {
-        if (!cancelled) {
-          setError(e?.message || "Öğrenci bilgileri yüklenemedi.")
-          setStudents([])
-          setStudent(null)
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
+  if (!cancelled) {
+    toast.error(e?.message || "Öğrenci bilgileri yüklenemedi.", {
+      duration: 2500,
+      position: "bottom-right",
+    })
+
+    setError(e?.message || "Öğrenci bilgileri yüklenemedi.")
+    setStudents([])
+    setStudent(null)
+  }
+} finally {
+  if (!cancelled) {
+    setLoading(false)
+  }
+}
+
     }
 
     load()

@@ -29,6 +29,8 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "sonner"
+
 
 type GuidanceNote = {
   id: string
@@ -127,13 +129,23 @@ export default function ParentGuidanceNotesPage() {
         ])
 
         if ([401, 403].includes(notesRes.status)) {
-          router.replace("/login")
-          return
-        }
-        if ([401, 403].includes(studentsRes.status)) {
-          router.replace("/login")
-          return
-        }
+  toast.error("Oturum süreniz sona ermiş. Lütfen tekrar giriş yapın.", {
+    duration: 2200,
+    position: "bottom-right",
+  })
+  router.replace("/login")
+  return
+}
+
+if ([401, 403].includes(studentsRes.status)) {
+  toast.error("Oturum süreniz sona ermiş. Lütfen tekrar giriş yapın.", {
+    duration: 2200,
+    position: "bottom-right",
+  })
+  router.replace("/login")
+  return
+}
+
 
         const notesJson = await notesRes.json().catch(() => ({}))
         const items = Array.isArray(notesJson.items) ? notesJson.items : []
@@ -165,12 +177,19 @@ export default function ParentGuidanceNotesPage() {
           }))
         )
       } catch (err: any) {
-        console.error("[parent] guidance fetch error", err)
-        setError(err?.message || "Veri alınamadı.")
-        setNotes([])
-      } finally {
-        setLoading(false)
-      }
+  console.error("[parent] guidance fetch error", err)
+
+  toast.error(err?.message || "Veriler yüklenirken bir hata oluştu.", {
+    duration: 2500,
+    position: "bottom-right",
+  })
+
+  setError(err?.message || "Veri alınamadı.")
+  setNotes([])
+} finally {
+  setLoading(false)
+}
+
     }
 
     fetchAll()

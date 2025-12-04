@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Bell, Calendar, AlertCircle, Info, CheckCircle2, ArrowLeft } from "lucide-react"
+import { toast } from "sonner"
+
 
 type Role = "Parent" | "Teacher" | string
 type VbsUser = { id?: string; email?: string; name?: string; roles?: Role[] }
@@ -171,10 +173,19 @@ export default function NotificationsPage() {
           }
         }
       } catch (e: any) {
-        if (!cancelled) setError(e?.message || "Bildirimler yüklenemedi.")
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+  const msg = e?.message || "Bildirimler yüklenemedi."
+
+  // 🔥 Sağ altta uyarı göster
+  toast.error(msg, {
+    duration: 2500,
+    position: "bottom-right",
+  })
+
+  if (!cancelled) setError(msg)
+} finally {
+  if (!cancelled) setLoading(false)
+}
+
     }
 
     load()

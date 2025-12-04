@@ -23,6 +23,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { AuthBackground } from "@/components/auth/auth-background"
+import { toast } from "sonner"
+
 
 type UserType = "parent" | "teacher"
 
@@ -229,14 +231,21 @@ export default function RegisterPage() {
 
       setSuccess(true)
     } catch (err: any) {
-      if (err?.name === "AbortError") {
-        setError("İstek zaman aşımına uğradı. Lütfen tekrar deneyin.")
-      } else {
-        setError(err?.message || "Kayıt işlemi sırasında bir hata oluştu.")
-      }
-    } finally {
-      setIsLoading(false)
-    }
+  const msg =
+    err?.name === "AbortError"
+      ? "İstek zaman aşımına uğradı. Lütfen tekrar deneyin."
+      : err?.message || "Kayıt işlemi sırasında bir hata oluştu."
+
+  toast.error(msg, {
+    duration: 3000,
+    position: "bottom-right",
+  })
+
+  setError(msg)
+} finally {
+  setIsLoading(false)
+}
+
   }
 
   // ---------- SUCCESS EKRANI (aynı büyük panel stilinde) ----------

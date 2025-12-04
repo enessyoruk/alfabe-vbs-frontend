@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
 import {
   Bell,
   BellRing,
@@ -177,12 +178,18 @@ export default function ParentNotifications() {
       }))
 
       setNotifications(merged)
-    } catch (e: any) {
-      setError(e?.message || "Bildirimler yüklenemedi.")
-      setNotifications([])
-    } finally {
-      setLoading(false)
-    }
+   } catch (e: any) {
+  toast.error(e?.message || "Bildirimler yüklenemedi.", {
+    duration: 2500,
+    position: "bottom-right",
+  })
+
+  setError(e?.message || "Bildirimler yüklenemedi.")
+  setNotifications([])
+} finally {
+  setLoading(false)
+}
+
   }
 
   // Okundu/okunmadı bilgisi localStorage ile kalıcı

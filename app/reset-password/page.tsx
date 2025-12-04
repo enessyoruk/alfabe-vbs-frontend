@@ -9,6 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Phone, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { AuthBackground } from "@/components/auth/auth-background"
+import { toast } from "sonner"
+
 
 export default function ResetPasswordPage() {
   const [phoneNumber, setPhoneNumber] = useState("")
@@ -51,12 +53,21 @@ export default function ResetPasswordPage() {
 
       setIsSuccess(true)
     } catch (err: any) {
-      setError(
-        err?.message || "İşlem sırasında beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
-      )
-    } finally {
-      setIsLoading(false)
-    }
+  const msg =
+    err?.message ||
+    "İşlem sırasında beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+
+  // 🔥 Sağ altta göster
+  toast.error(msg, {
+    duration: 2500,
+    position: "bottom-right",
+  })
+
+  setError(msg)
+} finally {
+  setIsLoading(false)
+}
+
   }
 
   // ---------- SUCCESS EKRANI ----------
