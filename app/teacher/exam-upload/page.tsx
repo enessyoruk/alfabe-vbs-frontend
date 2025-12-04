@@ -97,6 +97,9 @@ export default function ExamUploadPage() {
   const [selectedExamForAnalysis, setSelectedExamForAnalysis] = useState("")
   const [analysisContent, setAnalysisContent] = useState("")
   const [busy, setBusy] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(null)
+
 
   // grade options
   const gradeOptions = useMemo(() => {
@@ -128,6 +131,11 @@ export default function ExamUploadPage() {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     )
   }
+  function requestDelete(id: string | number) {
+  setDeleteTargetId(id)
+  setDeleteConfirmOpen(true)
+}
+
 
   // LOAD CLASSES
   useEffect(() => {
@@ -356,21 +364,24 @@ export default function ExamUploadPage() {
     }
   }
 
-  async function handleDeleteExam(id: string | number) {
-  if (!confirm("Silmek istediğinize emin misiniz?")) return
+  async function handleDeleteExam() {
+  if (!deleteTargetId) return
 
   try {
-    await http.post(`${endpoints.teacher.examsDelete}?id=${id}`)
+    await http.post(`${endpoints.teacher.examsDelete}?id=${deleteTargetId}`)
 
     toast.success("Sınav başarıyla silindi!", {
-      duration: 2000,
+      duration: 1800,
       position: "bottom-right",
     })
 
+    setDeleteConfirmOpen(false)
+    setDeleteTargetId(null)
+
     await refreshExams()
-  } catch (e: any) {
-    toast.error("Silme başarısız: " + (e?.message || "Bilinmeyen hata"), {
-      duration: 2500,
+  } catch (err: any) {
+    toast.error("Silme başarısız", {
+      duration: 2000,
       position: "bottom-right",
     })
   }
@@ -693,13 +704,14 @@ export default function ExamUploadPage() {
                       )}
 
                       <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600"
-                        onClick={() => handleDeleteExam(exam.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+  size="sm"
+  variant="outline"
+  className="text-red-600"
+  onClick={() => requestDelete(exam.id)}
+>
+  <Trash2 className="h-4 w-4" />
+</Button>
+
                     </div>
                   </div>
 
@@ -778,6 +790,29 @@ export default function ExamUploadPage() {
           </div>
         </DialogContent>
       </Dialog>
+    {/* DELETE CONFIRM DIALOG — BURAYA EKLE */}
+<Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+  <DialogContent className="max-w-sm">
+    <DialogHeader>
+      <DialogTitle>Sınavı Sil</DialogTitle>
+      <DialogDescription>
+        Bu sınavı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="flex justify-end gap-2 mt-4">
+      <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+        İptal
+      </Button>
+      <Button variant="destructive" onClick={handleDeleteExam}>
+        Evet, Sil
+      </Button>
     </div>
+  </DialogContent>
+</Dialog>
+    
+    </div>
+
+    
   )
 }
