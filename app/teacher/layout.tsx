@@ -44,6 +44,15 @@ const navigation = [
   { name: "Tatil Bildirimleri", href: "/teacher/holidays", icon: Calendar },
 ]
 
+function saveTeacherNotificationReadSet(userId: string | null, set: Set<string>) {
+  if (typeof window === "undefined") return
+  try {
+    const key = `vbs:teacher:notifications:read:${userId || "anon"}`
+    window.localStorage.setItem(key, JSON.stringify(Array.from(set)))
+  } catch {}
+}
+
+
 // {user:{...}} veya düz {...} için normalize okuyucu
 function readVbsUser() {
   try {
@@ -188,6 +197,24 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     [headerNotifications],
   )
 
+  function markHeaderNotificationAsRead(id: string | number) {
+  const userId = readTeacherUserId()
+  setHeaderNotifications((prev) => {
+    const next = prev.map((n) =>
+      String(n.id) === String(id) ? { ...n, isRead: true } : n
+    )
+
+    if (userId) {
+      const set = getTeacherNotificationReadSet(userId)
+      set.add(String(id))
+      saveTeacherNotificationReadSet(userId, set)
+    }
+
+    return next
+  })
+}
+
+  
   const handleLogout = () => {
     try {
       localStorage.removeItem("vbs:user")
@@ -373,7 +400,12 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
                   {!notificationsLoading &&
                     headerNotifications.slice(0, 4).map((n) => (
-                      <DropdownMenuItem key={n.id} className="flex flex-col items-start p-3 cursor-pointer">
+                      <DropdownMenuItem
+  key={n.id}
+  className="flex flex-col items-start p-3 cursor-pointer"
+  onClick={() => markHeaderNotificationAsRead(n.id)}
+>
+
                         <div className="flex items-start justify-between w-full">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
