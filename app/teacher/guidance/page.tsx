@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import {
   Card,
@@ -296,41 +297,51 @@ export default function GuidancePage() {
   const stats = getOverallStats()
 
   const handleAddNote = async () => {
+  try {
+    let createdByName: string | null = null
+
     try {
-      let createdByName: string | null = null
-      try {
-        const raw = localStorage.getItem("vbs:user")
-        if (raw) {
-          const u = JSON.parse(raw)
-          createdByName =
-            u?.displayName ||
-            u?.name ||
-            `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim() ||
-            null
-        }
-      } catch {}
+      const raw = localStorage.getItem("vbs:user")
+      if (raw) {
+        const u = JSON.parse(raw)
+        createdByName =
+          u?.displayName ||
+          u?.name ||
+          `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim() ||
+          null
+      }
+    } catch {}
 
-      await http.post(endpoints.teacher.guidance, {
-        studentId: Number(selectedStudent),
-        classId: selectedClass ? Number(selectedClass) : null,
-        area: selectedArea,
-        content: noteContent,
-        createdByName,
-      })
+    await http.post(endpoints.teacher.guidance, {
+      studentId: Number(selectedStudent),
+      classId: selectedClass ? Number(selectedClass) : null,
+      area: selectedArea,
+      content: noteContent,
+      createdByName,
+    })
 
-      await fetchStudentsData()
-      alert("Rehberlik notu başarıyla eklendi!")
-    } catch (error) {
-      console.error("[guidance] Error adding guidance note:", error)
-      alert("Rehberlik notu eklenirken hata oluştu!")
-    }
+    toast.success("Rehberlik notu başarıyla eklendi!", {
+      duration: 2000,
+      position: "bottom-right",
+    })
 
-    setIsAddNoteDialogOpen(false)
-    setSelectedStudent("")
-    setSelectedClass("")
-    setSelectedArea("")
-    setNoteContent("")
+    await fetchStudentsData()
+  } catch (error) {
+    console.error("[guidance] Error adding guidance note:", error)
+
+    toast.error("Rehberlik notu eklenirken bir hata oluştu!", {
+      duration: 2500,
+      position: "bottom-right",
+    })
   }
+
+  setIsAddNoteDialogOpen(false)
+  setSelectedStudent("")
+  setSelectedClass("")
+  setSelectedArea("")
+  setNoteContent("")
+}
+
 
   const handleParentNote = async () => {
     try {
