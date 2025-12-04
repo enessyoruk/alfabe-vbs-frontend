@@ -67,6 +67,30 @@ type ParentStudent = {
   subjects: { name: string; teacherName?: string }[]
 }
 
+/* ================== TARİH NORMALIZATION FUNC ================== */
+function parseExamDate(d: string): Date {
+  if (!d) return new Date(0)
+
+  if (d.includes("T")) return new Date(d)
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(d)) {
+    return new Date(d + "T00:00:00")
+  }
+
+  const dot = d.match(/^(\d{2})\.(\d{2})\.(\d{4})/)
+  if (dot) {
+    const [_, gun, ay, yil] = dot
+    return new Date(`${yil}-${ay}-${gun}T00:00:00`)
+  }
+
+  const slash = d.match(/^(\d{2})\/(\d{2})\/(\d{4})/)
+  if (slash) {
+    const [_, gun, ay, yil] = slash
+    return new Date(`${yil}-${ay}-${gun}T00:00:00`)
+  }
+
+  return new Date(d)
+}
 
 export default function ParentExamResultsPage() {
   const router = useRouter()
@@ -501,11 +525,12 @@ const subjects = useMemo(() => {
               {[...filteredResults]
   .sort((a, b) => {
     return (
-      new Date(b.examDate + "T00:00:00").getTime() -
-      new Date(a.examDate + "T00:00:00").getTime()
+      parseExamDate(b.examDate).getTime() -
+      parseExamDate(a.examDate).getTime()
     )
   })
   .map((result) => (
+
 
                 <div
                   key={result.id}
@@ -534,7 +559,8 @@ const subjects = useMemo(() => {
                         
                         
                         <span>
-                          {new Date(result.examDate + "T00:00:00").toLocaleDateString("tr-TR" )}
+                          {parseExamDate(result.examDate).toLocaleDateString("tr-TR")}
+
                         </span>
                       </div>
 
