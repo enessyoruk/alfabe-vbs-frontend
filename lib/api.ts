@@ -183,7 +183,8 @@ const baseVbs = {
   totalStudents: "/api/vbs/teacher/total-students",
   exams: "/api/vbs/teacher/exams",
   examsUploadImage: "/api/vbs/teacher/exams/upload-image",
-  examsDelete: "/api/vbs/teacher/exams/general/delete",
+  examsDelete: "/api/vbs/teacher/exams/delete-exam"
+
 
 },
 

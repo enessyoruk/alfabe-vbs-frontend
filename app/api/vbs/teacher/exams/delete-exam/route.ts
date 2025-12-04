@@ -29,21 +29,23 @@ function buildAuthHeaders(req: NextRequest) {
   return headers
 }
 
-export async function DELETE(req: NextRequest) {
+// 🔥 ARTIK POST
+export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    // BACKEND’DEKİ YENİ DELETE ROUTE
+    // BACKEND’DEKİ POST ALIAS ROUTE
     const upstreamUrl = new URL(
       u("/api/vbs/teacher/exams/general/delete")
     )
 
+    // query string'i ileri taşı
     req.nextUrl.searchParams.forEach((v, k) =>
       upstreamUrl.searchParams.set(k, v)
     )
 
     const up = await fetch(upstreamUrl.toString(), {
-      method: "DELETE",
+      method: "POST",           // 🔥 artık POST
       credentials: "include",
       cache: "no-store",
       headers

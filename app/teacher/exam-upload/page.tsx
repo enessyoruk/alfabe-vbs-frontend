@@ -356,15 +356,16 @@ export default function ExamUploadPage() {
   }
 
   async function handleDeleteExam(id: string | number) {
-    if (!confirm("Silmek istediğinize emin misiniz?")) return
+  if (!confirm("Silmek istediğinize emin misiniz?")) return
 
-    try {
-      await http.delete(`${endpoints.teacher.examsDelete}?id=${id}`)
-      await refreshExams()
-    } catch (e: any) {
-      alert(e?.message || "Silme başarısız.")
-    }
+  try {
+    await http.post(`${endpoints.teacher.examsDelete}?id=${id}`)
+    await refreshExams()
+  } catch (e: any) {
+    alert(e?.message || "Silme başarısız.")
   }
+}
+
 
   function handleImagePreview(url: string) {
     setPreviewImageUrl(url)
