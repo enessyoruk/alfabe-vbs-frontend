@@ -333,11 +333,15 @@ export default function ParentDashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <Avatar className="h-16 w-16">
-                        <AvatarImage src={st.photo || "/placeholder.svg"} />
-                        <AvatarFallback>
-                          <User className="h-8 w-8" />
-                        </AvatarFallback>
-                      </Avatar>
+  <AvatarImage
+    src={st.photo || "/student-placeholder.png"}
+    className="object-cover"
+  />
+  <AvatarFallback>
+    <User className="h-8 w-8" />
+  </AvatarFallback>
+</Avatar>
+
 
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
