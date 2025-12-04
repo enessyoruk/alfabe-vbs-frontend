@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
@@ -360,11 +361,21 @@ export default function ExamUploadPage() {
 
   try {
     await http.post(`${endpoints.teacher.examsDelete}?id=${id}`)
+
+    toast.success("Sınav başarıyla silindi!", {
+      duration: 2000,
+      position: "bottom-right",
+    })
+
     await refreshExams()
   } catch (e: any) {
-    alert(e?.message || "Silme başarısız.")
+    toast.error("Silme başarısız: " + (e?.message || "Bilinmeyen hata"), {
+      duration: 2500,
+      position: "bottom-right",
+    })
   }
 }
+
 
 
   function handleImagePreview(url: string) {
