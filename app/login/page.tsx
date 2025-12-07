@@ -31,11 +31,13 @@ type LoginResponse =
 
 function normalizeRoles(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
-  return raw.map(r => (r == null ? "" : String(r))).filter(r => r.trim().length > 0)
+  return raw
+    .map((r) => (r == null ? "" : String(r)))
+    .filter((r) => r.trim().length > 0)
 }
 
 function inferPrimaryRole(roles: string[], type?: string): "Teacher" | "Parent" | "Admin" | "" {
-  const lower = roles.map(r => r.toLowerCase())
+  const lower = roles.map((r) => r.toLowerCase())
   const t = (type || "").toLowerCase()
 
   if (lower.includes("teacher") || lower.includes("öğretmen") || t === "teacher") return "Teacher"
@@ -67,14 +69,19 @@ function setClientRoleCookies(roles: string[]) {
 
 function persistUser(u: LoginUser) {
   const roles = rolesFrom(u)
+
+  const teacherNumericId = (u as any).teacherNumericId ?? null
+
   const clean = {
     user: {
       id: u.id,
       email: u.email,
       name: u.name,
-      roles
-    }
+      roles,
+      teacherNumericId,
+    },
   }
+
   try {
     localStorage.setItem("vbs:user", JSON.stringify(clean))
   } catch {}
@@ -108,6 +115,10 @@ export default function LoginPage() {
   const isSafeNext = (val: string | null) =>
     val && val.startsWith("/") && !val.startsWith("//") ? val : null
 
+  const hardRedirect = (path: string) => {
+    if (typeof window !== "undefined") window.location.assign(path)
+  }
+
   const goRoleHome = (roles: string[]) => {
     const primary = inferPrimaryRole(roles)
     const next = isSafeNext(sp.get("next"))
@@ -120,7 +131,11 @@ export default function LoginPage() {
         ? "/parent/dashboard"
         : "/")
 
-    router.replace(target)
+    try {
+      router.replace(target)
+    } catch {}
+
+    setTimeout(() => hardRedirect(target), 20)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -135,24 +150,29 @@ export default function LoginPage() {
         credentials: "include",
         cache: "no-store",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password })
+        body: JSON.stringify({ email: email.trim(), password }),
       })
 
       const raw = await res.text()
       let data: LoginResponse | undefined
       try {
-        data = raw ? JSON.parse(raw) : undefined
+        data = raw ? (JSON.parse(raw) as LoginResponse) : undefined
       } catch {}
 
       if (!res.ok) {
         let message = "Giriş yapılamadı."
+
         try {
           const parsed = raw ? JSON.parse(raw) : null
           if (parsed?.error) message = parsed.error
           else if (parsed?.message) message = parsed.message
         } catch {}
 
-        toast.error(message, { duration: 2500, position: "bottom-right" })
+        toast.error(message, {
+          duration: 2500,
+          position: "bottom-right",
+        })
+
         setErrorMsg(message)
         return
       }
@@ -164,10 +184,10 @@ export default function LoginPage() {
       }
 
       const roles = rolesFrom(user)
+
       persistUser(user)
       setClientRoleCookies(roles)
       goRoleHome(roles)
-
     } finally {
       setIsLoading(false)
     }
@@ -175,13 +195,15 @@ export default function LoginPage() {
 
   return (
     <AuthBackground>
-      {/* 🔥 Tüm kutuyu ve linki ortalayan wrapper */}
-      <div className="w-full px-3 mx-auto flex flex-col items-center">
-
-        {/* 🔥 BÜYÜTÜLMÜŞ & ORTALANMIŞ LOGIN KUTUSU */}
-        <div className="w-full max-w-lg rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm px-6 py-8 sm:px-8 sm:py-10 space-y-8">
-
-          {/* Üst Başlık */}
+      {/* 🔥 Hem mobil hem PC için ortalanmış, hafif büyütülmüş kutu */}
+      <div className="w-full max-w-md md:max-w-lg px-3 mx-auto">
+        <div
+          className="
+            rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm
+            px-6 py-8 sm:px-8 sm:py-10 space-y-8
+          "
+        >
+          {/* Üst başlık */}
           <div className="text-center space-y-1">
             <h1 className="text-primary font-bold">
               Alfa-β Akademi Bilgi Yönetim Sistemi
@@ -198,7 +220,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Logo */}
+          {/* Logo + Form */}
           <div className="relative">
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-70">
               <Image
@@ -210,7 +232,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Form */}
             <div className="relative z-10 space-y-6">
               <div className="space-y-1 text-center">
                 <h2 className="text-xl font-semibold">Giriş Yap</h2>
@@ -220,7 +241,6 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleLogin} noValidate className="space-y-6">
-
                 {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">E-posta</Label>
@@ -292,14 +312,13 @@ export default function LoginPage() {
                     </Link>
                   </p>
                 </div>
-
               </form>
             </div>
           </div>
         </div>
 
-        {/* 🔥 HER ZAMAN ORTADA KALAN LINK */}
-        <div className="text-center mt-6 w-full flex justify-center">
+        {/* Ana sayfaya dön – her zaman kutunun hemen altında, ortada */}
+        <div className="text-center mt-6">
           <Link
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -307,7 +326,6 @@ export default function LoginPage() {
             ← Ana sayfaya dön
           </Link>
         </div>
-
       </div>
     </AuthBackground>
   )
