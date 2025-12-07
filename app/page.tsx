@@ -32,50 +32,74 @@ export default function HomePage() {
       <CarouselSection />
 
       {/* About Section */}
-      <section id="hakkimizda" className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h3 className="text-3xl font-bold text-foreground mb-4">Hakkımızda</h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Alfa-β Akademi, 5, 6, 7 ve 8. sınıf öğrencilerine yönelik çağdaş ve nitelikli bir eğitim anlayışıyla
-              faaliyet göstermektedir. Amacımız; öğrencilerimizin akademik başarısını artırırken, onları disiplinli,
-              özgüvenli ve sorumluluk sahibi bireyler olarak yetiştirmektir. Eğitim sürecimizi modern teknolojilerle
-              destekliyor, öğrenci takibini etkin biçimde sürdürüyoruz. Velilerimizle düzenli bilgi paylaşımı sağlayan
-              sistemimiz sayesinde, çocuklarının gelişim süreci her an şeffaf şekilde izlenebilmektedir. Alfa-β Akademi,
-              başarıyı sadece sınavlarla değil; takip, iletişim ve istikrarlı bir gelişim süreciyle tanımlar.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Award className="h-12 w-12 text-primary mx-auto mb-4" />
-                <CardTitle>Kaliteli Eğitim</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Deneyimli öğretmen kadromuz ile her öğrenciye özel yaklaşım</p>
-              </CardContent>
-            </Card>
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Users className="h-12 w-12 text-secondary mx-auto mb-4" />
-                <CardTitle>Aile Katılımı</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Veliler ile sürekli iletişim halinde, şeffaf eğitim süreci</p>
-              </CardContent>
-            </Card>
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Clock className="h-12 w-12 text-accent mx-auto mb-4" />
-                <CardTitle>7/24 Erişim</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Dijital platformumuz ile her zaman öğrenci bilgilerine erişim</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+<section id="hakkimizda" className="py-14 md:py-20 bg-white">
+  <div className="container mx-auto px-4">
+    
+    {/* Title + Text */}
+    <div className="text-center mb-10 md:mb-16">
+      <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 leading-tight">
+        Hakkımızda
+      </h3>
+
+      <p className="text-base sm:text-lg text-muted-foreground max-w-xl sm:max-w-2xl mx-auto leading-relaxed">
+        Alfa-β Akademi, 5, 6, 7 ve 8. sınıf öğrencilerine yönelik çağdaş ve nitelikli bir eğitim anlayışıyla
+        faaliyet göstermektedir. Amacımız; öğrencilerimizin akademik başarısını artırırken, onları disiplinli,
+        özgüvenli ve sorumluluk sahibi bireyler olarak yetiştirmektir. Eğitim sürecimizi modern teknolojilerle
+        destekliyor, öğrenci takibini etkin biçimde sürdürüyoruz. Velilerimizle düzenli bilgi paylaşımı sağlayan
+        sistemimiz sayesinde, çocuklarının gelişim süreci her an şeffaf şekilde izlenebilmektedir.
+      </p>
+    </div>
+
+    {/* Cards */}
+    <div className="
+      grid 
+      grid-cols-1 
+      sm:grid-cols-2 
+      lg:grid-cols-3 
+      gap-6 sm:gap-8
+    ">
+      
+      <Card className="text-center hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <Award className="h-12 w-12 text-primary mx-auto mb-4" />
+          <CardTitle>Kaliteli Eğitim</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Deneyimli öğretmen kadromuz ile her öğrenciye özel yaklaşım
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card className="text-center hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <Users className="h-12 w-12 text-secondary mx-auto mb-4" />
+          <CardTitle>Aile Katılımı</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Veliler ile sürekli iletişim halinde, şeffaf eğitim süreci
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="text-center hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <Clock className="h-12 w-12 text-accent mx-auto mb-4" />
+          <CardTitle>7/24 Erişim</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Dijital platformumuz ile her zaman öğrenci bilgilerine erişim
+          </p>
+        </CardContent>
+      </Card>
+
+    </div>
+
+  </div>
+</section>
+
 
       {/* Teachers Section */}
       <section id="ogretmenler" className="py-20 bg-card/30">
