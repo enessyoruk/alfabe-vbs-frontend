@@ -115,67 +115,84 @@ export default function HomePage() {
 
 
       {/* FAQ Section */}
-      <section id="sss" className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-foreground mb-3">Sıkça Sorulan Sorular</h3>
-            <p className="text-base text-muted-foreground max-w-xl mx-auto">
-              Sistemimiz hakkında merak ettiğiniz soruların cevapları
-            </p>
+<section id="sss" className="py-16">
+  <div className="container mx-auto px-4">
+    
+    <div className="text-center mb-12">
+      <h3 className="text-2xl font-bold text-foreground mb-3">Sıkça Sorulan Sorular</h3>
+      <p className="text-base text-muted-foreground max-w-xl mx-auto">
+        Sistemimiz hakkında merak ettiğiniz soruların cevapları
+      </p>
+    </div>
+
+    {/* ORTALAMA + MOBIL/PC UYUMLU */}
+    <div className="max-w-2xl mx-auto space-y-4 flex flex-col items-center">
+
+      {[
+        {
+          question: "Sisteme nasıl giriş yapabilirim?",
+          answer: "Üyeliğiniz onaylandıktan sonra sisteme kayıtlı olduğunuz e-mail ve şifre ile giriş yapabilirsiniz.",
+        },
+        {
+          question: "Ödev takibi nasıl yapılır?",
+          answer: "Veli panelinden öğrencinizin tüm ödevlerini takip edebilirsiniz.",
+        },
+        {
+          question: "Sınav sonuçlarını nasıl görebilirim?",
+          answer: "Sınav sonuçlarını veli panelinden görüntüleyebilir ve indirebilirsiniz.",
+        },
+        {
+          question: "Alfa-β Akademi'yi kimler kullanabilir?",
+          answer: "Alfa-β Akademi, yüksek hedefleri olan tüm ortaokul öğrencileri (5, 6, 7 ve 8. Sınıflar) tarafından kullanılabilir.",
+        },
+        {
+          question: "Alfa-β Akademi dijital bir eğitim platformu mudur?",
+          answer: "Alfa-β Akademi yalnızca bir dijital eğitim platformu değildir. Platform içerisindeki tüm verilerin birbirine bağlı olması sebebi ile aynı zamanda bir rehberlik ve kişisel gelişim platformudur.",
+        },
+      ].map((faq, index) => (
+        <Card 
+          key={index} 
+          className="hover:shadow-md transition-shadow w-full"
+        >
+          <CardHeader 
+            className="pb-3 cursor-pointer" 
+            onClick={() => toggleFaq(index)}
+          >
+            <CardTitle className="text-base flex items-center justify-between">
+              {faq.question}
+              <svg
+                className={`w-5 h-5 transition-transform duration-300 ${
+                  openFaq === index ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </CardTitle>
+          </CardHeader>
+
+          {/* YUMUŞAK AÇILMA ANİMASYONU */}
+          <div
+            className={`
+              overflow-hidden 
+              transition-all duration-500 ease-in-out
+              ${openFaq === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}
+            `}
+          >
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground">{faq.answer}</p>
+            </CardContent>
           </div>
-          <div className="max-w-2xl mx-auto space-y-4">
-            {[
-              {
-                question: "Sisteme nasıl giriş yapabilirim?",
-                answer: "Üyeliğiniz onaylandıktan sonra sisteme kayıtlı olduğunuz e-mail ve şifre ile giriş yapabilirsiniz.",
-              },
-              {
-                question: "Ödev takibi nasıl yapılır?",
-                answer: "Veli panelinden öğrencinizin tüm ödevlerini takip edebilirsiniz.",
-              },
-              {
-                question: "Sınav sonuçlarını nasıl görebilirim?",
-                answer: "Sınav sonuçlarını veli panelinden görüntüleyebilir ve indirebilirsiniz.",
-              },
-              {
-                question: "Alfa-β Akademi'yi kimler kullanabilir?",
-                answer:
-                  "Alfa-β Akademi, yüksek hedefleri olan tüm ortaokul öğrencileri (5, 6, 7 ve 8. Sınıflar) tarafından kullanılabilir.",
-              },
-              {
-                question: "Alfa-β Akademi dijital bir eğitim platformu mudur?",
-                answer:
-                  "Alfa-β Akademi yalnızca bir dijital eğitim platformu değildir. Platform içerisindeki tüm verilerin birbirine bağlı olması sebebi ile aynı zamanda bir rehberlik ve kişisel gelişim platformudur.",
-              },
-            ].map((faq, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3 cursor-pointer" onClick={() => toggleFaq(index)}>
-                  <CardTitle className="text-base flex items-center justify-between">
-                    {faq.question}
-                    <svg
-                      className={`w-5 h-5 transition-transform ${openFaq === index ? "rotate-180" : ""}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </CardTitle>
-                </CardHeader>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    openFaq === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground">{faq.answer}</p>
-                  </CardContent>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+
+        </Card>
+      ))}
+    </div>
+    
+  </div>
+</section>
+
 
       {/* Contact Section */}
       <section id="iletisim" className="py-20 bg-card/30">
