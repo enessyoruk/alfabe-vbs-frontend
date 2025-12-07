@@ -199,7 +199,11 @@ export default function LoginPage() {
   return (
     <AuthBackground>
       <div className="w-full max-w-md px-3">
-        <div className="rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm px-6 py-8 sm:px-8 sm:py-10 space-y-8">
+        <div className="
+  rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm
+  px-6 py-8 sm:px-8 sm:py-10 space-y-8
+  mx-auto md:max-w-lg lg:max-w-md
+">
           
           {/* Üst başlık */}
           <div className="text-center space-y-1">
