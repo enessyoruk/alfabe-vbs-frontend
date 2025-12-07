@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Users, Phone, Mail, MapPin, GraduationCap, Award, Clock } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { HomeHeader } from "@/components/home/HomeHeader"
 
 export default function HomePage() {
   useEffect(() => {
@@ -18,71 +19,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50 relative overflow-hidden">
-        {/* Dekoratif arka plan: tıklamaları engellemesin */}
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-red-50/30 via-white/20 to-red-50/30 animate-pulse pointer-events-none"
-          aria-hidden="true"
-        />
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none" aria-hidden="true">
-          <div
-            className="absolute top-2 left-10 w-3 h-3 bg-gradient-to-r from-red-400 to-pink-400 rounded-full animate-bounce opacity-60"
-            style={{ animationDelay: "0s" }}
-          />
-          <div
-            className="absolute top-4 right-20 w-2 h-2 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full animate-bounce opacity-50"
-            style={{ animationDelay: "1s" }}
-          />
-          <div
-            className="absolute bottom-3 left-1/4 w-2.5 h-2.5 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full animate-pulse opacity-40"
-            style={{ animationDelay: "2s" }}
-          />
-          <div
-            className="absolute bottom-2 right-1/3 w-3.5 h-3.5 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full animate-bounce opacity-30"
-            style={{ animationDelay: "0.5s" }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 w-1.5 h-1.5 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full animate-pulse opacity-50"
-            style={{ animationDelay: "1.5s" }}
-          />
-          <div
-            className="absolute top-6 left-1/3 w-2 h-2 bg-gradient-to-r from-rose-400 to-pink-500 rounded-full animate-bounce opacity-45"
-            style={{ animationDelay: "2.5s" }}
-          />
-        </div>
-
-        <div className="container mx-auto px-4 py-4 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <h1 className="text-xl font-bold text-foreground relative tracking-tight">
-                  <span className="relative z-10 font-sans" style={{ color: "#0891b2" }}>
-                    Alfa-β Akademi
-                  </span>
-                </h1>
-              </div>
-            </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#hakkimizda" className="text-foreground hover:text-primary transition-colors">
-                Hakkımızda
-              </a>
-              <a href="#ogretmenler" className="text-foreground hover:text-primary transition-colors">
-                Öğretmenlerimiz
-              </a>
-              <a href="#sss" className="text-foreground hover:text-primary transition-colors">
-                S.S.S
-              </a>
-              <a href="#iletisim" className="text-foreground hover:text-primary transition-colors">
-                İletişim
-              </a>
-              <Link href="/login">
-                <Button className="bg-primary hover:bg-primary/90">Giriş Yap</Button>
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+     {/* Header */}
+     <HomeHeader />
 
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-br from-card to-background overflow-hidden">
