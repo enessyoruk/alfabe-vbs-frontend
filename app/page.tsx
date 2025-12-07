@@ -10,6 +10,8 @@ import Link from "next/link"
 import { HomeHeader } from "@/components/home/HomeHeader"
 import { HeroSection } from "@/components/home/HeroSection"
 import { CarouselSection } from "@/components/home/CarouselSection"
+import { TeacherSection } from "@/components/home/TeacherSection"
+
 
 
 export default function HomePage() {
@@ -108,39 +110,9 @@ export default function HomePage() {
 
 
 
-      {/* Teachers Section */}
-      <section id="ogretmenler" className="py-20 bg-card/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h3 className="text-3xl font-bold text-foreground mb-4">Öğretmen Kadromuz</h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Alanında uzman, deneyimli öğretmenlerimiz ile kaliteli eğitim hizmeti sunuyoruz.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: "Buse Yılmaz", subject: "Matematik" },
-              { name: "Ayşe Civelek Bilgin", subject: "İngilizce" },
-              { name: "Hilal Çarşambalı", subject: "İngilizce" },
-              { name: "Metin Gürer", subject: "Türkçe" },
-              { name: "Huriye Hamzaçebi", subject: "Türkçe" },
-              { name: "Oktay Yaman", subject: "Fen Bilimleri" },
-              { name: "Seren Akgün", subject: "Fen Bilimleri" },
-              { name: "Umut Topuz", subject: "Sosyal Bilimler" },
-            ].map((teacher, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <GraduationCap className="h-10 w-10 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">{teacher.name}</CardTitle>
-                  <CardDescription>{teacher.subject}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+           {/* Teachers Section */}
+      <TeacherSection />
+
 
       {/* FAQ Section */}
       <section id="sss" className="py-16">
