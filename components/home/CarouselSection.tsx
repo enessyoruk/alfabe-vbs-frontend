@@ -27,44 +27,36 @@ export function CarouselSection() {
       title: "Veli İşbirliği",
       text: "Velilerimizle sürekli iletişim halinde, çocuklarının gelişimini birlikte takip ediyoruz."
     }
-  ]
+  ];
 
   return (
-    <section
-      className="
-        py-14 
-        mt-4            /* mobil – dokunmuyoruz */
-        md:mt-20        /* tablet – daha ferah */
-        lg:mt-32        /* PC – eski geniş boşluk */
-        bg-white 
-        w-full 
-        overflow-hidden
-      "
-    >
-      {/* Tam genişlik ama taşmayı kilitliyoruz */}
-      <div className="w-full overflow-x-hidden">
+    <section className="
+  py-14 
+  mt-4           /* mobil – dokunmuyoruz */
+  md:mt-20       /* tablet – daha ferah */
+  lg:mt-32       /* PC – eski geniş boşluk */
+  bg-white 
+  w-full 
+  overflow-hidden
+">
+
+
+      
+      {/* container DEĞİL → TAM GENİŞLİK */}
+      <div className="w-full overflow-hidden">
+
         <div className="relative w-full overflow-hidden">
-          
-          {/* DİKKAT: w-max KALDIRILDI, sadece flex + gap */}
-          <div className="flex gap-4 sm:gap-6 animate-scroll-x">
+
+          {/* scroll alanı: artık container yok */}
+          <div className="flex gap-6 animate-scroll-x w-max">
+
             {[...items, ...items].map((item, i) => (
               <div
                 key={i}
-                className="
-                  relative 
-                  w-[260px]           /* en küçük ekran */
-                  sm:w-[300px]        /* sm ve üstü */
-                  md:w-[340px]        /* md ve üstü */
-                  lg:w-[380px]        /* lg ve üstü */
-                  xl:w-[400px]
-                  h-[220px] 
-                  sm:h-[240px] 
-                  md:h-[260px] 
-                  lg:h-[300px]
-                  rounded-xl 
-                  overflow-hidden 
-                  group
-                "
+                className="relative 
+                min-w-[280px] sm:min-w-[360px] md:min-w-[400px]
+                h-[240px] sm:h-[260px] md:h-[300px]
+                rounded-xl overflow-hidden group"
               >
                 <img
                   src={item.src}
@@ -72,7 +64,7 @@ export function CarouselSection() {
                   className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
                 <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
                   <h4 className="text-lg sm:text-xl font-bold mb-2 text-white drop-shadow-lg">
@@ -84,8 +76,8 @@ export function CarouselSection() {
                 </div>
               </div>
             ))}
-          </div>
 
+          </div>
         </div>
       </div>
     </section>
