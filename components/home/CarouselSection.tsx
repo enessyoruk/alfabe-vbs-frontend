@@ -27,36 +27,43 @@ export function CarouselSection() {
       title: "Veli İşbirliği",
       text: "Velilerimizle sürekli iletişim halinde, çocuklarının gelişimini birlikte takip ediyoruz."
     }
-  ];
+  ]
 
   return (
     <section
       className="
         py-14 
-        mt-4           
-        md:mt-20      
-        lg:mt-32       
+        mt-4            /* mobil – dokunmuyoruz */
+        md:mt-20        /* tablet – daha ferah */
+        lg:mt-32        /* PC – eski geniş boşluk */
         bg-white 
         w-full 
         overflow-hidden
       "
     >
-
-      {/* SADECE BURAYA max-w-screen EKLENDİ */}
-      <div className="w-full overflow-hidden max-w-screen mx-auto">
-
+      {/* Tam genişlik ama taşmayı kilitliyoruz */}
+      <div className="w-full overflow-x-hidden">
         <div className="relative w-full overflow-hidden">
-
-          {/* scroll alanı */}
-          <div className="flex gap-6 animate-scroll-x w-max">
-
+          
+          {/* DİKKAT: w-max KALDIRILDI, sadece flex + gap */}
+          <div className="flex gap-4 sm:gap-6 animate-scroll-x">
             {[...items, ...items].map((item, i) => (
               <div
                 key={i}
-                className="relative 
-                  min-w-[280px] sm:min-w-[360px] md:min-w-[400px]
-                  h-[240px] sm:h-[260px] md:h-[300px]
-                  rounded-xl overflow-hidden group
+                className="
+                  relative 
+                  w-[260px]           /* en küçük ekran */
+                  sm:w-[300px]        /* sm ve üstü */
+                  md:w-[340px]        /* md ve üstü */
+                  lg:w-[380px]        /* lg ve üstü */
+                  xl:w-[400px]
+                  h-[220px] 
+                  sm:h-[240px] 
+                  md:h-[260px] 
+                  lg:h-[300px]
+                  rounded-xl 
+                  overflow-hidden 
+                  group
                 "
               >
                 <img
@@ -77,8 +84,8 @@ export function CarouselSection() {
                 </div>
               </div>
             ))}
-
           </div>
+
         </div>
       </div>
     </section>
