@@ -30,7 +30,8 @@ export function CarouselSection() {
   ];
 
   return (
-    <section className="py-14 mt-2 bg-white w-full overflow-hidden">
+    <section className="py-14 mt-4 md:mt-12 lg:mt-16 bg-white w-full overflow-hidden">
+
       
       {/* container DEĞİL → TAM GENİŞLİK */}
       <div className="w-full overflow-hidden">

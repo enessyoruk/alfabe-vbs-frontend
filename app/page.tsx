@@ -41,7 +41,13 @@ export default function HomePage() {
         Hakkımızda
       </h3>
 
-      <p className="text-base sm:text-lg text-muted-foreground max-w-xl sm:max-w-2xl mx-auto leading-relaxed">
+      <p className="
+        text-base sm:text-lg text-muted-foreground mx-auto leading-relaxed
+        max-w-[90%]
+        sm:max-w-[600px]
+        md:max-w-[800px]
+        lg:max-w-[1100px]   /* PC'de eski geniş ferah görünüm */
+      ">
         Alfa-β Akademi, 5, 6, 7 ve 8. sınıf öğrencilerine yönelik çağdaş ve nitelikli bir eğitim anlayışıyla
         faaliyet göstermektedir. Amacımız; öğrencilerimizin akademik başarısını artırırken, onları disiplinli,
         özgüvenli ve sorumluluk sahibi bireyler olarak yetiştirmektir. Eğitim sürecimizi modern teknolojilerle
@@ -99,6 +105,7 @@ export default function HomePage() {
 
   </div>
 </section>
+
 
 
       {/* Teachers Section */}
