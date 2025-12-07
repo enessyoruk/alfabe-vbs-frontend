@@ -363,11 +363,7 @@ if ([401, 403].includes(studentsRes.status)) {
                   <div className="flex justify-between items-start">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="outline">{n.studentName}</Badge>
-                      {n.className && (
-                        <Badge variant="secondary">
-                          {formatClassName(n.className)}
-                        </Badge>
-                      )}
+                      
                       <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                         {n.area}
                       </Badge>
