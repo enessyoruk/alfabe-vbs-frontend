@@ -12,7 +12,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { AuthBackground } from "@/components/auth/auth-background"
 import { toast } from "sonner"
 
-
 // --------------------------------------------------------
 // Helpers
 // --------------------------------------------------------
@@ -32,13 +31,11 @@ type LoginResponse =
 
 function normalizeRoles(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
-  return raw
-    .map((r) => (r == null ? "" : String(r)))
-    .filter((r) => r.trim().length > 0)
+  return raw.map(r => (r == null ? "" : String(r))).filter(r => r.trim().length > 0)
 }
 
 function inferPrimaryRole(roles: string[], type?: string): "Teacher" | "Parent" | "Admin" | "" {
-  const lower = roles.map((r) => r.toLowerCase())
+  const lower = roles.map(r => r.toLowerCase())
   const t = (type || "").toLowerCase()
 
   if (lower.includes("teacher") || lower.includes("öğretmen") || t === "teacher") return "Teacher"
@@ -69,22 +66,17 @@ function setClientRoleCookies(roles: string[]) {
 }
 
 function persistUser(u: LoginUser) {
-  const roles = rolesFrom(u);
-
-  const teacherNumericId = (u as any).teacherNumericId ?? null;
-
+  const roles = rolesFrom(u)
   const clean = {
     user: {
       id: u.id,
       email: u.email,
       name: u.name,
-      roles,
-      teacherNumericId
+      roles
     }
-  };
-
+  }
   try {
-    localStorage.setItem("vbs:user", JSON.stringify(clean));
+    localStorage.setItem("vbs:user", JSON.stringify(clean))
   } catch {}
 }
 
@@ -105,7 +97,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState("")    // 🔥 EKLENDİ
+  const [errorMsg, setErrorMsg] = useState("")
 
   const router = useRouter()
   const sp = useSearchParams()
@@ -115,10 +107,6 @@ export default function LoginPage() {
 
   const isSafeNext = (val: string | null) =>
     val && val.startsWith("/") && !val.startsWith("//") ? val : null
-
-  const hardRedirect = (path: string) => {
-    if (typeof window !== "undefined") window.location.assign(path)
-  }
 
   const goRoleHome = (roles: string[]) => {
     const primary = inferPrimaryRole(roles)
@@ -132,18 +120,14 @@ export default function LoginPage() {
         ? "/parent/dashboard"
         : "/")
 
-    try {
-      router.replace(target)
-    } catch {}
-
-    setTimeout(() => hardRedirect(target), 20)
+    router.replace(target)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate() || isLoading) return
     setIsLoading(true)
-    setErrorMsg("") // önceki mesajı sıfırla
+    setErrorMsg("")
 
     try {
       const res = await fetch(`/api/auth/login`, {
@@ -151,34 +135,27 @@ export default function LoginPage() {
         credentials: "include",
         cache: "no-store",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ email: email.trim(), password })
       })
 
       const raw = await res.text()
       let data: LoginResponse | undefined
       try {
-        data = raw ? (JSON.parse(raw) as LoginResponse) : undefined
+        data = raw ? JSON.parse(raw) : undefined
       } catch {}
 
       if (!res.ok) {
-  let message = "Giriş yapılamadı."
+        let message = "Giriş yapılamadı."
+        try {
+          const parsed = raw ? JSON.parse(raw) : null
+          if (parsed?.error) message = parsed.error
+          else if (parsed?.message) message = parsed.message
+        } catch {}
 
-  try {
-    const parsed = raw ? JSON.parse(raw) : null
-    if (parsed?.error) message = parsed.error
-    else if (parsed?.message) message = parsed.message
-  } catch {}
-
-  
-  toast.error(message, {
-    duration: 2500,
-    position: "bottom-right",
-  })
-
-  setErrorMsg(message)
-  return
-}
-
+        toast.error(message, { duration: 2500, position: "bottom-right" })
+        setErrorMsg(message)
+        return
+      }
 
       const user = pickUser(data)
       if (!user) {
@@ -187,10 +164,10 @@ export default function LoginPage() {
       }
 
       const roles = rolesFrom(user)
-
       persistUser(user)
       setClientRoleCookies(roles)
       goRoleHome(roles)
+
     } finally {
       setIsLoading(false)
     }
@@ -198,14 +175,13 @@ export default function LoginPage() {
 
   return (
     <AuthBackground>
-      <div className="w-full max-w-md px-3 mx-auto flex justify-center">
-        <div className="
-  rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm
-  px-6 py-8 sm:px-8 sm:py-10 space-y-8
-  mx-auto md:max-w-lg lg:max-w-md
-">
-          
-          {/* Üst başlık */}
+      {/* 🔥 Tüm kutuyu ve linki ortalayan wrapper */}
+      <div className="w-full px-3 mx-auto flex flex-col items-center">
+
+        {/* 🔥 BÜYÜTÜLMÜŞ & ORTALANMIŞ LOGIN KUTUSU */}
+        <div className="w-full max-w-lg rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm px-6 py-8 sm:px-8 sm:py-10 space-y-8">
+
+          {/* Üst Başlık */}
           <div className="text-center space-y-1">
             <h1 className="text-primary font-bold">
               Alfa-β Akademi Bilgi Yönetim Sistemi
@@ -215,7 +191,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* ❗ HATA MESAJI BLOĞU */}
+          {/* Hata Mesajı */}
           {errorMsg && (
             <div className="bg-red-100 text-red-700 border border-red-300 px-4 py-3 rounded-lg text-sm">
               {errorMsg}
@@ -244,7 +220,7 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleLogin} noValidate className="space-y-6">
-                
+
                 {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">E-posta</Label>
@@ -322,7 +298,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="text-center mt-6">
+        {/* 🔥 HER ZAMAN ORTADA KALAN LINK */}
+        <div className="text-center mt-6 w-full flex justify-center">
           <Link
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -330,6 +307,7 @@ export default function LoginPage() {
             ← Ana sayfaya dön
           </Link>
         </div>
+
       </div>
     </AuthBackground>
   )
