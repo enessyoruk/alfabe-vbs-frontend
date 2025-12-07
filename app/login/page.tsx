@@ -198,7 +198,7 @@ export default function LoginPage() {
 
   return (
     <AuthBackground>
-      <div className="w-full max-w-md px-3">
+      <div className="w-full max-w-md px-3 mx-auto flex justify-center">
         <div className="
   rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm
   px-6 py-8 sm:px-8 sm:py-10 space-y-8
