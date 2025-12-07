@@ -33,9 +33,10 @@ export function HeroSection() {
           </Badge>
 
           <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 text-balance animate-fade-in">
-            Eğitimde Yeni Nesil 
-            <span className="text-primary"> Dijital Çözüm</span>
-          </h2>
+  Eğitimde Yeni Nesil <br />
+  <span className="text-primary">Dijital Çözüm</span>
+</h2>
+
 
           <p className="text-xl text-muted-foreground mb-8 text-pretty animate-fade-in-delay"></p>
 
