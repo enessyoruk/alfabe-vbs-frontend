@@ -12,15 +12,14 @@ export function HeroSection() {
         aria-hidden="true"
       >
         <Image
-          src="/logo-alfabe.png"
-          alt=""
-          width={600}
-          height={600}
-          className="opacity-10 animate-pulse select-none pointer-events-none 
-w-[90%] sm:w-[60%] md:w-[40%] lg:w-[30%]"
+  src="/logo-alfabe.png"
+  alt=""
+  width={800}
+  height={800}
+  className="opacity-10 animate-pulse select-none pointer-events-none w-full max-w-[800px]"
+  priority
+/>
 
-          priority
-        />
       </div>
 
       {/* Content */}

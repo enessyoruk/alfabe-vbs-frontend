@@ -9,7 +9,6 @@
 
 /* ---------- Design Tokens (Light) ---------- */
 :root {
-  /* Alfabe teması: cyan + indigo */
   --background: #ffffff;
   --foreground: #4b5563;
 
@@ -189,101 +188,32 @@
   50%      { transform: translateY(-10px); }
 }
 
-/* Seamless marquee */
+/* ---------- Seamless marquee (ORİJİNAL, ÇALIŞAN) ---------- */
+/* 5 kart x 400px + 4 gap x 24px = 2096px */
 @keyframes scroll-x {
   0%   { transform: translateX(0); }
-  100% { transform: translateX(calc(-400px * 5 - 24px * 4)); }
+  100% { transform: translateX(-2096px); }
 }
 
-/* Gradient animations */
-@keyframes gradient-x {
-  0%, 100% {
-    background-size: 200% 200%;
-    background-position: left center;
-    background-image: linear-gradient(to right, #22c55e, white, #6366f1);
-  }
-  50% {
-    background-size: 200% 200%;
-    background-position: right center;
-    background-image: linear-gradient(to left, #22c55e, white, #6366f1);
+.animate-scroll-x {
+  animation: scroll-x 28s linear infinite;
+  white-space: nowrap;
+}
+/* Mobilde carousel daha yavaş aksın */
+@media (max-width: 640px) {
+  .animate-scroll-x {
+    animation-duration: 38s; /* 28s → 38s = daha yavaş akış */
   }
 }
 
-@keyframes gradient-x-slow {
-  0%, 100% {
-    background-size: 200% 200%;
-    background-position: left center;
-    background-image: linear-gradient(to right, #22c55e, white, #6366f1);
-  }
-  50% {
-    background-size: 200% 200%;
-    background-position: right center;
-    background-image: linear-gradient(to left, #22c55e, white, #6366f1);
-  }
-}
 
-@keyframes gradient-sync {
-  0% {
-    background-size: 200% 200%;
-    background-position: left center;
-    background-image: linear-gradient(to right, #16a34a, #f8fafc, #22c55e);
-  }
-  50% {
-    background-size: 200% 200%;
-    background-position: right center;
-    background-image: linear-gradient(to right, #22c55e, #f1f5f9, #16a34a);
-  }
-  100% {
-    background-size: 200% 200%;
-    background-position: left center;
-    background-image: linear-gradient(to right, #16a34a, #f8fafc, #22c55e);
-  }
-}
-
-@keyframes gradient-sync-alt {
-  0% {
-    background-size: 200% 200%;
-    background-position: right center;
-    background-image: linear-gradient(to left, #16a34a, #e2e8f0, #22c55e);
-  }
-  50% {
-    background-size: 200% 200%;
-    background-position: left center;
-    background-image: linear-gradient(to left, #22c55e, #f1f5f9, #16a34a);
-  }
-  100% {
-    background-size: 200% 200%;
-    background-position: right center;
-    background-image: linear-gradient(to left, #16a34a, #e2e8f0, #22c55e);
-  }
-}
-
-/* ---------- Seamless Infinite Carousel (Fixed) ---------- */
-@keyframes infinite-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-1600px); /* 5 kart * 320px mobil minimum */
-  }
-}
-
-.animate-infinite-scroll {
-  display: flex;
-  animation: infinite-scroll 16s linear infinite;
-  will-change: transform;
-}
-
-
-
-/* Utility classes for animations */
+/* ---------- Utility Classes ---------- */
 .animate-fade-in-up { animation: fadeInUp 0.6s ease-out; }
 .animate-slide-in-right { animation: slideInRight 0.6s ease-out; }
 .animate-fade-in { animation: fadeIn 0.8s ease-out; }
 .animate-fade-in-delay { animation: fadeIn 0.8s ease-out 0.2s both; }
 .animate-fade-in-delay-2 { animation: fadeIn 0.8s ease-out 0.4s both; }
 .animate-float { animation: float 3s ease-in-out infinite; }
-.animate-scroll-x { animation: scroll-x 60s linear infinite; }
 .pause-animation:hover { animation-play-state: paused; }
 
 .animate-gradient-x { animation: gradient-x 3s ease infinite; }
@@ -291,84 +221,63 @@
 .animate-gradient-sync { animation: gradient-sync 4s ease-in-out infinite; }
 .animate-gradient-sync-alt { animation: gradient-sync-alt 4s ease-in-out infinite 2s; }
 
-/* ---------- Auth arka planı için yumuşak blob animasyonları ---------- */
-
-@keyframes blob {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  33% {
-    transform: translate3d(24px, -40px, 0) scale(1.04);
-  }
-  66% {
-    transform: translate3d(-18px, 20px, 0) scale(0.98);
-  }
-}
-
-.animate-blob {
-  animation: blob 12s ease-in-out infinite;
-}
-
-.animate-blob-slow {
-  animation: blob 24s ease-in-out infinite;
-}
-
-/* Küçük gecikmeler için yardımcı sınıflar */
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* ---------- Daha canlı blob animasyonları ---------- */
 /* ---------- Blob Animasyonları ---------- */
-/* ---------- Blob Animasyonları (daha geniş alan, tüm ekranda gezer) ---------- */
+@keyframes blob {
+  0%,100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(24px, -40px, 0) scale(1.04); }
+  66% { transform: translate3d(-18px, 20px, 0) scale(0.98); }
+}
+
+.animate-blob { animation: blob 12s ease-in-out infinite; }
+.animate-blob-slow { animation: blob 24s ease-in-out infinite; }
+
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
+/* ---------- Mega Blob Motion ---------- */
 @keyframes blob-move-1 {
-  0%   { transform: translate3d(0,   0,   0); }
-  20%  { transform: translate3d(120px, 60px, 0); }
-  40%  { transform: translate3d(80px, 140px, 0); }
-  60%  { transform: translate3d(-40px, 120px, 0); }
-  80%  { transform: translate3d(-80px, 40px, 0); }
-  100% { transform: translate3d(0,   0,   0); }
+  0%{transform:translate3d(0,0,0)}
+  20%{transform:translate3d(120px,60px,0)}
+  40%{transform:translate3d(80px,140px,0)}
+  60%{transform:translate3d(-40px,120px,0)}
+  80%{transform:translate3d(-80px,40px,0)}
+  100%{transform:translate3d(0,0,0)}
 }
 
 @keyframes blob-move-2 {
-  0%   { transform: translate3d(0,   0,   0); }
-  20%  { transform: translate3d(-130px, 80px, 0); }
-  40%  { transform: translate3d(-60px, 160px, 0); }
-  60%  { transform: translate3d(40px, 110px, 0); }
-  80%  { transform: translate3d(80px, 30px, 0); }
-  100% { transform: translate3d(0,   0,   0); }
+  0%{transform:translate3d(0,0,0)}
+  20%{transform:translate3d(-130px,80px,0)}
+  40%{transform:translate3d(-60px,160px,0)}
+  60%{transform:translate3d(40px,110px,0)}
+  80%{transform:translate3d(80px,30px,0)}
+  100%{transform:translate3d(0,0,0)}
 }
 
 @keyframes blob-move-3 {
-  0%   { transform: translate3d(0,   0,   0); }
-  20%  { transform: translate3d(110px, -60px, 0); }
-  40%  { transform: translate3d(160px, 40px, 0); }
-  60%  { transform: translate3d(60px, 130px, 0); }
-  80%  { transform: translate3d(-60px, 80px, 0); }
-  100% { transform: translate3d(0,   0,   0); }
+  0%{transform:translate3d(0,0,0)}
+  20%{transform:translate3d(110px,-60px,0)}
+  40%{transform:translate3d(160px,40px,0)}
+  60%{transform:translate3d(60px,130px,0)}
+  80%{transform:translate3d(-60px,80px,0)}
+  100%{transform:translate3d(0,0,0)}
 }
 
 @keyframes blob-move-4 {
-  0%   { transform: translate3d(0,   0,   0); }
-  20%  { transform: translate3d(-120px, -80px, 0); }
-  40%  { transform: translate3d(-40px, 40px, 0); }
-  60%  { transform: translate3d(80px, 120px, 0); }
-  80%  { transform: translate3d(40px, 20px, 0); }
-  100% { transform: translate3d(0,   0,   0); }
+  0%{transform:translate3d(0,0,0)}
+  20%{transform:translate3d(-120px,-80px,0)}
+  40%{transform:translate3d(-40px,40px,0)}
+  60%{transform:translate3d(80px,120px,0)}
+  80%{transform:translate3d(40px,20px,0)}
+  100%{transform:translate3d(0,0,0)}
 }
 
 @keyframes blob-move-5 {
-  0%   { transform: translate3d(0,   0,   0); }
-  20%  { transform: translate3d(90px, -70px, 0); }
-  40%  { transform: translate3d(150px, -20px, 0); }
-  60%  { transform: translate3d(60px, 80px, 0); }
-  80%  { transform: translate3d(-80px, 40px, 0); }
-  100% { transform: translate3d(0,   0,   0); }
+  0%{transform:translate3d(0,0,0)}
+  20%{transform:translate3d(90px,-70px,0)}
+  40%{transform:translate3d(150px,-20px,0)}
+  60%{transform:translate3d(60px,80px,0)}
+  80%{transform:translate3d(-80px,40px,0)}
+  100%{transform:translate3d(0,0,0)}
 }
 
 @layer utilities {
@@ -378,6 +287,3 @@
   .blob-anim-4 { animation: blob-move-4 32s ease-in-out infinite; }
   .blob-anim-5 { animation: blob-move-5 34s ease-in-out infinite; }
 }
-
-
-

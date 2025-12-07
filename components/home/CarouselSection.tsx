@@ -30,35 +30,41 @@ export function CarouselSection() {
   ];
 
   return (
-    <section className="py-10 md:py-14 bg-white">
-      <div className="w-full overflow-hidden">
-        <div className="flex gap-4 animate-infinite-scroll">
+    <section className="py-16 mt-8 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="relative overflow-hidden">
+        
+          {/* ESKİ SCROLL MANTIĞI + YENİ RESPONSIVE */}
+          <div className="flex gap-6 animate-scroll-x">
 
-          {[...items, ...items].map((item, i) => (
-            <div
-              key={i}
-              className="relative 
-              min-w-[320px] 
-              sm:min-w-[360px] 
-              md:min-w-[400px]
-              h-[230px] sm:h-[250px] md:h-[300px]
-              rounded-xl overflow-hidden"
-            >
-              <img
-                src={item.src}
-                alt={item.title}
-                className="w-full h-full object-cover"
-              />
+            {[...items, ...items].map((item, i) => (
+              <div
+                key={i}
+                className="relative 
+                min-w-[320px] sm:min-w-[360px] md:min-w-[400px]
+                h-[240px] sm:h-[260px] md:h-[300px]
+                rounded-xl overflow-hidden group"
+              >
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
-              <div className="absolute bottom-4 left-4 right-4">
-                <h4 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">{item.title}</h4>
-                <p className="text-xs sm:text-sm text-white opacity-90">{item.text}</p>
+                <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                  <h4 className="text-lg sm:text-xl font-bold mb-2 text-white drop-shadow-lg">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs sm:text-sm opacity-90 text-white drop-shadow-md">
+                    {item.text}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
+          </div>
         </div>
       </div>
     </section>
