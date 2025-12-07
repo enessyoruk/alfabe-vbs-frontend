@@ -50,18 +50,18 @@ export function CarouselSection() {
               <div
                 key={i}
                 className="
-                  relative
-                  max-w-[280px]          /* 🔥 Mobil fix sadece bu satır */
-                  min-w-[280px]
-                  sm:min-w-[360px]
-                  md:min-w-[400px]
-                  h-[240px] 
-                  sm:h-[260px] 
-                  md:h-[300px]
-                  rounded-xl 
-                  overflow-hidden 
-                  group
-                "
+    relative
+    max-w-[280px]
+    min-w-[280px]
+    sm:min-w-[360px]
+    md:min-w-[400px]
+    h-[270px]          
+    sm:h-[260px]
+    md:h-[300px]
+    rounded-xl 
+    overflow-hidden 
+    group
+  "
               >
                 <img
                   src={item.src}
