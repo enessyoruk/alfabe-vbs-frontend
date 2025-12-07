@@ -166,15 +166,11 @@
     @apply bg-background text-foreground;
   }
 }
+
 html, body {
   overflow-x: hidden !important;
   width: 100%;
 }
-
-* {
-  max-width: 100vw;
-}
-
 
 /* ---------- Animations ---------- */
 @keyframes fadeInUp {
@@ -197,7 +193,7 @@ html, body {
   50%      { transform: translateY(-10px); }
 }
 
-/* ---------- Seamless marquee (ORİJİNAL, ÇALIŞAN) ---------- */
+/* ---------- Seamless marquee ---------- */
 /* 5 kart x 400px + 4 gap x 24px = 2096px */
 @keyframes scroll-x {
   0%   { transform: translateX(0); }
@@ -208,13 +204,13 @@ html, body {
   animation: scroll-x 28s linear infinite;
   white-space: nowrap;
 }
+
 /* Mobilde carousel daha yavaş aksın */
 @media (max-width: 640px) {
   .animate-scroll-x {
     animation-duration: 38s; /* 28s → 38s = daha yavaş akış */
   }
 }
-
 
 /* ---------- Utility Classes ---------- */
 .animate-fade-in-up { animation: fadeInUp 0.6s ease-out; }
@@ -296,4 +292,3 @@ html, body {
   .blob-anim-4 { animation: blob-move-4 32s ease-in-out infinite; }
   .blob-anim-5 { animation: blob-move-5 34s ease-in-out infinite; }
 }
-

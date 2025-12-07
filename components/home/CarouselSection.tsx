@@ -30,33 +30,29 @@ export function CarouselSection() {
   ];
 
   return (
-    <section className="
-  py-14 
-  mt-4           /* mobil – dokunmuyoruz */
-  md:mt-20       /* tablet – daha ferah */
-  lg:mt-32       /* PC – eski geniş boşluk */
-  bg-white 
-  w-full 
-  overflow-hidden
-">
-
-
-      
+    <section
+      className="
+        py-14 
+        mt-4           /* mobil – dokunmuyoruz */
+        md:mt-20       /* tablet – daha ferah */
+        lg:mt-32       /* PC – eski geniş boşluk */
+        bg-white 
+        w-full 
+        overflow-hidden
+      "
+    >
       {/* container DEĞİL → TAM GENİŞLİK */}
       <div className="w-full overflow-hidden">
-
         <div className="relative w-full overflow-hidden">
-
-          {/* scroll alanı: artık container yok */}
+          {/* scroll alanı */}
           <div className="flex gap-6 animate-scroll-x w-max">
-
             {[...items, ...items].map((item, i) => (
               <div
                 key={i}
                 className="relative 
-                min-w-[280px] sm:min-w-[360px] md:min-w-[400px]
-                h-[240px] sm:h-[260px] md:h-[300px]
-                rounded-xl overflow-hidden group"
+                  min-w-[280px] sm:min-w-[360px] md:min-w-[400px]
+                  h-[240px] sm:h-[260px] md:h-[300px]
+                  rounded-xl overflow-hidden group"
               >
                 <img
                   src={item.src}
@@ -64,7 +60,7 @@ export function CarouselSection() {
                   className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
                 <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
                   <h4 className="text-lg sm:text-xl font-bold mb-2 text-white drop-shadow-lg">
@@ -76,7 +72,6 @@ export function CarouselSection() {
                 </div>
               </div>
             ))}
-
           </div>
         </div>
       </div>
