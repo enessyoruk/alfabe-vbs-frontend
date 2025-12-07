@@ -33,34 +33,28 @@ export function CarouselSection() {
     <section
       className="
         py-14 
-        mt-4
-        md:mt-20
-        lg:mt-32
+        mt-4           /* mobil */
+        md:mt-20       /* tablet */
+        lg:mt-32       /* PC */
         bg-white 
         w-full 
         overflow-hidden
       "
     >
+      {/* container DEĞİL → TAM GENİŞLİK */}
       <div className="w-full overflow-hidden">
         <div className="relative w-full overflow-hidden">
-
+          {/* scroll alanı */}
           <div className="flex gap-6 animate-scroll-x">
             {[...items, ...items].map((item, i) => (
               <div
                 key={i}
                 className="
-    relative
-    max-w-[280px]
-    min-w-[280px]
-    sm:min-w-[360px]
-    md:min-w-[400px]
-    h-[270px]          
-    sm:h-[260px]
-    md:h-[300px]
-    rounded-xl 
-    overflow-hidden 
-    group
-  "
+                  relative 
+                  min-w-[280px] sm:min-w-[360px] md:min-w-[400px]
+                  h-[240px] sm:h-[260px] md:h-[300px]
+                  rounded-xl overflow-hidden group
+                "
               >
                 <img
                   src={item.src}
@@ -68,19 +62,28 @@ export function CarouselSection() {
                   className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
                 <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
                   <h4 className="text-lg sm:text-xl font-bold mb-2 text-white drop-shadow-lg">
                     {item.title}
                   </h4>
-                  <p className="text-xs sm:text-sm opacity-90 text-white drop-shadow-md">
+                  <p
+                    className="
+                      text-xs sm:text-sm 
+                      opacity-90 
+                      text-white 
+                      drop-shadow-md 
+                      whitespace-normal 
+                      break-words 
+                      leading-snug
+                    "
+                  >
                     {item.text}
                   </p>
                 </div>
               </div>
             ))}
-
           </div>
         </div>
       </div>
