@@ -30,7 +30,16 @@ export function CarouselSection() {
   ];
 
   return (
-    <section className="py-14 mt-4 md:mt-12 lg:mt-16 bg-white w-full overflow-hidden">
+    <section className="
+  py-14 
+  mt-4           /* mobil – dokunmuyoruz */
+  md:mt-20       /* tablet – daha ferah */
+  lg:mt-32       /* PC – eski geniş boşluk */
+  bg-white 
+  w-full 
+  overflow-hidden
+">
+
 
       
       {/* container DEĞİL → TAM GENİŞLİK */}
