@@ -166,6 +166,15 @@
     @apply bg-background text-foreground;
   }
 }
+html, body {
+  overflow-x: hidden !important;
+  width: 100%;
+}
+
+* {
+  max-width: 100vw;
+}
+
 
 /* ---------- Animations ---------- */
 @keyframes fadeInUp {
@@ -287,3 +296,4 @@
   .blob-anim-4 { animation: blob-move-4 32s ease-in-out infinite; }
   .blob-anim-5 { animation: blob-move-5 34s ease-in-out infinite; }
 }
+

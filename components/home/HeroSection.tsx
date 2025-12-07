@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 
 export function HeroSection() {
   return (
-    <section className="relative py-12 md:py-20 bg-gradient-to-br from-card to-background overflow-hidden">
+    <section className="relative py-14 md:py-20 bg-gradient-to-br from-card to-background overflow-hidden">
       {/* Background Logo */}
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"

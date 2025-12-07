@@ -30,7 +30,7 @@ export function CarouselSection() {
   ];
 
   return (
-    <section className="py-16 mt-8 bg-white">
+    <section className="py-14 mt-4 bg-white">
       <div className="container mx-auto px-4">
         <div className="relative overflow-hidden">
         
@@ -41,7 +41,7 @@ export function CarouselSection() {
               <div
                 key={i}
                 className="relative 
-                min-w-[320px] sm:min-w-[360px] md:min-w-[400px]
+                min-w-[280px] sm:min-w-[360px] md:min-w-[400px]
                 h-[240px] sm:h-[260px] md:h-[300px]
                 rounded-xl overflow-hidden group"
               >
