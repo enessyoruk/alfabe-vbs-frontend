@@ -30,33 +30,38 @@ export function CarouselSection() {
   ];
 
   return (
-    <section className="
-  py-14 
-  mt-4           /* mobil – dokunmuyoruz */
-  md:mt-20       /* tablet – daha ferah */
-  lg:mt-32       /* PC – eski geniş boşluk */
-  bg-white 
-  w-full 
-  overflow-hidden
-">
-
-
-      
-      {/* container DEĞİL → TAM GENİŞLİK */}
+    <section
+      className="
+        py-14 
+        mt-4
+        md:mt-20
+        lg:mt-32
+        bg-white 
+        w-full 
+        overflow-hidden
+      "
+    >
       <div className="w-full overflow-hidden">
-
         <div className="relative w-full overflow-hidden">
 
-          {/* scroll alanı: artık container yok */}
           <div className="flex gap-6 animate-scroll-x w-max">
 
             {[...items, ...items].map((item, i) => (
               <div
                 key={i}
-                className="relative 
-                min-w-[280px] sm:min-w-[360px] md:min-w-[400px]
-                h-[240px] sm:h-[260px] md:h-[300px]
-                rounded-xl overflow-hidden group"
+                className="
+                  relative
+                  max-w-[280px]          /* 🔥 Mobil fix sadece bu satır */
+                  min-w-[280px]
+                  sm:min-w-[360px]
+                  md:min-w-[400px]
+                  h-[240px] 
+                  sm:h-[260px] 
+                  md:h-[300px]
+                  rounded-xl 
+                  overflow-hidden 
+                  group
+                "
               >
                 <img
                   src={item.src}
