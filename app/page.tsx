@@ -284,16 +284,18 @@ export default function HomePage() {
                 <svg
                   className="w-4 h-4 text-white"
                   fill="currentColor"
+                  stroke="none"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm5 5.5A4.5 4.5 0 1016.5 12 4.505 4.505 0 0012 7.5zm6-1.2a1.2 1.2 0 11-1.2-1.2 1.2 1.2 0 011.2 1.2z"/>
+                  <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0-2h10a7 7 0 017 7v10a7 7 0 01-7 7H7a7 7 0 01-7-7V7a7 7 0 017-7zm5 7.5A4.5 4.5 0 1016.5 12 4.505 4.505 0 0012 7.5zm0 7A2.5 2.5 0 1114.5 12 2.503 2.503 0 0112 14.5zM18 6.3a1.2 1.2 0 11-1.2-1.2A1.2 1.2 0 0118 6.3z"/>
                 </svg>
               </a>
+
             </div>
           </div>
         </div>
 
-      </div>
+      </div> {/* ← SOL BLOK KAPANIŞI DOĞRU YERDE */}
 
       {/* SAĞ BLOK */}
       <div className="space-y-6 w-full lg:max-w-[480px] lg:ml-auto">
@@ -334,9 +336,10 @@ export default function HomePage() {
         </Card>
       </div>
 
-    </div>
+    </div> {/* GRID KAPANIŞ */}
   </div>
 </section>
+
 
 
       {/* Footer */}
