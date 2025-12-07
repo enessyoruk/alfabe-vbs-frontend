@@ -258,20 +258,22 @@
   }
 }
 
-/* ---------- Seamless Infinite Carousel ---------- */
+/* ---------- Seamless Infinite Carousel (Fixed) ---------- */
 @keyframes infinite-scroll {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-1600px); /* 5 kart * 320px mobil minimum */
   }
 }
 
 .animate-infinite-scroll {
   display: flex;
-  animation: infinite-scroll 28s linear infinite;
+  animation: infinite-scroll 16s linear infinite;
+  will-change: transform;
 }
+
 
 
 /* Utility classes for animations */

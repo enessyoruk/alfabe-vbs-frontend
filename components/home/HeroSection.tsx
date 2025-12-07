@@ -17,7 +17,8 @@ export function HeroSection() {
           width={600}
           height={600}
           className="opacity-10 animate-pulse select-none pointer-events-none 
-w-[85%] sm:w-[65%] md:w-[45%] lg:w-[35%]"
+w-[90%] sm:w-[60%] md:w-[40%] lg:w-[30%]"
+
           priority
         />
       </div>
