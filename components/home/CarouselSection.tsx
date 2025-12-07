@@ -44,8 +44,7 @@ export function CarouselSection() {
       <div className="w-full overflow-hidden">
         <div className="relative w-full overflow-hidden">
 
-          <div className="flex gap-6 animate-scroll-x w-max">
-
+          <div className="flex gap-6 animate-scroll-x">
             {[...items, ...items].map((item, i) => (
               <div
                 key={i}
