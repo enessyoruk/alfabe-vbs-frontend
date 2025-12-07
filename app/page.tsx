@@ -201,131 +201,133 @@ export default function HomePage() {
 
 
       {/* Contact Section */}
-      <section id="iletisim" className="py-20 bg-card/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h3 className="text-3xl font-bold text-foreground mb-4">İletişim</h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Bizimle iletişime geçin, sorularınızı yanıtlayalım
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <Phone className="h-6 w-6 text-primary mt-1" />
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Telefon & WhatsApp</h4>
-                  <div className="flex items-center gap-2">
-                    <p className="text-muted-foreground">+90 549 888 67 00</p>
-                    <a
-                      href="https://wa.me/905498886700"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-6 h-6 bg-green-500 rounded-full hover:bg-green-600 transition-colors"
-                    >
-                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.173-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.74-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <Mail className="h-6 w-6 text-primary mt-1" />
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">E-posta</h4>
-                  <p className="text-muted-foreground">alfabakademi@hotmail.com</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <MapPin className="h-6 w-6 text-primary mt-1" />
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Adres</h4>
-                  <p className="text-muted-foreground">Kozlu Fatih Mah. Çırağan Sk. Beyza Apt. Giriş Kat</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <Award className="h-6 w-6 text-primary mt-1" />
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Instagram</h4>
-                  <div className="flex items-center gap-2">
-                    <a
-                      href="https://instagram.com/alfabakademi"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      @alfabakademi
-                    </a>
-                    <a
-                      href="https://instagram.com/alfabakademi"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors"
-                    >
-                      <svg
-  className="w-4 h-4 text-white"
-  fill="currentColor"
-  stroke="none"
-  viewBox="0 0 24 24"
-  aria-hidden="true"
->
-  <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0-2h10a7 7 0 017 7v10a7 7 0 01-7 7H7a7 7 0 01-7-7V7a7 7 0 017-7zm5 7.5A4.5 4.5 0 1016.5 12 4.505 4.505 0 0012 7.5zm0 7A2.5 2.5 0 1114.5 12 2.503 2.503 0 0112 14.5zM18 6.3a1.2 1.2 0 11-1.2-1.2A1.2 1.2 0 0118 6.3z" />
-</svg>
+<section id="iletisim" className="py-20 bg-card/30">
+  <div className="container mx-auto px-4">
 
-
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <Card>
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <MapPin className="h-5 w-5" />
-      Konum
-    </CardTitle>
-    <CardDescription>Alfa-β Akademi konumumuzu haritada görüntüleyin</CardDescription>
-  </CardHeader>
-  <CardContent>
-    <div className="aspect-video rounded-lg overflow-hidden border">
-      <iframe
-        // 🔹 1) Sadece tek bir kırmızı pin gösteren link
-        // Buradaki LAT ve LNG değerlerini Google Maps'ten aldığın koordinatla değiştir:
-        // Örn: 41.2945, 31.9234 gibi
-        src="https://www.google.com/maps?q=41.432745094080914, 31.736593424075014&z=18&output=embed"
-        width="100%"
-        height="100%"
-        style={{ border: 0 }}
-        allowFullScreen
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        title="Alfa-β Akademi Konumu"
-      />
+    {/* Başlık */}
+    <div className="text-center mb-16">
+      <h3 className="text-3xl font-bold text-foreground mb-4">İletişim</h3>
+      <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        Bizimle iletişime geçin, sorularınızı yanıtlayalım
+      </p>
     </div>
 
-    <div className="mt-4 text-center">
-      <a
-        // 🔹 2) Haritayı yeni sekmede açan link
-        href="https://www.google.com/maps?q=41.432745094080914, 31.736593424075014"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-      >
-        <MapPin className="h-4 w-4" />
-        Google Maps'te Aç
-      </a>
-    </div>
-  </CardContent>
-</Card>
+    {/* GRID – Tablet & PC iyileştirme */}
+    <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-12">
 
-
+      {/* SOL BLOK – Ortalanma ve daraltma */}
+      <div className="space-y-8 max-w-lg mx-auto md:mx-0">
+        {/* Telefon */}
+        <div className="flex items-start gap-4">
+          <Phone className="h-6 w-6 text-primary mt-1" />
+          <div>
+            <h4 className="font-semibold text-foreground mb-1">Telefon & WhatsApp</h4>
+            <div className="flex items-center gap-2">
+              <p className="text-muted-foreground">+90 549 888 67 00</p>
+              <a
+                href="https://wa.me/905498886700"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-6 h-6 bg-green-500 rounded-full hover:bg-green-600 transition-colors"
+              >
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.173-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.74-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                </svg>
+              </a>
             </div>
           </div>
         </div>
-      </section>
+
+        {/* Mail */}
+        <div className="flex items-start gap-4">
+          <Mail className="h-6 w-6 text-primary mt-1" />
+          <div>
+            <h4 className="font-semibold text-foreground mb-1">E-posta</h4>
+            <p className="text-muted-foreground">alfabakademi@hotmail.com</p>
+          </div>
+        </div>
+
+        {/* Adres */}
+        <div className="flex items-start gap-4">
+          <MapPin className="h-6 w-6 text-primary mt-1" />
+          <div>
+            <h4 className="font-semibold text-foreground mb-1">Adres</h4>
+            <p className="text-muted-foreground">Kozlu Fatih Mah. Çırağan Sk. Beyza Apt. Giriş Kat</p>
+          </div>
+        </div>
+
+        {/* Instagram */}
+        <div className="flex items-start gap-4">
+          <Award className="h-6 w-6 text-primary mt-1" />
+          <div>
+            <h4 className="font-semibold text-foreground mb-1">Instagram</h4>
+            <div className="flex items-center gap-2">
+              <a
+                href="https://instagram.com/alfabakademi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                @alfabakademi
+              </a>
+              <a
+                href="https://instagram.com/alfabakademi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors"
+              >
+                <svg className="w-4 h-4 text-white" fill="currentColor" stroke="none" viewBox="0 0 24 24"></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* SAĞ BLOK – Google Maps genişlik kontrolü */}
+      <div className="space-y-6 w-full lg:max-w-[480px] lg:ml-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Konum
+            </CardTitle>
+            <CardDescription>Alfa-β Akademi konumumuzu haritada görüntüleyin</CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <div className="aspect-video rounded-lg overflow-hidden border">
+              <iframe
+                src="https://www.google.com/maps?q=41.432745094080914,31.736593424075014&z=18&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Alfa-β Akademi Konumu"
+              />
+            </div>
+
+            <div className="mt-4 text-center">
+              <a
+                href="https://www.google.com/maps?q=41.432745094080914,31.736593424075014"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+              >
+                <MapPin className="h-4 w-4" />
+                Google Maps'te Aç
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 
       {/* Footer */}
       <footer className="bg-foreground text-background py-8">
