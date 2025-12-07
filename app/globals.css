@@ -258,6 +258,22 @@
   }
 }
 
+/* ---------- Seamless Infinite Carousel ---------- */
+@keyframes infinite-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  animation: infinite-scroll 28s linear infinite;
+}
+
+
 /* Utility classes for animations */
 .animate-fade-in-up { animation: fadeInUp 0.6s ease-out; }
 .animate-slide-in-right { animation: slideInRight 0.6s ease-out; }

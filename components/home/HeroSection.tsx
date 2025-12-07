@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 
 export function HeroSection() {
   return (
-    <section className="relative py-16 md:py-24 bg-gradient-to-br from-card to-background overflow-hidden">
+    <section className="relative py-12 md:py-20 bg-gradient-to-br from-card to-background overflow-hidden">
       {/* Background Logo */}
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
@@ -16,7 +16,8 @@ export function HeroSection() {
           alt=""
           width={600}
           height={600}
-          className="opacity-10 animate-pulse select-none pointer-events-none w-[70%] sm:w-[50%] md:w-[35%]"
+          className="opacity-10 animate-pulse select-none pointer-events-none 
+w-[85%] sm:w-[65%] md:w-[45%] lg:w-[35%]"
           priority
         />
       </div>
