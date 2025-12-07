@@ -117,7 +117,7 @@ export default function HomePage() {
       {/* FAQ Section */}
 <section id="sss" className="py-16">
   <div className="container mx-auto px-4">
-    
+
     <div className="text-center mb-12">
       <h3 className="text-2xl font-bold text-foreground mb-3">Sıkça Sorulan Sorular</h3>
       <p className="text-base text-muted-foreground max-w-xl mx-auto">
@@ -125,7 +125,7 @@ export default function HomePage() {
       </p>
     </div>
 
-    {/* ORTALAMA + MOBIL/PC UYUMLU */}
+    {/* ORTALAMA + WIDTH FIX */}
     <div className="max-w-2xl mx-auto space-y-4 flex flex-col items-center">
 
       {[
@@ -147,17 +147,21 @@ export default function HomePage() {
         },
         {
           question: "Alfa-β Akademi dijital bir eğitim platformu mudur?",
-          answer: "Alfa-β Akademi yalnızca bir dijital eğitim platformu değildir. Platform içerisindeki tüm verilerin birbirine bağlı olması sebebi ile aynı zamanda bir rehberlik ve kişisel gelişim platformudur.",
+          answer: "Alfa-β Akademi yalnızca bir dijital eğitim platformu değildir...",
         },
       ].map((faq, index) => (
-        <Card 
-          key={index} 
-          className="hover:shadow-md transition-shadow w-full"
+        
+        <Card
+          key={index}
+          className="
+            hover:shadow-md transition-shadow
+            w-full
+            sm:w-[90%]
+            md:w-[80%]
+            lg:w-[60%]       /* PC → sabit, ortalanmış, daha dar görünüm */
+          "
         >
-          <CardHeader 
-            className="pb-3 cursor-pointer" 
-            onClick={() => toggleFaq(index)}
-          >
+          <CardHeader className="pb-3 cursor-pointer" onClick={() => toggleFaq(index)}>
             <CardTitle className="text-base flex items-center justify-between">
               {faq.question}
               <svg
@@ -173,7 +177,7 @@ export default function HomePage() {
             </CardTitle>
           </CardHeader>
 
-          {/* YUMUŞAK AÇILMA ANİMASYONU */}
+          {/* Soft animation */}
           <div
             className={`
               overflow-hidden 
@@ -187,11 +191,13 @@ export default function HomePage() {
           </div>
 
         </Card>
+
       ))}
     </div>
-    
+
   </div>
 </section>
+
 
 
       {/* Contact Section */}
