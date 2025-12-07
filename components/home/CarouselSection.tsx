@@ -30,12 +30,15 @@ export function CarouselSection() {
   ];
 
   return (
-    <section className="py-14 mt-4 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="relative overflow-hidden">
-        
-          {/* ESKİ SCROLL MANTIĞI + YENİ RESPONSIVE */}
-          <div className="flex gap-6 animate-scroll-x">
+    <section className="py-14 mt-2 bg-white w-full overflow-hidden">
+      
+      {/* container DEĞİL → TAM GENİŞLİK */}
+      <div className="w-full overflow-hidden">
+
+        <div className="relative w-full overflow-hidden">
+
+          {/* scroll alanı: artık container yok */}
+          <div className="flex gap-6 animate-scroll-x w-max">
 
             {[...items, ...items].map((item, i) => (
               <div
