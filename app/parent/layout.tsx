@@ -389,7 +389,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
           <Button
             variant="ghost"
             size="sm"
-            className={`lg:hidden transition-transform duration-300 ${sidebarOpen ? "translate-x-64" : ""}`}
+            className={`lg:hidden transition-transform duration-300 ${sidebarOpen ? "translate-x-48" : ""}`}
             onClick={toggleSidebar}
           >
             <Menu className="h-5 w-5" />
