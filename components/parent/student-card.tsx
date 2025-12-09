@@ -34,10 +34,12 @@ function StudentCardComponent({
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-6">
-        <div className="flex items-start gap-4">
+
+        {/* Ana satır: Mobilde dikey, tablet & PC'de yatay */}
+        <div className="flex flex-col sm:flex-row items-start gap-4">
 
           {/* FOTOĞRAF */}
-          <Avatar className="h-16 w-16">
+          <Avatar className="h-14 w-14 sm:h-16 sm:w-16">
             <AvatarImage
               src={photo || "/student-placeholder.png"}
               className="object-cover"
@@ -48,13 +50,16 @@ function StudentCardComponent({
           </Avatar>
 
           {/* SAĞ TARAF */}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 w-full">
+
+            {/* İSİM VE SINIF */}
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <h3 className="font-semibold text-base">{name}</h3>
               <Badge variant="secondary">{classValue}</Badge>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            {/* BİLGİLER */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 Devamsızlık:
@@ -68,28 +73,30 @@ function StudentCardComponent({
               </div>
             </div>
 
-            {/* BUTONLAR */}
-            <div className="flex gap-2 mt-4">
-              <Link href={`/parent/attendance?student=${id}`}>
-                <Button variant="outline" size="sm">
+            {/* BUTONLAR – Mobil alt alta, Tablet/PC yan yana */}
+            <div className="flex flex-wrap gap-2 mt-4">
+
+              <Link href={`/parent/attendance?student=${id}`} className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   <Calendar className="h-4 w-4 mr-1" />
                   Devamsızlık
                 </Button>
               </Link>
 
-              <Link href={`/parent/homework?student=${id}`}>
-                <Button variant="outline" size="sm">
+              <Link href={`/parent/homework?student=${id}`} className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   <BookOpen className="h-4 w-4 mr-1" />
                   Ödevler
                 </Button>
               </Link>
 
-              <Link href={`/parent/exam-results?student=${id}`}>
-                <Button variant="outline" size="sm">
+              <Link href={`/parent/exam-results?student=${id}`} className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   <FileText className="h-4 w-4 mr-1" />
                   Sınavlar
                 </Button>
               </Link>
+
             </div>
 
           </div>
