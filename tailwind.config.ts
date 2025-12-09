@@ -68,19 +68,48 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-      },
+  "accordion-down": {
+    from: { height: "0" },
+    to: { height: "var(--radix-accordion-content-height)" },
+  },
+  "accordion-up": {
+    from: { height: "var(--radix-accordion-content-height)" },
+    to: { height: "0" },
+  },
+
+  // 🚀 CUSTOM: Sidebar slide animation
+  "sidebar-slide-in": {
+    "0%": { transform: "translateX(-100%)" },
+    "100%": { transform: "translateX(0)" },
+  },
+  "sidebar-slide-out": {
+    "0%": { transform: "translateX(0)" },
+    "100%": { transform: "translateX(-100%)" },
+  },
+
+  // 🚀 CUSTOM: Overlay fade
+  "overlay-fade-in": {
+    "0%": { opacity: "0" },
+    "100%": { opacity: "1" },
+  },
+  "overlay-fade-out": {
+    "0%": { opacity: "1" },
+    "100%": { opacity: "0" },
+  },
+},
+animation: {
+  "accordion-down": "accordion-down 0.2s ease-out",
+  "accordion-up": "accordion-up 0.2s ease-out",
+
+  // 🚀 Sidebar animations
+  "sidebar-in": "sidebar-slide-in 0.30s ease-out",
+  "sidebar-out": "sidebar-slide-out 0.30s ease-out",
+
+  // 🚀 Overlay animations
+  "overlay-in": "overlay-fade-in 0.25s ease-out",
+  "overlay-out": "overlay-fade-out 0.25s ease-out",
+},
+
     },
   },
   plugins: [require("tailwindcss-animate")],

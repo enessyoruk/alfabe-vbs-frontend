@@ -111,18 +111,9 @@ function loadReadNotificationIds(): Set<string> {
   }
 }
 
-function saveReadNotificationIds(ids: Set<string>) {
-  if (typeof window === "undefined") return
-  try {
-    window.localStorage.setItem(
-      NOTIF_STORAGE_KEY,
-      JSON.stringify(Array.from(ids)),
-    )
-  } catch {}
-}
-
 export default function ParentLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarClosing, setSidebarClosing] = useState(false) // ⭐ animasyonlu kapanış için
   const [user, setUser] = useState<VbsUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -132,9 +123,9 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
   const router = useRouter()
   const pathname = usePathname()
 
+  // Kullanıcı çek
   useEffect(() => {
     let cancelled = false
-
     const init = () => {
       const u = readVbsUser()
       if (!cancelled) {
@@ -143,29 +134,22 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         setIsLoading(false)
       }
     }
-
     init()
     return () => {
       cancelled = true
     }
   }, [])
 
+  // Bildirim çek
   useEffect(() => {
-    if (!user) return
-    if (!user.roles?.includes("Parent")) return
-
+    if (!user?.roles?.includes("Parent")) return
     let cancelled = false
 
     const fetchNotifications = async () => {
       try {
         setNotifLoading(true)
-
-        const res = await fetch("/api/parent/notifications", {
-          credentials: "include",
-        })
-
-        const json = await res.json().catch(() => ({} as any))
-
+        const res = await fetch("/api/parent/notifications", { credentials: "include" })
+        const json = await res.json().catch(() => ({}))
         if (!res.ok) return
 
         const arr: Notification[] = Array.isArray(json?.items)
@@ -179,17 +163,15 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         const merged = arr.map((n) => ({
           ...n,
           id: String(n.id),
-          isRead: n.isRead || readIds.has(String(n.id)),
+          isRead: readIds.has(String(n.id)),
         }))
 
         if (!cancelled) {
           const sorted = [...merged].sort(
-            (a, b) =>
-              new Date(b.date).getTime() - new Date(a.date).getTime(),
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
           )
           setNotifications(sorted)
         }
-      } catch (e) {
       } finally {
         if (!cancelled) setNotifLoading(false)
       }
@@ -201,6 +183,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     }
   }, [user])
 
+  // Logout
   const handleLogout = () => {
     try {
       localStorage.removeItem("vbs:user")
@@ -212,13 +195,22 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     }
   }
 
+  // Animasyonlu kapanış başlat
+  const closeSidebar = () => {
+    setSidebarClosing(true)
+    setTimeout(() => {
+      setSidebarClosing(false)
+      setSidebarOpen(false)
+    }, 300) // animasyon süresi ile aynı
+  }
+
   const initials = useMemo(() => {
     const n = (user?.name || user?.email || "").trim()
     if (!n) return "U"
     const parts = n.split(" ").filter(Boolean)
     return parts.length === 1
-      ? parts[0].charAt(0).toUpperCase()
-      : (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+      ? parts[0][0].toUpperCase()
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   }, [user])
 
   const displayName = useMemo(() => {
@@ -228,15 +220,9 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     return e.includes("@") ? e.split("@")[0] : e
   }, [user])
 
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.isRead).length,
-    [notifications],
-  )
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications])
 
-  const latestThree = useMemo(
-    () => notifications.slice(0, 3),
-    [notifications],
-  )
+  const latestThree = useMemo(() => notifications.slice(0, 3), [notifications])
 
   if (isLoading) {
     return (
@@ -249,56 +235,48 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
   return (
     <div className="min-h-screen bg-background">
 
-      {/* ████████ MOBILE SIDEBAR (Smooth Slide + Fade + Logo + User) ████████ */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          
-          {/* Overlay fade */}
+      {/* ███████ MOBILE SIDEBAR ███████ */}
+      {(sidebarOpen || sidebarClosing) && (
+        <div className="fixed inset-0 z-[90] lg:hidden">
+
+          {/* Overlay (fade) */}
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-[fadeIn_0.25s_ease]"
-            onClick={() => setSidebarOpen(false)}
+            className={`fixed inset-0 bg-black/50 backdrop-blur-sm 
+              ${sidebarClosing ? "animate-overlay-out" : "animate-overlay-in"}
+            `}
+            onClick={closeSidebar}
           />
 
           {/* Drawer */}
           <div
-            className="
-              fixed inset-y-0 left-0 z-50 w-64 bg-card border-r 
-              transform transition-transform duration-300 ease-in-out 
-              animate-[slideIn_0.30s_ease]
-            "
+            className={`
+              fixed inset-y-0 left-0 w-64 bg-card border-r z-[100]
+              ${sidebarClosing ? "animate-sidebar-out" : "animate-sidebar-in"}
+              relative overflow-hidden
+            `}
           >
-            {/* Logo */}
+            {/* Background Logo */}
             <div
               className="absolute inset-0 opacity-60 bg-no-repeat bg-center bg-contain pointer-events-none"
               style={{
-                backgroundImage: "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
+                backgroundImage:
+                  "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
                 backgroundSize: "360px 220px",
               }}
             />
 
-            {/* Header */}
+            {/* TOP HEADER */}
             <div className="relative z-10 flex items-center justify-between p-4 border-b bg-card/70 backdrop-blur-sm">
               <div className="flex flex-col">
                 <span className="font-semibold text-foreground">Veli Paneli</span>
                 <span className="text-xs text-muted-foreground">Alfa-β Akademi</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
+              <Button variant="ghost" size="sm" onClick={closeSidebar}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
 
-            {/* User Block */}
-            <div className="relative z-10 flex items-center gap-3 p-4 border-b bg-card/60 backdrop-blur-sm">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/parent-avatar.png" />
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{displayName}</p>
-              </div>
-            </div>
-
-            {/* Navigation */}
+            {/* NAVIGATION */}
             <nav className="relative z-10 p-4 space-y-2">
               {navigation.map((item) => {
                 const isActive = pathname === item.href
@@ -306,12 +284,12 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                   <Link
                     key={item.name}
                     href={item.href}
+                    onClick={closeSidebar}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive
                         ? "bg-primary text-primary-foreground"
                         : "text-foreground hover:bg-muted hover:text-foreground"
                     }`}
-                    onClick={() => setSidebarOpen(false)}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.name}
@@ -320,13 +298,21 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
               })}
             </nav>
 
-            {/* Logout */}
-            <div className="relative z-10 p-6 border-t">
+            {/* USER + LOGOUT SECTION (BOTTOM) */}
+            <div className="relative z-10 mt-auto p-4 border-t bg-card/70 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/parent-avatar.png" />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+                <p className="text-sm font-medium truncate">{displayName}</p>
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
+                className="w-full"
                 onClick={handleLogout}
-                className="w-full bg-transparent"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Çıkış Yap
@@ -336,13 +322,14 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         </div>
       )}
 
-      {/* ████████ DESKTOP SIDEBAR (Aynen kaldı) ████████ */}
+      {/* ███████ DESKTOP SIDEBAR (DEĞİŞMEDİ) ███████ */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
         <Card className="flex grow flex-col gap-y-5 border-r bg-card/50 backdrop-blur-sm relative overflow-hidden">
           <div
             className="absolute inset-0 opacity-65 bg-no-repeat bg-center bg-contain pointer-events-none select-none"
             style={{
-              backgroundImage: "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
+              backgroundImage:
+                "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
               backgroundSize: "500px 300px",
             }}
           />
@@ -386,12 +373,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="w-full bg-transparent"
-            >
+            <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
               <LogOut className="h-4 w-4 mr-2" />
               Çıkış Yap
             </Button>
@@ -399,22 +381,20 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         </Card>
       </div>
 
-      {/*  MAIN CONTENT  */}
+      {/* ███████ MAIN CONTENT ███████ */}
       <div className="lg:pl-64">
 
         {/* TOP BAR */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-[40] flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
 
-          {/* Mobile menu button */}
           <Button
-  variant="ghost"
-  size="sm"
-  className="lg:hidden"
-  onClick={() => setSidebarOpen((prev) => !prev)}
->
-  <Menu className="h-5 w-5" />
-</Button>
-
+            variant="ghost"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
@@ -460,32 +440,22 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
                   {notifLoading ? (
                     <DropdownMenuItem disabled className="py-3">
-                      <p className="text-xs text-muted-foreground">
-                        Bildirimler yükleniyor...
-                      </p>
+                      <p className="text-xs text-muted-foreground">Bildirimler yükleniyor...</p>
                     </DropdownMenuItem>
                   ) : latestThree.length === 0 ? (
                     <DropdownMenuItem disabled className="py-3">
-                      <p className="text-xs text-muted-foreground">
-                        Henüz bildirim bulunmuyor.
-                      </p>
+                      <p className="text-xs text-muted-foreground">Henüz bildirim bulunmuyor.</p>
                     </DropdownMenuItem>
                   ) : (
                     <>
                       {latestThree.map((n) => (
-                        <DropdownMenuItem
-                          key={n.id}
-                          asChild
-                          className="h-auto py-2"
-                        >
+                        <DropdownMenuItem key={n.id} asChild className="h-auto py-2">
                           <Link href="/parent/notifications">
                             <div className="flex items-start gap-3">
                               <div className="mt-0.5">
                                 <span
                                   className={`inline-block h-2 w-2 rounded-full ${
-                                    n.isRead
-                                      ? "bg-muted-foreground/40"
-                                      : "bg-primary"
+                                    n.isRead ? "bg-muted-foreground/40" : "bg-primary"
                                   }`}
                                 />
                               </div>
@@ -508,13 +478,10 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                           </Link>
                         </DropdownMenuItem>
                       ))}
-
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild className="justify-center">
                         <Link href="/parent/notifications">
-                          <span className="text-xs text-primary">
-                            Tüm bildirim detaylarını görüntüle
-                          </span>
+                          <span className="text-xs text-primary">Tüm bildirim detaylarını görüntüle</span>
                         </Link>
                       </DropdownMenuItem>
                     </>
@@ -522,10 +489,8 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* vertical separator */}
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-border" />
 
-              {/* Avatar */}
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/parent-avatar.png" />
@@ -537,7 +502,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
           </div>
         </div>
 
-        {/* PAGE CONTENT */}
+        {/* CONTENT */}
         <main className="py-6">
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
