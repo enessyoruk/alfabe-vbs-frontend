@@ -8,7 +8,7 @@ export function CarouselSection() {
       text: "Teknoloji destekli eğitim sınıflarımızda öğrencilerimiz en iyi koşullarda öğreniyor."
     },
     {
-      src: "/furkan1.jpg",
+      src: "/happy-students-celebrating-academic-success--gradu.jpg",
       title: "Başarı Hikayeleri",
       text: "Öğrencilerimizin akademik başarıları ve kişisel gelişimleri bizim en büyük gururumuz."
     },
