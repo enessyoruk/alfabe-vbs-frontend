@@ -32,10 +32,13 @@ function NotificationsPanelComponent({ notifications }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+
+      {/* Üst bar - mobilde dikey, PC'de yatay */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h2 className="text-xl font-semibold">Son Aktiviteler</h2>
+
         <Link href="/parent/notifications">
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline" className="w-full sm:w-auto">
             Tümünü Gör
           </Button>
         </Link>
@@ -48,6 +51,7 @@ function NotificationsPanelComponent({ notifications }: Props) {
         </CardHeader>
 
         <CardContent className="space-y-3">
+
           {latest.length === 0 ? (
             <Alert>
               <AlertDescription>Bildirim bulunamadı.</AlertDescription>
@@ -56,9 +60,17 @@ function NotificationsPanelComponent({ notifications }: Props) {
             latest.map((n) => (
               <div
                 key={n.id}
-                className="flex items-start gap-3 p-3 hover:bg-accent/40 rounded-lg transition border border-border/60"
+                className="
+                  flex flex-col sm:flex-row 
+                  items-start gap-3 
+                  p-3 sm:p-4 
+                  hover:bg-accent/40 
+                  rounded-lg transition 
+                  border border-border/60
+                "
               >
-                <div className="p-2 bg-accent/30 rounded-full">
+                {/* ICON */}
+                <div className="p-1.5 sm:p-2 bg-accent/30 rounded-full">
                   {n.type === "holiday" ? (
                     <Calendar className="h-4 w-4 text-green-600" />
                   ) : (
@@ -66,11 +78,14 @@ function NotificationsPanelComponent({ notifications }: Props) {
                   )}
                 </div>
 
+                {/* TEXT */}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{n.title}</p>
+
                   <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
                     {n.message}
                   </p>
+
                   <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {new Date(n.date).toLocaleDateString("tr-TR")}
