@@ -34,7 +34,7 @@ type VbsUser = {
   id: string
   email?: string
   name?: string
-  roles?: string[] // ["Parent"] | ...
+  roles?: string[]
   type?: "parent" | "teacher" | "admin" | string
   branch?: string
 }
@@ -68,7 +68,6 @@ const navigation = [
   { name: "Öğrenci Bilgileri", href: "/parent/student-info", icon: User },
 ]
 
-// ---- helpers
 function readVbsUser(): VbsUser | null {
   if (typeof window === "undefined") return null
   try {
@@ -119,9 +118,7 @@ function saveReadNotificationIds(ids: Set<string>) {
       NOTIF_STORAGE_KEY,
       JSON.stringify(Array.from(ids)),
     )
-  } catch {
-    // yut
-  }
+  } catch {}
 }
 
 export default function ParentLayout({ children }: { children: React.ReactNode }) {
@@ -135,15 +132,13 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
   const router = useRouter()
   const pathname = usePathname()
 
-  // Sadece localStorage’dan kullanıcıyı okuyup state’e koyuyoruz.
-  // Güvenlik middleware + JWT tarafında.
   useEffect(() => {
     let cancelled = false
 
     const init = () => {
       const u = readVbsUser()
       if (!cancelled) {
-        if (u) saveVbsUser(u) // format düzeltme
+        if (u) saveVbsUser(u)
         setUser(u)
         setIsLoading(false)
       }
@@ -155,7 +150,6 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     }
   }, [])
 
-  // Bildirimleri çek (sadece parent için)
   useEffect(() => {
     if (!user) return
     if (!user.roles?.includes("Parent")) return
@@ -172,18 +166,12 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
         const json = await res.json().catch(() => ({} as any))
 
-        if (!res.ok) {
-          console.warn(
-            "[ParentLayout] Bildirimler alınamadı:",
-            (json as any)?.error || res.status,
-          )
-          return
-        }
+        if (!res.ok) return
 
-        const arr: Notification[] = Array.isArray((json as any)?.items)
-          ? (json as any).items
+        const arr: Notification[] = Array.isArray(json?.items)
+          ? json.items
           : Array.isArray(json)
-          ? (json as any)
+          ? json
           : []
 
         const readIds = loadReadNotificationIds()
@@ -195,7 +183,6 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         }))
 
         if (!cancelled) {
-          // Yeni gelenleri tarihe göre sırala
           const sorted = [...merged].sort(
             (a, b) =>
               new Date(b.date).getTime() - new Date(a.date).getTime(),
@@ -203,14 +190,12 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
           setNotifications(sorted)
         }
       } catch (e) {
-        console.warn("[ParentLayout] Bildirim fetch hatası:", e)
       } finally {
         if (!cancelled) setNotifLoading(false)
       }
     }
 
     fetchNotifications()
-
     return () => {
       cancelled = true
     }
@@ -220,7 +205,6 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     try {
       localStorage.removeItem("vbs:user")
     } catch {}
-    // vbs_session httpOnly, JS ile silemeyiz → login’e yönlendiriyoruz.
     router.replace("/login")
     if (typeof window !== "undefined") {
       window.location.assign("/login")
@@ -264,12 +248,36 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile sidebar overlay */}
+
+      {/* ████████ MOBILE SIDEBAR (Smooth Slide + Fade + Logo + User) ████████ */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r">
-            <div className="flex items-center justify-between p-4 border-b">
+          
+          {/* Overlay fade */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-[fadeIn_0.25s_ease]"
+            onClick={() => setSidebarOpen(false)}
+          />
+
+          {/* Drawer */}
+          <div
+            className="
+              fixed inset-y-0 left-0 z-50 w-64 bg-card border-r 
+              transform transition-transform duration-300 ease-in-out 
+              animate-[slideIn_0.30s_ease]
+            "
+          >
+            {/* Logo */}
+            <div
+              className="absolute inset-0 opacity-60 bg-no-repeat bg-center bg-contain pointer-events-none"
+              style={{
+                backgroundImage: "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
+                backgroundSize: "360px 220px",
+              }}
+            />
+
+            {/* Header */}
+            <div className="relative z-10 flex items-center justify-between p-4 border-b bg-card/70 backdrop-blur-sm">
               <div className="flex flex-col">
                 <span className="font-semibold text-foreground">Veli Paneli</span>
                 <span className="text-xs text-muted-foreground">Alfa-β Akademi</span>
@@ -278,7 +286,20 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <nav className="p-4 space-y-2">
+
+            {/* User Block */}
+            <div className="relative z-10 flex items-center gap-3 p-4 border-b bg-card/60 backdrop-blur-sm">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/parent-avatar.png" />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{displayName}</p>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <nav className="relative z-10 p-4 space-y-2">
               {navigation.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -298,7 +319,9 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                 )
               })}
             </nav>
-            <div className="p-6 border-t">
+
+            {/* Logout */}
+            <div className="relative z-10 p-6 border-t">
               <Button
                 variant="outline"
                 size="sm"
@@ -313,7 +336,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         </div>
       )}
 
-      {/* Desktop sidebar */}
+      {/* ████████ DESKTOP SIDEBAR (Aynen kaldı) ████████ */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
         <Card className="flex grow flex-col gap-y-5 border-r bg-card/50 backdrop-blur-sm relative overflow-hidden">
           <div
@@ -350,6 +373,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
               })}
             </div>
           </nav>
+
           <div className="relative z-10 p-6 border-t">
             <div className="flex items-center gap-3 mb-4">
               <Avatar className="h-8 w-8">
@@ -375,144 +399,144 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         </Card>
       </div>
 
-      {/* Main content */}
+      {/* ████████ MAIN CONTENT ████████ */}
       <div className="lg:pl-64">
-        {/* Top bar */}
-<div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
-  <Button
-    variant="ghost"
-    size="sm"
-    className="lg:hidden"
-    onClick={() => setSidebarOpen(true)}
-  >
-    <Menu className="h-5 w-5" />
-  </Button>
 
-  <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-    <div className="flex flex-1 items-center">
-      <h1
-  className="
-    font-semibold 
-    text-[clamp(1rem,3.8vw,1.25rem)] 
-    leading-tight 
-    whitespace-nowrap 
-    overflow-hidden 
-    min-w-0 
-    text-foreground 
-    flex-shrink
-  "
->
-  {displayName
-    ? `Hoş geldiniz, ${displayName}`
-    : navigation.find((item) => item.href === pathname)?.name || "Veli Paneli"}
-</h1>
+        {/* TOP BAR */}
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
 
-    </div>
-
-    <div className="flex items-center gap-x-4 lg:gap-x-6">
-      {/* Bildirim Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="relative">
-            {unreadCount > 0 ? (
-              <BellRing className="h-5 w-5" />
-            ) : (
-              <Bell className="h-5 w-5" />
-            )}
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
-            )}
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
           </Button>
-        </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-80">
-          <DropdownMenuLabel>Bildirimler</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+            <div className="flex flex-1 items-center">
+              <h1
+                className="
+                  font-semibold 
+                  text-[clamp(1rem,3.8vw,1.25rem)] 
+                  leading-tight
+                  whitespace-nowrap 
+                  overflow-hidden 
+                  min-w-0 
+                  text-foreground 
+                  flex-shrink
+                "
+              >
+                {displayName
+                  ? `Hoş geldiniz, ${displayName}`
+                  : navigation.find((item) => item.href === pathname)?.name ||
+                    "Veli Paneli"}
+              </h1>
+            </div>
 
-          {notifLoading ? (
-            <DropdownMenuItem disabled className="py-3">
-              <p className="text-xs text-muted-foreground">
-                Bildirimler yükleniyor...
-              </p>
-            </DropdownMenuItem>
-          ) : latestThree.length === 0 ? (
-            <DropdownMenuItem disabled className="py-3">
-              <p className="text-xs text-muted-foreground">
-                Henüz bildirim bulunmuyor.
-              </p>
-            </DropdownMenuItem>
-          ) : (
-            <>
-              {latestThree.map((n) => (
-                <DropdownMenuItem
-                  key={n.id}
-                  asChild
-                  className="h-auto py-2"
-                >
-                  <Link href="/parent/notifications">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5">
-                        <span
-                          className={`inline-block h-2 w-2 rounded-full ${
-                            n.isRead ? "bg-muted-foreground/40" : "bg-primary"
-                          }`}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm font-medium truncate ${
-                            n.isRead ? "text-muted-foreground" : "text-foreground"
-                          }`}
+            <div className="flex items-center gap-x-4 lg:gap-x-6">
+
+              {/* Notification Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="relative">
+                    {unreadCount > 0 ? (
+                      <BellRing className="h-5 w-5" />
+                    ) : (
+                      <Bell className="h-5 w-5" />
+                    )}
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-80">
+                  <DropdownMenuLabel>Bildirimler</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  {notifLoading ? (
+                    <DropdownMenuItem disabled className="py-3">
+                      <p className="text-xs text-muted-foreground">
+                        Bildirimler yükleniyor...
+                      </p>
+                    </DropdownMenuItem>
+                  ) : latestThree.length === 0 ? (
+                    <DropdownMenuItem disabled className="py-3">
+                      <p className="text-xs text-muted-foreground">
+                        Henüz bildirim bulunmuyor.
+                      </p>
+                    </DropdownMenuItem>
+                  ) : (
+                    <>
+                      {latestThree.map((n) => (
+                        <DropdownMenuItem
+                          key={n.id}
+                          asChild
+                          className="h-auto py-2"
                         >
-                          {n.title}
-                        </p>
-                        <p className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
-                          <Clock className="h-3 w-3" />
-                          {new Date(n.date).toLocaleDateString("tr-TR")}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+                          <Link href="/parent/notifications">
+                            <div className="flex items-start gap-3">
+                              <div className="mt-0.5">
+                                <span
+                                  className={`inline-block h-2 w-2 rounded-full ${
+                                    n.isRead
+                                      ? "bg-muted-foreground/40"
+                                      : "bg-primary"
+                                  }`}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p
+                                  className={`text-sm font-medium truncate ${
+                                    n.isRead
+                                      ? "text-muted-foreground"
+                                      : "text-foreground"
+                                  }`}
+                                >
+                                  {n.title}
+                                </p>
+                                <p className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
+                                  <Clock className="h-3 w-3" />
+                                  {new Date(n.date).toLocaleDateString("tr-TR")}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
 
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="justify-center">
-                <Link href="/parent/notifications">
-                  <span className="text-xs text-primary">
-                    Tüm bildirim detaylarını görüntüle
-                  </span>
-                </Link>
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild className="justify-center">
+                        <Link href="/parent/notifications">
+                          <span className="text-xs text-primary">
+                            Tüm bildirim detaylarını görüntüle
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-      {/* Dikey çizgi */}
-      <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-border" />
+              {/* vertical separator */}
+              <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-border" />
 
-      {/* Avatar - İSİM KALDIRILDI */}
-      <div className="flex items-center gap-3">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src="/parent-avatar.png" />
-          <AvatarFallback>{initials}</AvatarFallback>
-        </Avatar>
+              {/* Avatar */}
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/parent-avatar.png" />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              </div>
 
-        {/* ❌ KALDIRILAN BLOK
-        <div className="hidden lg:block">
-          <p className="text-sm font-medium text-foreground">
-            {displayName || "Veli"}
-          </p>
+            </div>
+          </div>
         </div>
-        */}
-      </div>
-    </div>
-  </div>
-</div>
 
-
-        {/* Page content */}
+        {/* PAGE CONTENT */}
         <main className="py-6">
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
