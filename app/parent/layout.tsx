@@ -407,13 +407,14 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
           {/* Mobile menu button */}
           <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+  variant="ghost"
+  size="sm"
+  className="lg:hidden"
+  onClick={() => setSidebarOpen((prev) => !prev)}
+>
+  <Menu className="h-5 w-5" />
+</Button>
+
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
