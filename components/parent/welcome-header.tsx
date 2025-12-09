@@ -27,20 +27,39 @@ function WelcomeHeaderComponent({ user }: Props) {
 
   return (
     <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 rounded-lg p-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16 animate-pulse" />
 
-      <div className="relative z-10 flex items-center gap-3">
-        <Avatar className="h-12 w-12">
+      {/* Background pulse circle */}
+      <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-primary/5 rounded-full -translate-y-12 sm:-translate-y-16 translate-x-12 sm:translate-x-16 animate-pulse" />
+
+      <div className="relative z-10 flex items-center gap-3 min-w-0">
+
+        {/* Avatar */}
+        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
           <AvatarImage src="/parent-avatar.png" />
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
 
-        <div>
-          <h1 className="text-2xl font-bold">Hoş geldiniz, {displayName}</h1>
+        {/* Text wrapper */}
+        <div className="flex flex-col min-w-0">
+
+          {/* Title - Auto scales to fit long names */}
+          <h1
+            className="
+              font-bold 
+              leading-tight 
+              whitespace-nowrap 
+              overflow-hidden 
+              text-[clamp(1.15rem,4.2vw,1.65rem)]
+            "
+          >
+            Hoş geldiniz, {displayName}
+          </h1>
+
           <p className="text-muted-foreground text-sm">
             Çocuğunuzun akademik durumunu kolayca takip edin.
           </p>
         </div>
+
       </div>
     </div>
   )
