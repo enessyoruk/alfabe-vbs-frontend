@@ -390,11 +390,23 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
   <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
     <div className="flex flex-1 items-center">
-      <h1 className="text-lg font-semibold text-foreground">
-        {displayName
-          ? `Hoş geldiniz, ${displayName}`
-          : navigation.find((item) => item.href === pathname)?.name || "Veli Paneli"}
-      </h1>
+      <h1
+  className="
+    font-semibold 
+    text-[clamp(1rem,3.8vw,1.25rem)] 
+    leading-tight 
+    whitespace-nowrap 
+    overflow-hidden 
+    min-w-0 
+    text-foreground 
+    flex-shrink
+  "
+>
+  {displayName
+    ? `Hoş geldiniz, ${displayName}`
+    : navigation.find((item) => item.href === pathname)?.name || "Veli Paneli"}
+</h1>
+
     </div>
 
     <div className="flex items-center gap-x-4 lg:gap-x-6">
