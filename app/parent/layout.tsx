@@ -236,14 +236,14 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
       {/* █████ MOBILE SIDEBAR OVERLAY + DRAWER █████ */}
       <div
         className={`
-          fixed inset-0 z-50 lg:hidden
+          fixed inset-0 z-[997] lg:hidden
           transition-opacity duration-300
           ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
         `}
       >
         {/* Overlay */}
         <div
-          className="absolute inset-0 bg-black/50"
+          className="absolute inset-0 bg-black/50 z-[998]"
           onClick={closeSidebar}
         />
 
@@ -384,7 +384,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
       {/* █████ MAIN CONTENT █████ */}
       <div className="lg:pl-64">
         {/* TOP BAR */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-[999] flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           {/* Hamburger */}
           <Button
             variant="ghost"
