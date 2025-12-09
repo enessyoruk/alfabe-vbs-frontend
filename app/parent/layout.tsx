@@ -399,7 +399,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
         </Card>
       </div>
 
-      {/* ████████ MAIN CONTENT ████████ */}
+      {/*  MAIN CONTENT  */}
       <div className="lg:pl-64">
 
         {/* TOP BAR */}
