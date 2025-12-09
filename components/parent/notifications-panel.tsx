@@ -34,11 +34,12 @@ function NotificationsPanelComponent({ notifications }: Props) {
     <div className="space-y-6">
 
       {/* Üst bar - mobilde dikey, PC'de yatay */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Son Aktiviteler</h2>
 
         <Link href="/parent/notifications">
-          <Button size="sm" variant="outline" className="w-full sm:w-auto">
+          <Button size="sm" variant="outline" className="whitespace-nowrap">
+
             Tümünü Gör
           </Button>
         </Link>
