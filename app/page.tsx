@@ -364,7 +364,7 @@ export default function HomePage() {
   </p>
 
   <p className="text-right whitespace-nowrap opacity-70">
-    Developed by <strong>DALYARAK FURKAN</strong>
+    Developed by <strong>Mehmet Enes YÖRÜK</strong>
   </p>
 
 
