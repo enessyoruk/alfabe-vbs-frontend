@@ -254,134 +254,126 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen bg-background">
 
-      {/* ----------------------------- */}
+      
       {/* MOBILE SIDEBAR */}
-      {/* ----------------------------- */}
+     {sidebarOpen && (
+  <div className="fixed inset-0 z-[200] lg:hidden">
 
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-[200] lg:hidden">
+    {/* Overlay */}
+    <div
+      className={`
+        fixed inset-0 bg-black/50
+        transition-opacity duration-300
+        ${sidebarOpen ? "opacity-100" : "opacity-0"}
+      `}
+      onClick={() => setSidebarOpen(false)}
+    />
 
-          {/* Overlay */}
-          <div
-            className={`
-              fixed inset-0 bg-black/50
-              transition-opacity duration-300
-              ${sidebarOpen ? "opacity-100" : "opacity-0"}
-            `}
-            onClick={() => setSidebarOpen(false)}
-          />
+    {/* Sidebar panel */}
+    <div
+      className={`
+        fixed inset-y-0 left-0 w-64 bg-card border-r shadow-xl
+        z-[210]
+        transform transition-transform duration-300
+        ease-[cubic-bezier(0.22,1,0.36,1)]
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        pt-[env(safe-area-inset-top)]
+        pb-[env(safe-area-inset-bottom)]
+        overflow-y-auto
+        relative
+      `}
+    >
 
-          {/* Sidebar panel */}
-          <div
-            className={`
-              fixed inset-y-0 left-0 w-64 bg-card border-r shadow-xl
-              z-[210] pt-safe
-              transform transition-transform duration-300 ease-in-out
-              ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-              relative overflow-hidden
-            `}
-          >
+      {/* Sidebar üst header */}
+      <div className="relative z-10 flex items-center justify-between p-4 border-b">
+        <div className="flex flex-col">
+          <span className="font-semibold text-foreground whitespace-nowrap">
+            Öğretmen Paneli
+          </span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            Alfa-β Akademi
+          </span>
+        </div>
 
-            {/* Background (light watermark) */}
-            <div
-              className="absolute inset-0 opacity-40 bg-no-repeat bg-center bg-contain pointer-events-none"
-              style={{
-                backgroundImage:
-                  "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
-                backgroundSize: "360px 240px",
-              }}
-            />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      </div>
 
-            {/* Header */}
-            <div className="relative z-10 flex items-center justify-between p-4 border-b">
-              <div className="flex flex-col leading-tight">
-                <span className="font-semibold text-foreground whitespace-nowrap">
-                  Öğretmen Paneli
-                </span>
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  Alfa-β Akademi
-                </span>
-              </div>
+      {/* Navigation */}
+      <nav className="relative z-10 p-4 space-y-2">
+        {navigation.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                isActive
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-foreground hover:bg-muted"
+              }`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.name}
+            </Link>
+          )
+        })}
+      </nav>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>
+      {/* Footer */}
+      <div className="relative z-10 p-6 border-t">
 
-            {/* Navigation */}
-            <nav className="relative z-10 p-4 space-y-2">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                      isActive
-                        ? "bg-secondary text-secondary-foreground"
-                        : "text-foreground hover:bg-muted"
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </nav>
+        {/* Avatar + İsim + Branş */}
+        <div className="flex items-center gap-3 mb-3 min-w-0">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="/teacher-avatar.png" />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
 
-            {/* Footer */}
-            <div className="relative z-10 p-6 border-t">
+          <div className="flex flex-col min-w-0">
+            <p
+              className="
+                text-sm font-medium text-foreground
+                whitespace-nowrap
+                text-[clamp(0.75rem,3vw,0.9rem)]
+              "
+            >
+              {displayName || "Öğretmen"}
+            </p>
 
-              {/* Avatar + isim */}
-              <div className="flex items-center gap-3 mb-3 min-w-0">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/teacher-avatar.png" />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="
-                      text-sm font-medium text-foreground
-                      whitespace-nowrap
-                      text-[clamp(0.75rem,3vw,0.9rem)]
-                    "
-                  >
-                    {displayName}
-                  </p>
-
-                  <p
-                    className="
-                      text-xs text-muted-foreground
-                      whitespace-nowrap
-                      text-[clamp(0.65rem,2.5vw,0.8rem)]
-                    "
-                  >
-                    {user.branch || "Öğretmen"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Logout */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="w-full bg-transparent"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Çıkış Yap
-              </Button>
-            </div>
-
+            <p
+              className="
+                text-xs text-muted-foreground
+                whitespace-nowrap
+              "
+            >
+              {user.branch || "Öğretmen"}
+            </p>
           </div>
         </div>
-      )}
+
+        {/* Çıkış butonu */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleLogout}
+          className="w-full bg-transparent"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Çıkış Yap
+        </Button>
+      </div>
+
+    </div>
+  </div>
+)}
+
 
       {/* ----------------------------- */}
       {/* DESKTOP SIDEBAR (PC) */}
