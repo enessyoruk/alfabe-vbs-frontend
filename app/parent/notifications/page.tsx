@@ -1,3 +1,4 @@
+// app/parent/notifications/page.tsx
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -117,9 +118,7 @@ function saveReadIds(ids: Set<string>) {
   if (typeof window === "undefined") return
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(ids)))
-  } catch {
-    // yut
-  }
+  } catch {}
 }
 
 export default function ParentNotifications() {
@@ -142,7 +141,6 @@ export default function ParentNotifications() {
       setLoading(true)
       setError(null)
 
-      // Proxy route → Next.js API → Backend
       const res = await fetch("/api/parent/notifications", {
         credentials: "include",
       })
@@ -150,26 +148,18 @@ export default function ParentNotifications() {
       const json = await res.json().catch(() => ({} as any))
 
       if (!res.ok) {
-        const errMsg =
-          (json as any)?.error || `Bildirimler alınamadı (HTTP ${res.status}).`
-        throw new Error(errMsg)
+        throw new Error(
+          (json as any)?.error ||
+            `Bildirimler alınamadı (HTTP ${res.status}).`,
+        )
       }
 
-      // API { items: [...] } veya doğrudan [...] dönebilir
       const arr: Notification[] = Array.isArray((json as any)?.items)
         ? (json as any).items
         : Array.isArray(json)
         ? (json as any)
         : []
 
-      const errMsg = (json as any)?.error
-      if (errMsg && arr.length === 0) {
-        setError(errMsg)
-      } else {
-        setError(null)
-      }
-
-      // 🔒 Okunmuş bildirimleri localStorage'dan çek
       const readIds = loadReadIds()
 
       const merged = arr.map((n) => ({
@@ -178,21 +168,19 @@ export default function ParentNotifications() {
       }))
 
       setNotifications(merged)
-   } catch (e: any) {
-  toast.error(e?.message || "Bildirimler yüklenemedi.", {
-    duration: 2500,
-    position: "bottom-right",
-  })
+    } catch (e: any) {
+      toast.error(e?.message || "Bildirimler yüklenemedi.", {
+        duration: 2500,
+        position: "bottom-right",
+      })
 
-  setError(e?.message || "Bildirimler yüklenemedi.")
-  setNotifications([])
-} finally {
-  setLoading(false)
-}
-
+      setError(e?.message || "Bildirimler yüklenemedi.")
+      setNotifications([])
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Okundu/okunmadı bilgisi localStorage ile kalıcı
   function markAllAsRead() {
     setNotifications((prev) => {
       const updated = prev.map((n) => ({ ...n, isRead: true }))
@@ -211,11 +199,8 @@ export default function ParentNotifications() {
       const ids = loadReadIds()
       const target = updated.find((n) => n.id === id)
 
-      if (target?.isRead) {
-        ids.add(id)
-      } else {
-        ids.delete(id)
-      }
+      if (target?.isRead) ids.add(id)
+      else ids.delete(id)
 
       saveReadIds(ids)
       return updated
@@ -234,6 +219,7 @@ export default function ParentNotifications() {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
+
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertDescription>{error}</AlertDescription>
@@ -246,7 +232,10 @@ export default function ParentNotifications() {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-6">
+          {/* ---------------- MOBIL HEADER ---------------- */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+
+            {/* Sol: İkon + Başlık */}
             <div className="flex items-center gap-3">
               <BellRing className="h-8 w-8 text-primary" />
               <div>
@@ -258,11 +247,14 @@ export default function ParentNotifications() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+
+            {/* Sağ: yalnızca mobilde alta iner */}
+            <div className="flex flex-col items-start sm:items-end gap-2">
               <div className="text-sm text-muted-foreground">
                 <span className="font-semibold text-primary">{unreadCount}</span>{" "}
                 okunmamış
               </div>
+
               <Button
                 onClick={markAllAsRead}
                 disabled={unreadCount === 0}
@@ -273,81 +265,84 @@ export default function ParentNotifications() {
             </div>
           </div>
 
+          {/* ---------------- BİLDİRİM KARTLARI ---------------- */}
           <div className="space-y-4">
-            {notifications.map((notification) => (
+            {notifications.map((n) => (
               <Card
-                key={notification.id}
+                key={n.id}
                 className={`transition-all duration-200 hover:shadow-md cursor-pointer border-l-4 ${getNotificationColor(
-                  notification.type,
+                  n.type,
                 )} ${
-                  !notification.isRead
+                  !n.isRead
                     ? "bg-blue-50/50 border-blue-200"
                     : "bg-background"
                 }`}
-                onClick={() => toggleNotificationRead(notification.id)}
+                onClick={() => toggleNotificationRead(n.id)}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
+                <CardHeader className="pb-2">
+                  {/* İlk satır: ikon + başlık + sağ okundu işareti */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div
                         className={`p-2 rounded-full ${
-                          !notification.isRead ? "bg-primary/10" : "bg-muted"
+                          !n.isRead ? "bg-primary/10" : "bg-muted"
                         }`}
                       >
-                        {getNotificationIcon(notification.type)}
+                        {getNotificationIcon(n.type)}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <CardTitle
-                            className={`text-lg ${
-                              !notification.isRead
-                                ? "text-foreground"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {notification.title}
-                          </CardTitle>
-                          {!notification.isRead && (
-                            <div className="w-2 h-2 bg-primary rounded-full" />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {getTypeLabel(notification.type)}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(notification.date)}
-                          </span>
-                        </div>
-                      </div>
+
+                      <CardTitle
+                        className={`text-lg truncate max-w-[70vw] sm:max-w-full ${
+                          !n.isRead
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {n.title}
+                      </CardTitle>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {notification.isRead ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <Circle className="h-5 w-5 text-muted-foreground" />
-                      )}
-                    </div>
+
+                    {n.isRead ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                    ) : (
+                      <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
+                    )}
+                  </div>
+
+                  {/* İkinci satır: Duyuru · 12 Ocak 2025 */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                    <Badge variant="outline" className="text-xs">
+                      {getTypeLabel(n.type)}
+                    </Badge>
+
+                    <span className="text-xs">·</span>
+
+                    <span>{formatDate(n.date)}</span>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0">
+
+                <CardContent className="pt-2">
                   <p
                     className={`text-base leading-relaxed ${
-                      !notification.isRead
+                      !n.isRead
                         ? "text-foreground"
                         : "text-muted-foreground"
                     }`}
                   >
-                    {notification.message}
+                    {n.message}
                   </p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
+          {/* ---------------- ALT ÖZET KUTUSU ---------------- */}
           <Card className="mt-8 bg-muted/50">
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+
+              {/* Sadece mobilde → tek satır */}
+              <div className="grid grid-cols-3 text-center sm:grid-cols-3 gap-4">
+
                 <div>
                   <div className="text-2xl font-bold text-primary">
                     {totalCount}
@@ -356,6 +351,7 @@ export default function ParentNotifications() {
                     Toplam Bildirim
                   </div>
                 </div>
+
                 <div>
                   <div className="text-2xl font-bold text-blue-600">
                     {unreadCount}
@@ -364,6 +360,7 @@ export default function ParentNotifications() {
                     Okunmamış
                   </div>
                 </div>
+
                 <div>
                   <div className="text-2xl font-bold text-green-600">
                     {totalCount - unreadCount}
@@ -372,6 +369,7 @@ export default function ParentNotifications() {
                     Okunmuş
                   </div>
                 </div>
+
               </div>
             </CardContent>
           </Card>
