@@ -564,33 +564,51 @@ export default function TeacherDashboardPage() {
     {/* Buttons */}
     <div className="grid grid-cols-3 gap-2">
 
+  {/* Ödev Ver */}
   <Link href={`/teacher/homework?class=${c.id}`}>
     <Button
       variant="outline"
       size="sm"
-      className="w-full px-2 py-2 text-xs flex items-center justify-center gap-1"
+      className="
+        w-full px-2 py-2 
+        flex items-center justify-center gap-1 
+        text-[clamp(0.55rem,2.2vw,0.75rem)] 
+        whitespace-nowrap
+      "
     >
       <BookOpen className="h-3 w-3" />
-      Ödev
+      Ödev Ver
     </Button>
   </Link>
 
+  {/* Sınav Yükle */}
   <Link href={`/teacher/exam-upload?class=${c.id}`}>
     <Button
       variant="outline"
       size="sm"
-      className="w-full px-2 py-2 text-xs flex items-center justify-center gap-1"
+      className="
+        w-full px-2 py-2 
+        flex items-center justify-center gap-1 
+        text-[clamp(0.55rem,2.2vw,0.75rem)] 
+        whitespace-nowrap
+      "
     >
       <Upload className="h-3 w-3" />
-     Sınav Yükle
+      Sınav Yükle
     </Button>
   </Link>
 
+  {/* Analiz */}
   <Link href={`/teacher/analytics?class=${c.id}`}>
     <Button
       variant="outline"
       size="sm"
-      className="w-full px-2 py-2 text-xs flex items-center justify-center gap-1"
+      className="
+        w-full px-2 py-2 
+        flex items-center justify-center gap-1 
+        text-[clamp(0.55rem,2.2vw,0.75rem)] 
+        whitespace-nowrap
+      "
     >
       <BarChart3 className="h-3 w-3" />
       Analiz
@@ -598,6 +616,7 @@ export default function TeacherDashboardPage() {
   </Link>
 
 </div>
+
 
 
   </div>
