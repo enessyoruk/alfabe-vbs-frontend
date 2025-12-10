@@ -647,19 +647,30 @@ export default function TeacherDashboardPage() {
       key={i}
       className={`p-4 rounded-lg border ${p.bgColor}`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-medium text-foreground">
-          {p.className}
-        </h4>
-        <div className="flex items-center gap-2">
-          <BarChart3 className={`h-4 w-4 ${p.color}`} />
-          <span
-            className={`text-sm font-medium ${p.color}`}
-          >
-            {p.trend === "up" ? "↗" : "↘"}
-          </span>
-        </div>
-      </div>
+      <div className="flex items-center justify-between mb-3 gap-2 min-w-0">
+
+  {/* Sınıf Adı */}
+  <h4
+    className="
+      font-medium text-foreground
+      whitespace-nowrap overflow-hidden tracking-tight
+      text-[clamp(0.9rem,3vw,1.1rem)]
+      max-w-[70%]
+    "
+  >
+    {p.className}
+  </h4>
+
+  {/* Sağdaki İkon Alanı */}
+  <div className="flex items-center gap-2 flex-shrink-0">
+    <BarChart3 className={`h-4 w-4 ${p.color}`} />
+    <span className={`text-sm font-medium ${p.color}`}>
+      {p.trend === "up" ? "↗" : "↘"}
+    </span>
+  </div>
+
+</div>
+
 
       <div className="grid grid-cols-2 gap-3">
         <div>
