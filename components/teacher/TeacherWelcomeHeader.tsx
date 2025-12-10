@@ -1,5 +1,7 @@
 "use client"
 
+import { AutoFitText } from "@/components/ui/AutoFitText"
+
 interface TeacherWelcomeHeaderProps {
   displayName: string
 }
@@ -23,18 +25,14 @@ export function TeacherWelcomeHeader({ displayName }: TeacherWelcomeHeaderProps)
 
       {/* Content */}
       <div className="relative z-10">
-        <h1
-  className="
-    font-bold text-foreground mb-2
-    whitespace-nowrap
-    max-w-full overflow-hidden tracking-tight
-    text-[clamp(1rem,5vw,1.6rem)]
-    md:text-[1.75rem]
-  "
->
-  Hoş geldiniz, {displayName} hocam
-</h1>
 
+        {/* Auto-Fit Başlık */}
+        <AutoFitText
+          text={`Hoş geldiniz, ${displayName} hocam`}
+          maxSize={28}   // PC'de 28px
+          minSize={14}   // Mobilde 14px'e kadar küçülür (taşma olmaz)
+          className="font-bold text-foreground mb-2"
+        />
 
         <p
           className="
