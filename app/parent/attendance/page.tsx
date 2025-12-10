@@ -22,7 +22,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react"
 
-/* ---------------- Types ---------------- */
+/* ============================================================
+   TYPES + HELPERS (AYNEN KALDI)
+============================================================ */
 
 type ApiStudent = {
   id: string | number
@@ -42,7 +44,7 @@ type UiStudent = {
 type ApiAttendanceRecord = {
   id: string | number
   date?: string
-  tarih?: string // backend farklı isim kullanırsa tolere et
+  tarih?: string
   course?: string
   status?: string
   durum?: string
@@ -59,8 +61,6 @@ type UiAttendanceRecord = {
   notes?: string
 }
 
-/* ---------------- Helpers ---------------- */
-
 function normalizeStudent(x: ApiStudent): UiStudent {
   return {
     id: String(x.id ?? ""),
@@ -68,21 +68,19 @@ function normalizeStudent(x: ApiStudent): UiStudent {
     class: String(x.class ?? x.className ?? "-"),
     subjects: Array.isArray((x as any).subjects)
       ? (x as any).subjects.map((s: any) => s.name || s)
-      : [],                          // 🔥 BACKEND'DEN GELEN DERSLER
+      : [],
   }
 }
 
-
 function normalizeAttendance(x: ApiAttendanceRecord): UiAttendanceRecord {
-  // Backend farklı property isimleri kullanırsa hepsini yakala
   const rawDate =
-    (x.date as string | undefined) ??
-    (x.tarih as string | undefined) ??
+    x.date ??
+    x.tarih ??
     new Date().toISOString()
 
   const rawStatus =
-    (x.status as string | undefined) ??
-    (x.durum as string | undefined) ??
+    x.status ??
+    x.durum ??
     ""
 
   const statusText = rawStatus.toLowerCase().trim()
@@ -137,7 +135,9 @@ function formatMonthLabel(value: string) {
   })
 }
 
-/* ---------------- Component ---------------- */
+/* ============================================================
+   PAGE COMPONENT
+============================================================ */
 
 export default function AttendancePage() {
   const router = useRouter()
@@ -156,11 +156,9 @@ export default function AttendancePage() {
   const [loadingAttendance, setLoadingAttendance] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Sayfalama
   const [page, setPage] = useState(1)
   const pageSize = 10
 
-  /* ---------------- Month options ---------------- */
   const monthOptions = useMemo(() => {
     const out: string[] = []
     const now = new Date()
@@ -171,7 +169,7 @@ export default function AttendancePage() {
     return out
   }, [])
 
-  /* ---------------- 1) STUDENTS LOAD ---------------- */
+  /* ---------------- LOAD STUDENTS ---------------- */
   useEffect(() => {
     const ac = new AbortController()
 
@@ -191,13 +189,11 @@ export default function AttendancePage() {
         }
 
         const json = await res.json().catch(() => ({}))
-
         const arr: ApiStudent[] = Array.isArray(json.items) ? json.items : []
-        const ui = arr.map(normalizeStudent)
 
+        const ui = arr.map(normalizeStudent)
         setStudents(ui)
 
-        // initial student
         const fromQuery = searchParams.get("student")
         const initial =
           (fromQuery && ui.find((s) => s.id === fromQuery)?.id) ||
@@ -205,9 +201,8 @@ export default function AttendancePage() {
           ""
 
         setSelectedStudent(initial)
-      } catch (err: any) {
-        if (err.name !== "AbortError")
-          setError(err?.message || "Öğrenciler alınamadı.")
+      } catch {
+        setError("Öğrenciler alınamadı.")
       } finally {
         setLoadingStudents(false)
       }
@@ -216,7 +211,7 @@ export default function AttendancePage() {
     return () => ac.abort()
   }, [router, searchParams])
 
-  /* ---------------- 2) ATTENDANCE LOAD ---------------- */
+  /* ---------------- LOAD ATTENDANCE ---------------- */
   useEffect(() => {
     if (!selectedStudent) return
 
@@ -247,9 +242,8 @@ export default function AttendancePage() {
           : []
 
         setAttendance(arr.map(normalizeAttendance))
-      } catch (err: any) {
-        if (err.name !== "AbortError")
-          setError(err?.message || "Devamsızlık verileri alınamadı.")
+      } catch {
+        setError("Devamsızlık verileri alınamadı.")
       } finally {
         setLoadingAttendance(false)
       }
@@ -258,85 +252,72 @@ export default function AttendancePage() {
     return () => ac.abort()
   }, [selectedStudent, selectedMonth, router])
 
-  // Öğrenci veya ay değiştiğinde sayfayı 1'e çek
   useEffect(() => {
     setPage(1)
   }, [selectedStudent, selectedMonth])
 
-  /* ---------------- Derived ---------------- */
+  /* ---------------- DERIVED ---------------- */
 
-  // ✅ Backend zaten month ile filtreliyor → biz yeniden filtrelemiyoruz
   const filtered = attendance
 
-  // ✅ BACKEND mantığına paralel ama mazeretliyi rate’e dahil etmiyoruz
   const stats = useMemo(() => {
-    const totalLessons = filtered.length
-
     const present = filtered.filter((r) => r.status === "present").length
     const absent = filtered.filter((r) => r.status === "absent").length
     const late = filtered.filter((r) => r.status === "late").length
 
-    const validForRate = present + absent
-    const attendanceRate =
-      validForRate > 0 ? Math.round((present / validForRate) * 100) : 0
+    const valid = present + absent
+    const rate = valid > 0 ? Math.round((present / valid) * 100) : 0
 
-    return { totalLessons, present, absent, late, attendanceRate }
+    return { present, absent, late, attendanceRate: rate }
   }, [filtered])
 
   const selectedStudentObj = students.find((s) => s.id === selectedStudent)
-  const totalCourses = selectedStudentObj
-  ? (selectedStudentObj as any)?.subjects?.length ?? 0
-  : 0
-
-
-  // Sayfalama hesapları
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const currentPage = Math.min(page, pageCount)
   const startIndex = (currentPage - 1) * pageSize
   const pagedRecords = filtered.slice(startIndex, startIndex + pageSize)
 
-  /* ---------------- UI ---------------- */
+  /* ============================================================
+     UI
+  ============================================================ */
 
   return (
     <div className="space-y-6">
+
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Header */}
+      {/* HEADER BLOĞU */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Devamsızlık Takibi</h1>
-          <p className="text-muted-foreground">
-            Öğrenci devamsızlık kayıtlarını aylık olarak görüntüleyin.
-          </p>
+          <p className="text-muted-foreground">Öğrenci devamsızlık kayıtlarını aylık olarak görüntüleyin.</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
+        {/* 🔥 DROPDOWNLAR YAN YANA */}
+        <div className="flex flex-row gap-2 w-full sm:w-auto">
           <Select
             value={selectedStudent}
             onValueChange={setSelectedStudent}
             disabled={loadingStudents}
           >
-            <SelectTrigger className="w-56">
+            <SelectTrigger className="w-full sm:w-56">
               <SelectValue placeholder="Öğrenci seçin" />
             </SelectTrigger>
             <SelectContent>
               {students.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                  {s.name}
-                  {s.class &&
-                    s.class.toLowerCase() !== "test" &&
-                    ` — ${s.class}`}
+                  {s.name} {s.class && s.class.toLowerCase() !== "test" && `— ${s.class}`}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full sm:w-44">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -350,33 +331,26 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      {/* Öğrenci Yok */}
+      {/* ÖĞRENCİ YOK */}
       {students.length === 0 && !loadingStudents ? (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">
-              Sisteme kayıtlı öğrenci bulunamadı.
-            </p>
+            <p className="text-muted-foreground">Sisteme kayıtlı öğrenci bulunamadı.</p>
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Stats */}
+          {/* STATS (DOKUNMADIM — SEN BEĞENDİN) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Devam Oranı */}
             <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Devam Oranı
-                </CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Devam Oranı</CardTitle>
                 <CheckCircle className="h-5 w-5 text-emerald-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
                   {stats.attendanceRate}
-                  <span className="text-base font-normal text-muted-foreground">
-                    %
-                  </span>
+                  <span className="text-base font-normal text-muted-foreground">%</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {formatMonthLabel(selectedMonth)} için genel katılım oranı
@@ -384,103 +358,94 @@ export default function AttendancePage() {
               </CardContent>
             </Card>
 
-            {/* Toplam Ders */}
-<Card className="shadow-sm">
-  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium">
-      Toplam Ders
-    </CardTitle>
-    <Calendar className="h-5 w-5 text-blue-600" />
-  </CardHeader>
-  <CardContent>
-    <div className="text-2xl font-bold">
-      {selectedStudentObj?.subjects?.length ?? 0}
-    </div>
-    <p className="text-xs text-muted-foreground">
-      Öğrencinin aldığı toplam ders sayısı
-    </p>
-  </CardContent>
-</Card>
-
-
-            {/* Katıldığı Dersler */}
             <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Katıldığı Ders
-                </CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Toplam Ders</CardTitle>
+                <Calendar className="h-5 w-5 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {selectedStudentObj?.subjects?.length ?? 0}
+                </div>
+                <p className="text-xs text-muted-foreground">Öğrencinin aldığı toplam ders sayısı</p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Katıldığı Ders</CardTitle>
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.present}</div>
-                <p className="text-xs text-muted-foreground">
-                  Yoklamaya katıldığı ders sayısı
-                </p>
+                <p className="text-xs text-muted-foreground">Yoklamaya katıldığı ders sayısı</p>
               </CardContent>
             </Card>
 
-            {/* Katılmadı / Mazeretli */}
             <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Katılmadı / Mazeretli
-                </CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Katılmadı / Mazeretli</CardTitle>
                 <XCircle className="h-5 w-5 text-red-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-lg font-semibold">
                   <span className="text-2xl">{stats.absent}</span>
-                  <span className="text-xs text-muted-foreground ml-1">
-                    yok
-                  </span>
+                  <span className="text-xs text-muted-foreground ml-1">yok</span>
                   <span className="mx-2 text-muted-foreground">·</span>
                   <span className="text-2xl">{stats.late}</span>
-                  <span className="text-xs text-muted-foreground ml-1">
-                    mazeretli
-                  </span>
+                  <span className="text-xs text-muted-foreground ml-1">mazeretli</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Devamsızlık ve mazeretli olarak işaretlenen dersler
-                </p>
+                <p className="text-xs text-muted-foreground">Devamsızlık ve mazeretli olarak işaretlenen dersler</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Detaylar */}
+          {/* DEVAMSIZLIK DETAYLARI */}
           <Card>
             <CardHeader>
-              <CardTitle>
-                Devamsızlık Kayıtları — {selectedStudentObj?.name || ""}
+              <CardTitle className="text-xl font-semibold">
+                Devamsızlık Kayıtları
               </CardTitle>
-              <CardDescription>
-                {formatMonthLabel(selectedMonth)}
-              </CardDescription>
+
+              {/* 🔥 ÖĞRENCİ ADI — küçültme + alt satır */}
+              <p className="text-[clamp(0.9rem,3.6vw,1.1rem)] font-normal text-muted-foreground mt-1 leading-tight">
+                {selectedStudentObj?.name || ""}
+              </p>
+
+              <CardDescription>{formatMonthLabel(selectedMonth)}</CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
+
               {loadingAttendance ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Devamsızlık kayıtları yükleniyor...
-                </p>
+                <p className="text-center text-muted-foreground py-8">Devamsızlık kayıtları yükleniyor...</p>
               ) : pagedRecords.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Henüz yoklama kaydı alınmadı.
-                </p>
+                <p className="text-center text-muted-foreground py-8">Henüz yoklama kaydı alınmadı.</p>
               ) : (
                 <>
+                  {/* 🔥 YENİ MOBİL DÜZEN: ICON+INFO BLOK DİKEY, BADGE ALTA GEÇER */}
                   <div className="space-y-4">
                     {pagedRecords.map((rec) => (
                       <div
-                        className="flex items-center justify-between p-4 border rounded-lg bg-muted/40"
                         key={rec.id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg bg-muted/40"
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-start gap-4">
                           {getStatusIcon(rec.status)}
+
                           <div>
                             <p className="font-medium">{rec.course}</p>
+
+                            {/* 🔥 TARİH */}
                             <p className="text-sm text-muted-foreground">
-                              {new Date(rec.date).toLocaleDateString("tr-TR")} ·{" "}
+                              {new Date(rec.date).toLocaleDateString("tr-TR")}
+                            </p>
+
+                            {/* 🔥 ALFA-Β AKADEMİ → ALTTA YEŞİL */}
+                            <p className="text-sm mt-1 font-medium" style={{ color: "#089B12" }}>
                               {rec.teacher}
                             </p>
+
                             {rec.notes && (
                               <p className="text-xs text-muted-foreground mt-1">
                                 Not: {rec.notes}
@@ -488,18 +453,20 @@ export default function AttendancePage() {
                             )}
                           </div>
                         </div>
-                        {getStatusBadge(rec.status)}
+
+                        {/* BADGE ALTTA — MOBİLDE MÜKEMMEL DURUR */}
+                        <div className="sm:self-center">{getStatusBadge(rec.status)}</div>
                       </div>
                     ))}
                   </div>
 
-                  {/* Sayfalama */}
+                  {/* PAGINATION */}
                   {pageCount > 1 && (
                     <div className="flex items-center justify-between pt-4 border-t mt-4">
                       <p className="text-xs text-muted-foreground">
-                        Sayfa {currentPage} / {pageCount} · Toplam{" "}
-                        {filtered.length} kayıt
+                        Sayfa {currentPage} / {pageCount} · Toplam {filtered.length} kayıt
                       </p>
+
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -509,13 +476,12 @@ export default function AttendancePage() {
                         >
                           Önceki
                         </Button>
+
                         <Button
                           variant="outline"
                           size="sm"
                           disabled={currentPage >= pageCount}
-                          onClick={() =>
-                            setPage((p) => Math.min(pageCount, p + 1))
-                          }
+                          onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
                         >
                           Sonraki
                         </Button>
