@@ -582,7 +582,7 @@ export default function TeacherDashboardPage() {
       className="w-full px-2 py-2 text-xs flex items-center justify-center gap-1"
     >
       <Upload className="h-3 w-3" />
-      Yükle
+     Sınav Yükle
     </Button>
   </Link>
 
