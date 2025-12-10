@@ -292,14 +292,22 @@ export default function ParentNotifications() {
                       </div>
 
                       <CardTitle
-                        className={`text-lg truncate max-w-[70vw] sm:max-w-full ${
-                          !n.isRead
-                            ? "text-foreground"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {n.title}
-                      </CardTitle>
+  className={`
+    text-[clamp(1rem,3.8vw,1.25rem)]
+    leading-snug
+    font-semibold
+    break-words
+    whitespace-normal
+    ${
+      !n.isRead
+        ? "text-foreground"
+        : "text-muted-foreground"
+    }
+  `}
+>
+  {n.title}
+</CardTitle>
+
                     </div>
 
                     {n.isRead ? (
