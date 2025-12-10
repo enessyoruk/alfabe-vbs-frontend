@@ -233,26 +233,17 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen bg-background">
-      {sidebarOpen && (
-  <button
-    onClick={toggleSidebar}
-    className="fixed top-4 left-4 z-[9999] p-2 rounded-md bg-card/80 backdrop-blur-sm lg:hidden"
-  >
-    <Menu className="h-6 w-6 text-foreground" />
-  </button>
-)}
-
       {/* █████ MOBILE SIDEBAR OVERLAY + DRAWER █████ */}
       <div
         className={`
-          fixed inset-0 z-[997] lg:hidden
+          fixed inset-0 z-50 lg:hidden
           transition-opacity duration-300
           ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
         `}
       >
         {/* Overlay */}
         <div
-          className="absolute inset-0 bg-black/50 z-[998]"
+          className="absolute inset-0 bg-black/50"
           onClick={closeSidebar}
         />
 
@@ -393,12 +384,12 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
       {/* █████ MAIN CONTENT █████ */}
       <div className="lg:pl-64">
         {/* TOP BAR */}
-        <div className="sticky top-0 z-[999] flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b bg-card/80 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           {/* Hamburger */}
           <Button
             variant="ghost"
             size="sm"
-            className={`lg:hidden transition-transform duration-300 ${sidebarOpen ? "translate-x-48" : ""}`}
+            className="lg:hidden relative z-[9999]"
             onClick={toggleSidebar}
           >
             <Menu className="h-5 w-5" />
