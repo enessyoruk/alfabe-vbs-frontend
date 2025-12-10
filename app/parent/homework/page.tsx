@@ -49,11 +49,8 @@ interface ParentHomeworkItem {
   feedback?: string | null
 }
 
-// Mock data for parent's children
-const children = [
-  { id: "1", name: "Elif Yılmaz", class: "9-A Matematik", photo: "/student-girl.png" },
-  { id: "2", name: "Can Yılmaz", class: "7-B Fen", photo: "/student-boy.png" },
-]
+const children: [] = []
+
 
 export default function ParentHomeworkPage() {
   const [selectedStudent, setSelectedStudent] = useState<string>("all")
@@ -269,47 +266,55 @@ export default function ParentHomeworkPage() {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Ödev ara..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Öğrenci seçin" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tüm Çocuklar</SelectItem>
-                {children.map((child) => (
-                  <SelectItem key={child.id} value={child.id}>
-                    {child.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={statusFilter}
-              onValueChange={(val: "all" | HomeworkStatus) => setStatusFilter(val)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Durum" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tüm Durumlar</SelectItem>
-                <SelectItem value="pending">Bekleyen</SelectItem>
-                <SelectItem value="completed">Tamamlanan</SelectItem>
-                <SelectItem value="overdue">Geciken</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
+  <div className="flex flex-col gap-4">
+
+    {/* SEARCH BAR */}
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+      <Input
+        placeholder="Ödev ara..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="pl-10"
+      />
+    </div>
+
+    {/* 🔥 DROPDOWNLAR YAN YANA */}
+    <div className="flex flex-row gap-4">
+
+      {/* Öğrenci */}
+      <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+        <SelectTrigger className="w-48">
+          <SelectValue placeholder="Tüm Çocuklar" />
+        </SelectTrigger>
+        <SelectContent>
+
+          {/* Mock çocukları kaldırdık → sadece bu var */}
+          <SelectItem value="all">Tüm Çocuklar</SelectItem>
+
+        </SelectContent>
+      </Select>
+
+      {/* Durum */}
+      <Select
+        value={statusFilter}
+        onValueChange={(val: "all" | HomeworkStatus) => setStatusFilter(val)}
+      >
+        <SelectTrigger className="w-40">
+          <SelectValue placeholder="Durum" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Tüm Durumlar</SelectItem>
+          <SelectItem value="pending">Bekleyen</SelectItem>
+          <SelectItem value="completed">Tamamlanan</SelectItem>
+          <SelectItem value="overdue">Geciken</SelectItem>
+        </SelectContent>
+      </Select>
+
+    </div>
+  </div>
+</CardContent>
+
       </Card>
 
       {/* Homework List */}
