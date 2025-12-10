@@ -233,6 +233,15 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen bg-background">
+      {sidebarOpen && (
+  <button
+    onClick={toggleSidebar}
+    className="fixed top-4 left-4 z-[9999] p-2 rounded-md bg-card/80 backdrop-blur-sm lg:hidden"
+  >
+    <Menu className="h-6 w-6 text-foreground" />
+  </button>
+)}
+
       {/* █████ MOBILE SIDEBAR OVERLAY + DRAWER █████ */}
       <div
         className={`
