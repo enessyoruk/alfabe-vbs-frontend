@@ -257,67 +257,69 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       
       {/* MOBILE SIDEBAR */}
      {sidebarOpen && (
-  <div className="fixed inset-0 z-[200] lg:hidden">
-
+  <div
+    className={`
+      fixed inset-0 z-50 lg:hidden
+      transition-opacity duration-300
+      ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+    `}
+  >
     {/* Overlay */}
     <div
-      className={`
-        fixed inset-0 bg-black/50
-        transition-opacity duration-300
-        ${sidebarOpen ? "opacity-100" : "opacity-0"}
-      `}
+      className="absolute inset-0 bg-black/50"
       onClick={() => setSidebarOpen(false)}
     />
 
-    {/* Sidebar panel */}
+    {/* Drawer */}
     <div
       className={`
-        fixed inset-y-0 left-0 w-64 bg-card border-r shadow-xl
-        z-[210]
-        transform transition-transform duration-300
-        ease-[cubic-bezier(0.22,1,0.36,1)]
+        absolute inset-y-0 left-0 w-64 bg-card border-r shadow-lg
+        flex flex-col
+        transform transition-transform duration-300 ease-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        pt-[env(safe-area-inset-top)]
-        pb-[env(safe-area-inset-bottom)]
-        overflow-y-auto
-        relative
       `}
     >
 
-      {/* Sidebar üst header */}
-      <div className="relative z-10 flex items-center justify-between p-4 border-b">
-        <div className="flex flex-col">
-          <span className="font-semibold text-foreground whitespace-nowrap">
-            Öğretmen Paneli
-          </span>
-          <span className="text-xs text-muted-foreground whitespace-nowrap">
-            Alfa-β Akademi
-          </span>
-        </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
+      {/* Sağ üst üç çizgi (veli panelindeki gibi) */}
+      {sidebarOpen && (
+        <button
           onClick={() => setSidebarOpen(false)}
+          className="absolute top-3 right-3 z-[200] p-2 rounded-md hover:bg-muted transition-colors lg:hidden"
         >
-          <Menu className="h-5 w-5" />
-        </Button>
+          <Menu className="h-5 w-5 text-foreground" />
+        </button>
+      )}
+
+      {/* Arka plan logo */}
+      <div
+        className="absolute inset-0 opacity-60 bg-no-repeat bg-center bg-contain pointer-events-none"
+        style={{
+          backgroundImage:
+            "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
+          backgroundSize: "360px 220px",
+        }}
+      />
+
+      {/* Üst başlık */}
+      <div className="relative z-10 flex flex-col justify-center p-4 border-b bg-card/80 backdrop-blur-sm">
+        <span className="font-semibold text-foreground">Öğretmen Paneli</span>
+        <span className="text-xs text-muted-foreground">Alfa-β Akademi</span>
       </div>
 
-      {/* Navigation */}
-      <nav className="relative z-10 p-4 space-y-2">
+      {/* Menü */}
+      <nav className="relative z-10 flex-1 p-4 space-y-2 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           return (
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                 isActive
                   ? "bg-secondary text-secondary-foreground"
-                  : "text-foreground hover:bg-muted"
+                  : "text-foreground hover:bg-muted hover:text-foreground"
               }`}
-              onClick={() => setSidebarOpen(false)}
             >
               <item.icon className="h-4 w-4" />
               {item.name}
@@ -327,38 +329,23 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       </nav>
 
       {/* Footer */}
-      <div className="relative z-10 p-6 border-t">
-
-        {/* Avatar + İsim + Branş */}
+      <div className="relative z-10 border-t bg-card/80 backdrop-blur-sm p-4">
         <div className="flex items-center gap-3 mb-3 min-w-0">
           <Avatar className="h-8 w-8">
             <AvatarImage src="/teacher-avatar.png" />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
 
-          <div className="flex flex-col min-w-0">
-            <p
-              className="
-                text-sm font-medium text-foreground
-                whitespace-nowrap
-                text-[clamp(0.75rem,3vw,0.9rem)]
-              "
-            >
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground whitespace-nowrap">
               {displayName || "Öğretmen"}
             </p>
-
-            <p
-              className="
-                text-xs text-muted-foreground
-                whitespace-nowrap
-              "
-            >
+            <p className="text-xs text-muted-foreground whitespace-nowrap">
               {user.branch || "Öğretmen"}
             </p>
           </div>
         </div>
 
-        {/* Çıkış butonu */}
         <Button
           variant="outline"
           size="sm"
@@ -369,10 +356,10 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           Çıkış Yap
         </Button>
       </div>
-
     </div>
   </div>
 )}
+
 
 
       {/* ----------------------------- */}
