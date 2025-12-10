@@ -246,49 +246,111 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   if (!user) return null
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r">
-            <div className="flex items-center justify-between p-4 border-b">
-              <div className="flex items-center gap-3">
-                <Image src="/images/design-mode/logo-alfabe-removebg-preview.png" alt="Logo" width={48} height={48} className="rounded" />
-                <span className="font-semibold text-foreground">Öğretmen Paneli</span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
+ return (
+  <div className="min-h-screen bg-background">
+    {/* Mobile sidebar overlay */}
+    {sidebarOpen && (
+      <div className="fixed inset-0 z-40 lg:hidden">
+        
+        {/* Overlay arka plan */}
+        <div
+          className="fixed inset-0 bg-black/50"
+          onClick={() => setSidebarOpen(false)}
+        />
+
+        {/* Sidebar panel */}
+        <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r">
+
+          {/* Sidebar üst header */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/images/design-mode/logo-alfabe-removebg-preview.png"
+                alt="Logo"
+                width={48}
+                height={48}
+                className="rounded"
+              />
+              <span className="font-semibold text-foreground">
+                Öğretmen Paneli
+              </span>
             </div>
-            <nav className="p-4 space-y-2">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                      isActive ? "bg-secondary text-secondary-foreground" : "text-foreground hover:bg-muted"
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </nav>
-            <div className="p-6 border-t">
-              <Button variant="outline" size="sm" onClick={handleLogout} className="w-full bg-transparent">
-                <LogOut className="h-4 w-4 mr-2" />
-                Çıkış Yap
-              </Button>
-            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
+
+          {/* Navigation */}
+          <nav className="p-4 space-y-2">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-secondary text-secondary-foreground"
+                      : "text-foreground hover:bg-muted"
+                  }`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.name}
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Footer */}
+          <div className="p-6 border-t">
+
+            {/* Avatar + İsim + Branş */}
+            <div className="flex items-center gap-3 mb-3 min-w-0">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/teacher-avatar.png" />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+
+              <div className="flex flex-col min-w-0">
+                <p
+                  className="
+                    text-sm font-medium text-foreground 
+                    truncate 
+                    text-[clamp(0.75rem,3vw,0.9rem)]
+                    max-w-[160px]
+                  "
+                >
+                  {displayName || "Öğretmen"}
+                </p>
+
+                <p className="text-xs text-muted-foreground truncate max-w-[160px]">
+                  {user.branch || "Öğretmen"}
+                </p>
+              </div>
+            </div>
+
+            {/* Çıkış butonu */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="w-full bg-transparent"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Çıkış Yap
+            </Button>
+          </div>
+
         </div>
-      )}
+      </div>
+    )}
+
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
@@ -298,7 +360,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
             className="absolute inset-0 opacity-65 bg-no-repeat bg-center bg-contain pointer-events-none select-none"
             style={{
               backgroundImage: "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
-              backgroundSize: "500px 300px",
+              backgroundSize: "360px 220px",
+
             }}
           />
           <div className="relative z-10 flex items-center gap-3 p-6 border-b">
