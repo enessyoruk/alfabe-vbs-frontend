@@ -44,16 +44,21 @@ function WelcomeHeaderComponent({ user }: Props) {
 
           {/* Title - Auto scales to fit long names */}
           <h1
-            className="
-              font-bold 
-              leading-tight 
-              whitespace-nowrap 
-              overflow-hidden 
-              text-[clamp(1.15rem,4.2vw,1.65rem)]
-            "
-          >
-            Hoş geldiniz, {displayName}
-          </h1>
+  className="
+    font-bold leading-tight
+    whitespace-nowrap
+    overflow-hidden
+    min-w-0
+    text-[clamp(1rem,3.5vw,1.55rem)]
+  "
+  style={{
+    display: "inline-flex",
+    maxWidth: "100%",
+  }}
+>
+  Hoş geldiniz, {displayName}
+</h1>
+
 
           <p className="text-muted-foreground text-sm">
             Çocuğunuzun akademik durumunu kolayca takip edin.
