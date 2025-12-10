@@ -157,7 +157,7 @@ export default function AttendancePage() {
   const [error, setError] = useState<string | null>(null)
 
   const [page, setPage] = useState(1)
-  const pageSize = 10
+  const pageSize = 5
 
   const monthOptions = useMemo(() => {
     const out: string[] = []
@@ -442,7 +442,7 @@ export default function AttendancePage() {
                             </p>
 
                             {/* 🔥 ALFA-Β AKADEMİ → ALTTA YEŞİL */}
-                            <p className="text-sm mt-1 font-medium" style={{ color: "#089B12" }}>
+                            <p className="text-sm mt-1 font-medium" style={{ color: "#0891B2" }}>
                               {rec.teacher}
                             </p>
 

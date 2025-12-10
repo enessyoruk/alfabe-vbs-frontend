@@ -104,8 +104,8 @@ export default function GuidancePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // ⭐ PAGINATION
-  const PAGE_SIZE = 10
+  
+  const PAGE_SIZE = 5
   const [page, setPage] = useState(1)
 
   useEffect(() => {
