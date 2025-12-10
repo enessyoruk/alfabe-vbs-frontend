@@ -359,32 +359,47 @@ if ([401, 403].includes(studentsRes.status)) {
           ) : (
             <div className="space-y-4">
               {filteredNotes.map((n) => (
-                <div key={n.id} className="p-4 border rounded-lg space-y-2">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline">{n.studentName}</Badge>
-                      
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                        {n.area}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        <span>{formatDateTimeWithOffset(n.createdAt)}</span>
-                      </div>
+  <div key={n.id} className="p-4 border rounded-lg space-y-3">
+    
+    {/* ÜST KISIM - Öğrenci Adı + Alan */}
+    <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex items-center flex-wrap gap-2">
+        <Badge variant="outline" className="text-xs max-w-[150px] truncate">
+          {n.studentName}
+        </Badge>
 
-                      {n.createdBy && (
-                        <span className="text-sm">
-                          Notu yazan: {n.createdBy}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+        <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs max-w-[130px] truncate">
+          {n.area}
+        </Badge>
+      </div>
+    </div>
 
-                  <p className="text-sm whitespace-pre-wrap">{n.content}</p>
-                </div>
-              ))}
+    {/* TARİH ve NOTU YAZAN */}
+    <div className="flex flex-col gap-1 text-xs text-muted-foreground mt-1">
+      <div className="flex items-center gap-1">
+        <Calendar className="h-3 w-3" />
+        <span>
+          {formatDateTimeWithOffset(n.createdAt).replace(" ", " - ")}
+        </span>
+      </div>
+
+      {n.createdBy && (
+        <span className="text-xs truncate">
+          Notu yazan: {n.createdBy}
+        </span>
+      )}
+    </div>
+
+    {/* AYIRICI ÇİZGİ */}
+    <div className="border-t my-2"></div>
+
+    {/* NOT İÇERİĞİ */}
+    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+      {n.content}
+    </p>
+  </div>
+))}
+
             </div>
           )}
         </CardContent>
