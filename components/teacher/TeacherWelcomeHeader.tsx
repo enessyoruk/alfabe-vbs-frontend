@@ -24,14 +24,17 @@ export function TeacherWelcomeHeader({ displayName }: TeacherWelcomeHeaderProps)
       {/* Content */}
       <div className="relative z-10">
         <h1
-          className="
-            font-bold text-foreground mb-2
-            text-[clamp(1.25rem,4vw,1.75rem)]
-            whitespace-nowrap
-          "
-        >
-          Hoş geldiniz, {displayName} hocam
-        </h1>
+  className="
+    font-bold text-foreground mb-2
+    whitespace-nowrap
+    max-w-full overflow-hidden tracking-tight
+    text-[clamp(1rem,5vw,1.6rem)]
+    md:text-[1.75rem]
+  "
+>
+  Hoş geldiniz, {displayName} hocam
+</h1>
+
 
         <p
           className="
