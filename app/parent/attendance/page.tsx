@@ -200,7 +200,8 @@ export default function AttendancePage() {
           ui[0]?.id ||
           ""
 
-        setSelectedStudent(initial)
+        if (!selectedStudent) setSelectedStudent(initial)
+
       } catch {
         setError("Öğrenciler alınamadı.")
       } finally {
