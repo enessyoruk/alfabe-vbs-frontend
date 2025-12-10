@@ -293,9 +293,18 @@ export default function StudentInfoPage() {
 
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-foreground">
-          Öğrenci bilgilerini görüntüleyin
-        </h1>
+        <h1
+  className="
+    font-bold text-foreground
+    text-[clamp(1.25rem,4vw,1.75rem)]
+    whitespace-nowrap 
+    overflow-hidden 
+    text-ellipsis
+  "
+>
+  Öğrenci bilgilerini görüntüleyin
+</h1>
+
 
         {/* Birden fazla öğrenci varsa seçim butonları */}
         {!loading && students.length > 1 && (
@@ -350,7 +359,18 @@ export default function StudentInfoPage() {
                     <User className="h-12 w-12" />
                   </AvatarFallback>
                 </Avatar>
-                <CardTitle className="text-xl">{student.name}</CardTitle>
+                <CardTitle
+  className="
+    text-[clamp(1rem,3.5vw,1.25rem)]
+    font-semibold
+    whitespace-nowrap 
+    overflow-hidden 
+    text-ellipsis
+  "
+>
+  {student.name}
+</CardTitle>
+
                 <CardDescription>
                   <div className="flex items-center justify-center gap-2 mt-2">
                     <Badge variant="secondary">{student.class}</Badge>
