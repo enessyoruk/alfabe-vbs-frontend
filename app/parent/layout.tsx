@@ -233,15 +233,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen bg-background">
-      {sidebarOpen && (
-  <button
-    onClick={closeSidebar}
-    className="absolute top-4 left-4 z-[100] p-2 rounded-md bg-card/80 backdrop-blur-sm lg:hidden"
-  >
-    <Menu className="h-6 w-6 text-foreground" />
-  </button>
-)}
-
+      
       {/* █████ MOBILE SIDEBAR OVERLAY + DRAWER █████ */}
       <div
         className={`
@@ -265,6 +257,15 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           `}
         >
+          
+  {sidebarOpen && (
+    <button
+      onClick={closeSidebar}
+      className="absolute top-3 right-3 z-[200] p-2 rounded-md hover:bg-muted transition-colors lg:hidden"
+    >
+      <Menu className="h-5 w-5 text-foreground" />
+    </button>
+  )}
           {/* Arka plan logo */}
           <div
             className="absolute inset-0 opacity-60 bg-no-repeat bg-center bg-contain pointer-events-none"
