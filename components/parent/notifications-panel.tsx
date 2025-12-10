@@ -80,18 +80,24 @@ function NotificationsPanelComponent({ notifications }: Props) {
                 </div>
 
                 {/* TEXT */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{n.title}</p>
+<div className="flex-1 min-w-0">
+  
+  <p className="font-medium break-words whitespace-normal">
+    {n.title}
+  </p>
 
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                    {n.message}
-                  </p>
+  
+  <p className="text-xs text-muted-foreground whitespace-normal mt-0.5 break-words">
+    {n.message}
+  </p>
 
-                  <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {new Date(n.date).toLocaleDateString("tr-TR")}
-                  </p>
-                </div>
+  {/* Tarih */}
+  <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+    <Clock className="h-3 w-3" />
+    {new Date(n.date).toLocaleDateString("tr-TR")}
+  </p>
+</div>
+
               </div>
             ))
           )}

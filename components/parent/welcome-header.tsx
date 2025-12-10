@@ -47,17 +47,17 @@ function WelcomeHeaderComponent({ user }: Props) {
   className="
     font-bold leading-tight
     whitespace-nowrap
-    overflow-hidden
+    text-[clamp(0.85rem,3vw,1.6rem)]
+    shrink
     min-w-0
-    text-[clamp(1rem,3.5vw,1.55rem)]
   "
   style={{
-    display: "inline-flex",
     maxWidth: "100%",
   }}
 >
   Hoş geldiniz, {displayName}
 </h1>
+
 
 
           <p className="text-muted-foreground text-sm">
