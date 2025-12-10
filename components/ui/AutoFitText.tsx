@@ -11,11 +11,11 @@ interface AutoFitTextProps {
 
 export function AutoFitText({
   text,
-  maxSize = 28,   // PC görünümü bozulmaz
-  minSize = 14,   // Mobil için minimum okunabilir font
+  maxSize = 28,
+  minSize = 14,
   className = "",
 }: AutoFitTextProps) {
-
+  
   const ref = useRef<HTMLDivElement>(null)
   const [fontSize, setFontSize] = useState(maxSize)
 
@@ -23,21 +23,39 @@ export function AutoFitText({
     const el = ref.current
     if (!el) return
 
-    const resize = () => {
-      let size = maxSize
+    const fit = () => {
+      let low = minSize
+      let high = maxSize
+      let mid = maxSize
+
       const parentWidth = el.parentElement?.clientWidth || 0
 
-      // Metin sığana kadar fontu küçült
-      while (size > minSize && el.scrollWidth > parentWidth) {
-        size -= 1
-        setFontSize(size)
+      // Binary search ile en doğru font-size'ı bul
+      while (low <= high) {
+        mid = Math.floor((low + high) / 2)
+        el.style.fontSize = `${mid}px`
+
+        // Metin container'a sığıyor mu?
+        if (el.scrollWidth <= parentWidth) {
+          low = mid + 1
+        } else {
+          high = mid - 1
+        }
       }
+
+      setFontSize(high)
     }
 
-    resize()
+    fit()
 
-    window.addEventListener("resize", resize)
-    return () => window.removeEventListener("resize", resize)
+    const resizeObserver = new ResizeObserver(() => fit())
+    resizeObserver.observe(el.parentElement!)
+
+    window.addEventListener("resize", fit)
+    return () => {
+      window.removeEventListener("resize", fit)
+      resizeObserver.disconnect()
+    }
   }, [text, maxSize, minSize])
 
   return (
