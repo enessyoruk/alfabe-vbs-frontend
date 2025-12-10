@@ -562,40 +562,41 @@ export default function TeacherDashboardPage() {
     </div>
 
     {/* Buttons */}
-    <div className="flex gap-2 overflow-x-auto no-scrollbar">
+    <div className="flex gap-2 justify-between">
 
       <Link href={`/teacher/homework?class=${c.id}`}>
-        <Button
-          variant="outline"
-          size="sm"
-          className="px-2 sm:px-3 whitespace-nowrap"
-        >
-          <BookOpen className="h-4 w-4 mr-1" />
-          Ödev Ver
-        </Button>
-      </Link>
+  <Button
+    variant="outline"
+    size="sm"
+    className="px-2 py-1 text-xs whitespace-nowrap"
+  >
+    <BookOpen className="h-3 w-3 mr-1" />
+    Ödev Ver
+  </Button>
+</Link>
 
-      <Link href={`/teacher/exam-upload?class=${c.id}`}>
-        <Button
-          variant="outline"
-          size="sm"
-          className="px-2 sm:px-3 whitespace-nowrap"
-        >
-          <Upload className="h-4 w-4 mr-1" />
-          Sınav Yükle
-        </Button>
-      </Link>
+<Link href={`/teacher/exam-upload?class=${c.id}`}>
+  <Button
+    variant="outline"
+    size="sm"
+    className="px-2 py-1 text-xs whitespace-nowrap"
+  >
+    <Upload className="h-3 w-3 mr-1" />
+    Sınav Yükle
+  </Button>
+</Link>
 
-      <Link href={`/teacher/analytics?class=${c.id}`}>
-        <Button
-          variant="outline"
-          size="sm"
-          className="px-2 sm:px-3 whitespace-nowrap"
-        >
-          <BarChart3 className="h-4 w-4 mr-1" />
-          Analiz
-        </Button>
-      </Link>
+<Link href={`/teacher/analytics?class=${c.id}`}>
+  <Button
+    variant="outline"
+    size="sm"
+    className="px-2 py-1 text-xs whitespace-nowrap"
+  >
+    <BarChart3 className="h-3 w-3 mr-1" />
+    Analiz
+  </Button>
+</Link>
+
 
     </div>
 
