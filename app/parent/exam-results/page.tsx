@@ -108,7 +108,7 @@ export default function ParentExamResultsPage() {
 
   const [authChecked, setAuthChecked] = useState(false)
 
-  // Oturum kontrolü: vbs:user yoksa login'e at
+  // Oturum kontrolü
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -127,7 +127,7 @@ export default function ParentExamResultsPage() {
     }
   }, [router])
 
-  // Öğrenciler + sınav sonuçları aynı anda yüklenir
+  // Öğrenciler + sınav sonuçları yükleme
   useEffect(() => {
     if (!authChecked) return
 
@@ -137,28 +137,20 @@ export default function ParentExamResultsPage() {
         setError(null)
 
         const [studentsRes, examsRes] = await Promise.all([
-          fetch("/api/parent/students", {
-            credentials: "include",
-          }),
+          fetch("/api/parent/students", { credentials: "include" }),
           fetch("/api/vbs/parent/exams", {
             credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
           }),
         ])
 
-        // Yetki sorunu = login
         if (
           studentsRes.status === 401 ||
           studentsRes.status === 403 ||
           examsRes.status === 401 ||
           examsRes.status === 403
         ) {
-          toast.error("Oturum süreniz sona erdi. Lütfen tekrar giriş yapın.", {
-            duration: 2200,
-            position: "bottom-right",
-          })
+          toast.error("Oturum süreniz sona erdi. Lütfen tekrar giriş yapın.")
           router.replace("/login")
           return
         }
@@ -177,7 +169,6 @@ export default function ParentExamResultsPage() {
           )
         }
 
-        // ----- Öğrenciler -----
         const studentsJson = await studentsRes.json()
         const studentsItems = Array.isArray(studentsJson.items)
           ? studentsJson.items
@@ -201,7 +192,6 @@ export default function ParentExamResultsPage() {
           setSelectedStudent(students[0].id)
         }
 
-        // ----- Sınavlar -----
         const examsJson = await examsRes.json()
 
         const transformedData: ExamResult[] = (examsJson.examResults || []).map(
@@ -232,22 +222,8 @@ export default function ParentExamResultsPage() {
 
         setExamResults(transformedData)
       } catch (err: any) {
-        console.error("[parent] Failed to fetch exams/students:", err)
-
-        toast.error(
-          err?.message ||
-            "Veriler yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
-          {
-            duration: 2500,
-            position: "bottom-right",
-          }
-        )
-
-        setError(
-          err?.message ||
-            "Sınav sonuçları yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin."
-        )
-
+        toast.error("Veriler yüklenirken bir hata oluştu.")
+        setError("Sınav verileri alınamadı.")
         setExamResults([])
       } finally {
         setLoading(false)
@@ -335,9 +311,7 @@ export default function ParentExamResultsPage() {
     try {
       const response = await fetch(
         `/api/parent/exam-photo?url=${encodeURIComponent(photoUrl)}`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       )
 
       if (!response.ok) {
@@ -353,13 +327,8 @@ export default function ParentExamResultsPage() {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(downloadUrl)
-    } catch (error) {
-      console.error("Fotoğraf indirme hatası:", error)
-
-      toast.error("Fotoğraf indirilemedi. Lütfen tekrar deneyin.", {
-        duration: 2500,
-        position: "bottom-right",
-      })
+    } catch {
+      toast.error("Fotoğraf indirilemedi.")
     }
   }
 
@@ -367,7 +336,7 @@ export default function ParentExamResultsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Sınav Sonuçları</h1>
+          <h1 className="text-2xl font-bold">Sınav Sonuçları</h1>
           <p className="text-muted-foreground">Yükleniyor...</p>
         </div>
       </div>
@@ -384,7 +353,7 @@ export default function ParentExamResultsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Sınav Sonuçları</h1>
+        <h1 className="text-2xl font-bold">Sınav Sonuçları</h1>
         <p className="text-muted-foreground">
           Öğretmenler tarafından yüklenen sınav sonuçlarını görüntüleyin
         </p>
@@ -396,12 +365,8 @@ export default function ParentExamResultsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Toplam Sınav
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {stats.total}
-                </p>
+                <p className="text-sm text-muted-foreground">Toplam Sınav</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <FileText className="h-8 w-8 text-primary" />
             </div>
@@ -412,12 +377,10 @@ export default function ParentExamResultsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Öğretmen Analizi Olan
                 </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {stats.withAnalysis}
-                </p>
+                <p className="text-2xl font-bold">{stats.withAnalysis}</p>
               </div>
               <MessageSquare className="h-8 w-8 text-blue-600" />
             </div>
@@ -428,12 +391,10 @@ export default function ParentExamResultsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Sadece Fotoğraf Yüklenen
                 </p>
-                <p className="text-2xl font-bold text-muted-foreground">
-                  {stats.withoutAnalysis}
-                </p>
+                <p className="text-2xl font-bold">{stats.withoutAnalysis}</p>
               </div>
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -445,9 +406,10 @@ export default function ParentExamResultsPage() {
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search */}
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Sınav ara..."
                   value={searchTerm}
@@ -457,6 +419,7 @@ export default function ParentExamResultsPage() {
               </div>
             </div>
 
+            {/* Tüm Çocuklar — truncate kaldırıldı */}
             <Select
               value={selectedStudent}
               onValueChange={(val) => {
@@ -464,7 +427,7 @@ export default function ParentExamResultsPage() {
                 setSubjectFilter("all")
               }}
             >
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-48 whitespace-nowrap text-sm">
                 <SelectValue placeholder="Öğrenci seçin" />
               </SelectTrigger>
               <SelectContent>
@@ -477,8 +440,9 @@ export default function ParentExamResultsPage() {
               </SelectContent>
             </Select>
 
+            {/* Tüm Dersler — truncate kaldırıldı */}
             <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 whitespace-nowrap text-sm">
                 <SelectValue placeholder="Ders" />
               </SelectTrigger>
               <SelectContent>
@@ -494,7 +458,7 @@ export default function ParentExamResultsPage() {
         </CardContent>
       </Card>
 
-      {/* Sınav Sonuçları Listesi */}
+      {/* Sınav Sonuçları */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -502,20 +466,16 @@ export default function ParentExamResultsPage() {
             Sınav Sonuçları
           </CardTitle>
           <CardDescription>
-            Öğretmenler tarafından yüklenen sınav fotoğrafları ve isteğe bağlı
-            analizler
+            Öğretmenler tarafından yüklenen sınav fotoğrafları ve analizler
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           {filteredResults.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                {searchTerm ||
-                selectedStudent !== "all" ||
-                subjectFilter !== "all"
-                  ? "Filtrelere uygun sınav sonucu bulunamadı."
-                  : "Henüz sınav sonucu bulunmuyor."}
+                Filtreye uygun sonuç bulunamadı.
               </p>
             </div>
           ) : (
@@ -531,65 +491,73 @@ export default function ParentExamResultsPage() {
                     key={result.id}
                     className="p-6 border border-border rounded-lg transition-colors"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-foreground">
-                            {result.examTitle}
-                          </h3>
-                          <Badge variant="outline" className="text-xs">
-                            {result.subject}
+                    {/* Üst Başlık */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                      <h3
+                        className="
+                          font-semibold 
+                          text-foreground 
+                          text-[clamp(1rem,2.5vw,1.25rem)]
+                          leading-tight 
+                          whitespace-nowrap 
+                          overflow-hidden 
+                          text-ellipsis
+                          max-w-[75%]
+                        "
+                      >
+                        {result.examTitle}
+                      </h3>
+
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {result.subject}
+                        </Badge>
+
+                        {result.hasTeacherAnalysis && (
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200 flex items-center gap-1 whitespace-nowrap">
+                            <MessageSquare className="h-3 w-3" />
+                            Analiz Var
                           </Badge>
-                          {result.hasTeacherAnalysis && (
-                            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                              <MessageSquare className="h-3 w-3 mr-1" />
-                              Analiz Var
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                          <span className="font-medium">
-                            {result.studentName}
-                          </span>
-
-                          <span>
-                            {parseExamDate(result.examDate).toLocaleDateString(
-                              "tr-TR"
-                            )}
-                          </span>
-                        </div>
-
-                        {result.topics && result.topics.length > 0 && (
-                          <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <span className="flex items-center text-xs text-muted-foreground gap-1">
-                              <Tag className="h-3 w-3" />
-                              Çalışılan konular:
-                            </span>
-                            {result.topics.map((t, idx) => (
-                              <Badge
-                                key={`${result.id}-topic-${idx}`}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {t}
-                              </Badge>
-                            ))}
-                          </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 mb-4">
+                    {/* Öğrenci + Tarih */}
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+                      <span
+                        className="
+                          font-medium 
+                          whitespace-nowrap 
+                          text-[clamp(0.8rem,2vw,1rem)]
+                          overflow-hidden 
+                          text-ellipsis
+                          max-w-[60%]
+                        "
+                      >
+                        {result.studentName}
+                      </span>
+
+                      <span>
+                        {parseExamDate(result.examDate).toLocaleDateString(
+                          "tr-TR"
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Fotoğraf Butonları */}
+                    <div className="flex flex-wrap gap-2 mb-4">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() =>
                           handleViewPhoto(result.examPhoto, result.examTitle)
                         }
+                        className="whitespace-nowrap"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         Sınav Fotoğrafını Görüntüle
                       </Button>
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -599,30 +567,29 @@ export default function ParentExamResultsPage() {
                             result.examTitle
                           )
                         }
+                        className="whitespace-nowrap"
                       >
                         <Download className="h-4 w-4 mr-1" />
                         Fotoğrafı İndir
                       </Button>
                     </div>
 
+                    {/* Öğretmen Analizi */}
                     {result.hasTeacherAnalysis && result.teacherAnalysis && (
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                      <div className="p-3 bg-blue-50 rounded-lg text-sm">
+                        <h4 className="font-medium text-blue-800 mb-1 flex items-center gap-2">
                           <MessageSquare className="h-4 w-4" />
                           Öğretmen Analizi
                         </h4>
-                        <p className="text-sm text-blue-700">
-                          {result.teacherAnalysis}
-                        </p>
+                        <p className="text-blue-700">{result.teacherAnalysis}</p>
                       </div>
                     )}
 
                     {!result.hasTeacherAnalysis && (
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                        <p className="text-gray-600 flex items-center gap-2">
                           <ImageIcon className="h-4 w-4" />
-                          Bu sınav için sadece fotoğraf yüklenmiş, öğretmen
-                          analizi bulunmuyor.
+                          Bu sınav için sadece fotoğraf yüklenmiş.
                         </p>
                       </div>
                     )}
@@ -648,6 +615,7 @@ export default function ParentExamResultsPage() {
               </Button>
             </DialogTitle>
           </DialogHeader>
+
           <div className="flex justify-center bg-gray-50 p-4 rounded-lg">
             {selectedPhoto && (
               <Image
