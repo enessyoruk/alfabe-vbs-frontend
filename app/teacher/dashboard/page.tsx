@@ -726,8 +726,9 @@ export default function TeacherDashboardPage() {
                     className="flex items-start gap-3 rounded-md border p-3"
                   >
                     <n.icon
-                      className={`h-4 w-4 mt-0.5 ${n.color}`}
-                    />
+  className={`h-4 w-4 mt-0.5 flex-shrink-0 ${n.color}`}
+/>
+
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground">
                         {n.title}
