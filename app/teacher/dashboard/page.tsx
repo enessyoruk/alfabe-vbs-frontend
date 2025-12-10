@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Users, BookOpen, Upload, BarChart3, Calendar } from "lucide-react"
 import { http, endpoints } from "@/lib/api"
+import { TeacherWelcomeHeader } from "@/components/teacher/TeacherWelcomeHeader"
 
 type VbsUser = {
   id: string
@@ -446,26 +447,7 @@ export default function TeacherDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div className="bg-gradient-to-r from-secondary/10 via-primary/10 to-accent/10 rounded-lg p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16 animate-pulse" />
-        <div
-          className="absolute bottom-0 left-0 w-24 h-24 bg-secondary/5 rounded-full translate-y-12 -translate-x-12 animate-pulse"
-          style={{ animationDelay: "1s" }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 w-16 h-16 bg-accent/5 rounded-full -translate-x-8 -translate-y-8 animate-pulse"
-          style={{ animationDelay: "2s" }}
-        />
-        <div className="relative z-10">
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Hoş geldiniz, {displayName} hocam
-          </h1>
-          <p className="text-muted-foreground">
-            Sınıflarınızı yönetin, ödevleri takip edin ve öğrenci
-            gelişimini izleyin.
-          </p>
-        </div>
-      </div>
+      <TeacherWelcomeHeader displayName={displayName} />
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
