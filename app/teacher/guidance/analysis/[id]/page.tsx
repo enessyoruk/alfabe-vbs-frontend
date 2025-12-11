@@ -255,7 +255,15 @@ export default function StudentAnalysisPage() {
                         : formatDateTime(new Date().toISOString())}
                     </span>
                   </div>
-                  <p className="text-sm">{note.content}</p>
+                  <p
+  className="
+    text-sm
+    break-words
+    break-all
+  "
+>
+  {note.content}
+</p>
                 </div>
               ))
             ) : (

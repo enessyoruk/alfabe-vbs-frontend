@@ -51,11 +51,11 @@ export default function HolidaysPage() {
         // alternatif: direkt liste dönerse
         setHolidays(data)
       } else {
-        console.warn("[v0] /api/holidays beklenmeyen cevap:", data)
+        console.warn(" /api/holidays beklenmeyen cevap:", data)
         setHolidays([])
       }
     } catch (error) {
-      console.error("[v0] Failed to fetch holidays:", error)
+      console.error(" Failed to fetch holidays:", error)
       setError("Tatil listesi yüklenirken bir hata oluştu.")
     } finally {
       setListLoading(false)
@@ -242,38 +242,48 @@ export default function HolidaysPage() {
       </div>
 
       {/* Statistics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Bildirim İstatistikleri</CardTitle>
-          <CardDescription>
-            Şu an için bu sayfayı kullandığınız oturumdaki gönderim özetiniz.
-            (İleride backend toplam istatistiklerine bağlanacağız.)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-              <div className="text-2xl font-bold text-blue-600">
-                {totalNotificationsSent}
-              </div>
-              <div className="text-sm text-gray-600">Gönderilen Bildirim</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <Phone className="h-8 w-8 mx-auto mb-2 text-green-600" />
-              <div className="text-2xl font-bold text-green-600">
-                {totalSmsSent}
-              </div>
-              <div className="text-sm text-gray-600">Gönderilen SMS</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <Calendar className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-              <div className="text-2xl font-bold text-purple-600">{holidays.length}</div>
-              <div className="text-sm text-gray-600">Bu Yıl Tatil</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+<Card>
+  <CardHeader>
+    <CardTitle>Bildirim İstatistikleri</CardTitle>
+    <CardDescription>
+      Şu an için bu sayfayı kullandığınız oturumdaki gönderim özetiniz.
+    </CardDescription>
+  </CardHeader>
+
+  <CardContent>
+    <div className="grid grid-cols-3 gap-4">
+
+      {/* Gönderilen Bildirim */}
+      <div className="text-center p-3 bg-blue-50 rounded-lg">
+        <MessageSquare className="h-7 w-7 mx-auto mb-2 text-blue-600" />
+        <div className="text-xl font-bold text-blue-600">
+          {totalNotificationsSent}
+        </div>
+        <div className="text-xs text-gray-600">Gönderilen Bildirim</div>
+      </div>
+
+      {/* Gönderilen SMS */}
+      <div className="text-center p-3 bg-green-50 rounded-lg">
+        <Phone className="h-7 w-7 mx-auto mb-2 text-green-600" />
+        <div className="text-xl font-bold text-green-600">
+          {totalSmsSent}
+        </div>
+        <div className="text-xs text-gray-600">Gönderilen SMS</div>
+      </div>
+
+      {/* Bu Yıl Tatil */}
+      <div className="text-center p-3 bg-purple-50 rounded-lg">
+        <Calendar className="h-7 w-7 mx-auto mb-2 text-purple-600" />
+        <div className="text-xl font-bold text-purple-600">
+          {holidays.length}
+        </div>
+        <div className="text-xs text-gray-600">Bu Yıl Tatil</div>
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
     </div>
   )
 }
