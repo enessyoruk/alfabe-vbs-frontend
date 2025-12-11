@@ -1,219 +1,221 @@
-// app/api/auth/login/route.ts
-import { NextRequest, NextResponse } from "next/server"
-import { SignJWT, jwtVerify, type JWTPayload } from "jose"
+// lib/api.ts
 
-export const runtime = "nodejs"
+// Env yardımcı fonksiyon
+function resolveApiBase(): string {
+  const base =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    process.env.NEXT_PUBLIC_API_URL
 
-// Backend API base
-function requiredEnv(name: string): string {
-  const val = process.env[name]
-  if (!val || !val.trim()) {
-    throw new Error(`Missing env: ${name}`)
-  }
-  return val
-}
-
-const BACKEND_API_BASE =
-  process.env.BACKEND_API_BASE || process.env.NEXT_PUBLIC_API_BASE
-
-if (!BACKEND_API_BASE) {
-  throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
-}
-
-const SESSION_SECRET = requiredEnv("SESSION_SECRET")
-
-// Helpers
-function isValidEmail(v: unknown) {
-  return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
-}
-
-function isValidPassword(v: unknown) {
-  return typeof v === "string" && v.length >= 3 && v.length <= 128
-}
-
-async function signSession(payload: JWTPayload) {
-  const secret = new TextEncoder().encode(SESSION_SECRET)
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("24h")
-    .sign(secret)
-}
-
-async function verifySession(token: string) {
-  const secret = new TextEncoder().encode(SESSION_SECRET)
-  return await jwtVerify(token, secret)
-}
-
-function isHttps(req: NextRequest) {
-  return req.nextUrl.protocol === "https:" || process.env.NODE_ENV === "production"
-}
-
-function buildSessionCookie(token: string, req: NextRequest) {
-  return {
-    name: "vbs_session",
-    value: token,
-    httpOnly: true,
-    secure: isHttps(req),
-    sameSite: "lax" as const,
-    path: "/",
-    maxAge: 60 * 60 * 24,
-  }
-}
-
-function setRoleCookie(resp: NextResponse, req: NextRequest, roles: string[]) {
-  const role =
-    roles.includes("Teacher") ? "Teacher" :
-    roles.includes("Parent")  ? "Parent" : ""
-
-  if (!role) return
-
-  resp.cookies.set({
-    name: "vbs_role",
-    value: role,
-    httpOnly: false,
-    secure: isHttps(req),
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24,
-  })
-
-  resp.cookies.set({
-    name: "vbs_auth",
-    value: "1",
-    httpOnly: false,
-    secure: isHttps(req),
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24,
-  })
-}
-
-function noStore(resp: NextResponse) {
-  resp.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
-  resp.headers.set("Pragma", "no-cache")
-  resp.headers.set("Expires", "0")
-  return resp
-}
-
-function normalizeRoles(raw: any): string[] {
-  if (Array.isArray(raw)) return raw.filter((r) => typeof r === "string")
-  if (typeof raw === "string" && raw.trim()) return [raw.trim()]
-  return []
-}
-
-// ----------------------------------------------------------
-// POST /login
-// ----------------------------------------------------------
-export async function POST(req: NextRequest) {
-  try {
-    const { email, password } = await req.json().catch(() => ({}))
-
-    if (!isValidEmail(email)) {
-      return NextResponse.json({ error: "Geçerli bir e-posta girin." }, { status: 400 })
-    }
-    if (!isValidPassword(password)) {
-      return NextResponse.json({ error: "Şifre en az 3 karakter olmalı." }, { status: 400 })
-    }
-
-    const url = `${BACKEND_API_BASE}/api/vbs/auth/login`
-
-    const upstream = await fetch(url, {
-      method: "POST",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({ email: String(email).trim(), password }),
-    })
-
-    const raw = await upstream.text()
-    let data: any = {}
-
-    try {
-      data = raw ? JSON.parse(raw) : {}
-    } catch {}
-
-    if (!upstream.ok) {
-      const msg = data?.error || data?.message || `Giriş başarısız (HTTP ${upstream.status})`
-      const resp = NextResponse.json({ error: msg }, { status: upstream.status })
-
-      const ra = upstream.headers.get("Retry-After")
-      if (ra) resp.headers.set("Retry-After", ra)
-
-      return noStore(resp)
-    }
-
-    const user = data?.user ?? null
-    if (!user) {
-      return noStore(NextResponse.json({ error: "Beklenmeyen yanıt formatı (user yok)." }, { status: 502 }))
-    }
-
-    const roles = normalizeRoles(user.roles)
-
-    // 🔥 Backend’den gelen session bilgileri
-    const sessionVersion = user.sessionVersion ?? null
-    const sessionExpiresAt = user.sessionExpiresAt ?? null
-
-    // ----------------------------------------------------
-    // JWT oluştur (tek cihaz login + timeout bilgisi dahil)
-    // ----------------------------------------------------
-    const token = await signSession({
-      sub: String(user.id),
-      email: String(user.email || ""),
-      name: String(user.name || ""),
-      roles,
-      session_ver: sessionVersion || undefined,
-      session_expires_at: sessionExpiresAt || undefined, // 🔥 EKLENDİ
-    })
-
-    const safeUser = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      roles,
-      teacherNumericId: user.teacherNumericId ?? null,
-      sessionVersion,
-      sessionExpiresAt, // 🔥 EKLENDİ
-    }
-
-    const resp = NextResponse.json({ user: safeUser }, { status: 200 })
-
-    // Cookie'leri ayarla
-    resp.cookies.set(buildSessionCookie(token, req))
-    setRoleCookie(resp, req, roles)
-
-    return noStore(resp)
-  } catch {
-    return noStore(NextResponse.json({ error: "Sunucu hatası" }, { status: 500 }))
-  }
-}
-
-// ----------------------------------------------------------
-// GET /login
-// ----------------------------------------------------------
-export async function GET(req: NextRequest) {
-  try {
-    const token = req.cookies.get("vbs_session")?.value
-    if (!token) {
-      return noStore(NextResponse.json({ ok: false }, { status: 401 }))
-    }
-
-    const { payload } = await verifySession(token)
-
-    return noStore(
-      NextResponse.json({
-        ok: true,
-        user: {
-          id: payload.sub,
-          email: payload.email,
-          name: payload.name,
-          roles: payload.roles,
-        },
-      })
+  if (!base || !base.trim()) {
+    throw new Error(
+      "API_BASE is not configured. Set NEXT_PUBLIC_API_BASE (veya eskiden kullanıyorsan NEXT_PUBLIC_API_URL) environment variable."
     )
+  }
+
+  return base.trim()
+}
+
+export const API_BASE = resolveApiBase()
+
+type Json = Record<string, any> | any[]
+
+// Güvenli JSON parse
+async function readJson<T = any>(res: Response): Promise<T> {
+  if (res.status === 204) return {} as T
+  const text = await res.text()
+  try {
+    return (text ? JSON.parse(text) : {}) as T
   } catch {
-    return noStore(NextResponse.json({ ok: false }, { status: 401 }))
+    return {} as T
   }
 }
+
+function buildUrl(path: string): string {
+  if (path.startsWith("/api/")) {
+    // ⭐ Next.js API route — backend’e gitme
+    return path
+  }
+
+  if (/^https?:\/\//i.test(path)) return path
+  return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`
+}
+
+function isFormData(body: any): body is FormData {
+  return typeof FormData !== "undefined" && body instanceof FormData
+}
+
+// ======================================================
+// 🔥 YENİ – GLOBAL 401 LOGOUT + LOGIN REDIRECT HANDLE
+// ======================================================
+function handleUnauthorizedRedirect() {
+  if (typeof window === "undefined") return
+
+  try {
+    localStorage.removeItem("vbs:user")
+  } catch {}
+
+  // Non-HttpOnly cookie’leri temizle
+  document.cookie = "vbs_auth=; Max-Age=0; Path=/; SameSite=Lax"
+  document.cookie = "vbs_role=; Max-Age=0; Path=/; SameSite=Lax"
+
+  // Login’e yönlendirme
+  window.location.href = "/login"
+}
+
+// ======================================================
+// API FETCH WRAPPER
+// ======================================================
+export async function apiFetch<T = any>(
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
+  const url = buildUrl(path)
+
+  const hasBody =
+    typeof (init as any).body !== "undefined" &&
+    (init as any).body !== null
+
+  const bodyIsForm = hasBody && isFormData((init as any).body)
+
+  const res = await fetch(url, {
+    credentials: "include",
+    mode: "cors",
+    redirect: "follow",
+    cache: "no-store",
+    headers: {
+      ...(hasBody && !bodyIsForm ? { "Content-Type": "application/json" } : {}),
+      ...(init.headers || {}),
+    },
+    ...init,
+  })
+
+  // ======================================================
+  // 🔥 401 → Logout + /login redirect (tek cihaz & timeout)
+  // ======================================================
+  if (res.status === 401) {
+    handleUnauthorizedRedirect()
+    throw new Error("Unauthorized")
+  }
+
+  if (res.status === 429) {
+    const ra = res.headers.get("Retry-After")
+    const wait = ra ? ` Lütfen ${ra} sn sonra tekrar deneyin.` : ""
+    const data = await readJson<{ error?: string; message?: string }>(res)
+    const msg = data?.error || data?.message || "Çok fazla deneme (429)."
+    throw new Error(msg + wait)
+  }
+
+  if (!res.ok) {
+    const data = await readJson<{ error?: string; message?: string }>(res)
+    const msg = data?.error || data?.message || `API Error (HTTP ${res.status})`
+    throw new Error(msg)
+  }
+
+  return readJson<T>(res)
+}
+
+export const backendFetch = apiFetch
+
+// ======================================================
+// HTTP METHODS
+// ======================================================
+export const http = {
+  get: <T = any>(path: string, init?: RequestInit) =>
+    apiFetch<T>(path, { method: "GET", ...(init || {}) }),
+
+  post: <T = any>(path: string, body?: Json | FormData, init?: RequestInit) =>
+    apiFetch<T>(path, {
+      method: "POST",
+      body:
+        body instanceof FormData
+          ? body
+          : body
+          ? JSON.stringify(body)
+          : undefined,
+      ...(init || {}),
+    }),
+
+  put: <T = any>(path: string, body?: Json | FormData, init?: RequestInit) =>
+    apiFetch<T>(path, {
+      method: "PUT",
+      body:
+        body instanceof FormData
+          ? body
+          : body
+          ? JSON.stringify(body)
+          : undefined,
+      ...(init || {}),
+    }),
+
+  patch: <T = any>(path: string, body?: Json | FormData, init?: RequestInit) =>
+    apiFetch<T>(path, {
+      method: "PATCH",
+      body:
+        body instanceof FormData
+          ? body
+          : body
+          ? JSON.stringify(body)
+          : undefined,
+      ...(init || {}),
+    }),
+
+  delete: <T = any>(path: string, init?: RequestInit) =>
+    apiFetch<T>(path, { method: "DELETE", ...(init || {}) }),
+}
+
+// ======================================================
+// ENDPOINTS
+// ======================================================
+const baseVbs = {
+  auth: {
+    login: "/api/vbs/auth/login",
+    logout: "/api/vbs/auth/logout",
+    checkEmail: "/api/vbs/auth/check-email",
+    register: "/api/vbs/auth/register",
+    ping: "/api/vbs/auth/ping",
+  },
+
+  parent: {
+    students: "/api/parent/students",
+    attendance: (studentId: string) =>
+      `/api/parent/students/${studentId}/attendance`,
+    payments: "/api/parent/payments",
+    homework: (studentId: string) =>
+      `/api/parent/students/${studentId}/homework`,
+    examResults: (studentId: string) =>
+      `/api/parent/students/${studentId}/exam-results`,
+    examPhoto: (url: string) =>
+      `/api/parent/exam-photo?url=${encodeURIComponent(url)}`,
+  },
+
+  teacher: {
+    classes: "/api/teacher/classes",
+    classStudents: (classId: string) =>
+      `/api/teacher/classes/${classId}/students`,
+    homework: "/api/vbs/teacher/homework",
+    examResultsUpload: "/api/vbs/teacher/exam-results",
+    analytics: "/api/vbs/teacher/dashboard-analytics",
+    guidance: "/api/vbs/teacher/guidance",
+    guidanceParentNote: "/api/vbs/teacher/guidance/parent-note",
+    notifications: "/api/vbs/teacher/notifications",
+    generalExams: "/api/vbs/teacher/exams/general",
+    generalExamAnalysis: "/api/vbs/teacher/exams/analysis",
+    totalStudents: "/api/vbs/teacher/total-students",
+    exams: "/api/vbs/teacher/exams",
+    examsUploadImage: "/api/vbs/teacher/exams/upload-image",
+    examsDelete: "/api/vbs/teacher/exams/delete-exam",
+  },
+}
+
+export const endpoints = {
+  login: baseVbs.auth.login,
+  logout: baseVbs.auth.logout,
+  checkEmail: baseVbs.auth.checkEmail,
+  register: baseVbs.auth.register,
+  ping: baseVbs.auth.ping,
+
+  parent: baseVbs.parent,
+  teacher: baseVbs.teacher,
+
+  vbs: baseVbs,
+} as const
