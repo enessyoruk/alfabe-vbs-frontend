@@ -373,7 +373,16 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
+                <p
+  className="
+    font-medium text-foreground
+    whitespace-nowrap
+    overflow-hidden
+    text-ellipsis
+    min-w-0
+    text-[clamp(0.8rem,1.6vw,0.95rem)]
+  "
+>
                   {displayName || "Veli"}
                 </p>
               </div>
