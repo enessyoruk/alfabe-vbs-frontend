@@ -91,13 +91,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
-  // 🔥 Yeni: Logout reason mesajı
+  // 🔥 Logout reason mesajı
   const [logoutReasonMsg, setLogoutReasonMsg] = useState("")
 
   const router = useRouter()
   const sp = useSearchParams()
 
-  // ✔ Logout reason mesajını oku
+  // 🔥 Logout reason mesajını oku
   useEffect(() => {
     const reason = localStorage.getItem("vbs_logout_reason")
 
@@ -225,7 +225,7 @@ export default function LoginPage() {
                 <div className="text-center space-y-1">
                   <h2 className="text-xl font-semibold">Giriş Yap</h2>
                   <p className="text-sm text-muted-foreground">
-                    E-posta adresiniz veya telefon numaranız ile giriş yapın
+                    E-posta adresiniz ile giriş yapın
                   </p>
                 </div>
 
@@ -285,13 +285,13 @@ export default function LoginPage() {
                   {/* Alt Linkler */}
                   <div className="text-center space-y-1 text-sm text-muted-foreground">
                     <p>
-                      Hesabınız yok mu?{" "}
+                      Hesabınız yok mu{" "}
                       <Link href="/register" className="text-primary hover:underline">
                         Kayıt olun
                       </Link>
                     </p>
                     <p>
-                      Şifrenizi mi unuttunuz?{" "}
+                      Şifrenizi mi unuttunuz{" "}
                       <Link href="/reset-password" className="text-primary hover:underline">
                         Şifre sıfırla
                       </Link>
@@ -311,7 +311,6 @@ export default function LoginPage() {
               ← Ana sayfaya dön
             </Link>
           </div>
-
         </div>
       </div>
     </AuthBackground>
