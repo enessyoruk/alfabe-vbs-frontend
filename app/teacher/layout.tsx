@@ -465,7 +465,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
             <Menu className="h-5 w-5" />
           </Button>
 
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 min-w-0">
+
             <div className="flex flex-1 items-center justify-between min-w-0">
 
               <h1
