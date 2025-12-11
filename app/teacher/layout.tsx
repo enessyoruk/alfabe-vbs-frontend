@@ -256,17 +256,18 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
       
       {/* MOBILE SIDEBAR */}
-     {sidebarOpen && (
+{sidebarOpen && (
   <div
     className={`
       fixed inset-0 z-50 lg:hidden
       transition-opacity duration-300
-      ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+      opacity-100 pointer-events-auto
     `}
   >
+
     {/* Overlay */}
     <div
-      className="absolute inset-0 bg-black/50"
+      className="absolute inset-0 bg-black/50 transition-opacity duration-300"
       onClick={() => setSidebarOpen(false)}
     />
 
@@ -275,20 +276,19 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       className={`
         absolute inset-y-0 left-0 w-64 bg-card border-r shadow-lg
         flex flex-col
-        transform transition-transform duration-300 ease-out
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        transform transition-transform duration-300 ease-in-out
+        translate-x-0
+        relative
       `}
     >
 
-      {/* Sağ üst üç çizgi (veli panelindeki gibi) */}
-      {sidebarOpen && (
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="absolute top-3 right-3 z-[200] p-2 rounded-md hover:bg-muted transition-colors lg:hidden"
-        >
-          <Menu className="h-5 w-5 text-foreground" />
-        </button>
-      )}
+      {/* Sağ üst üç çizgi (kapatma butonu) */}
+      <button
+        onClick={() => setSidebarOpen(false)}
+        className="absolute top-3 right-3 z-[200] p-2 rounded-md hover:bg-muted transition-colors"
+      >
+        <Menu className="h-5 w-5 text-foreground" />
+      </button>
 
       {/* Arka plan logo */}
       <div
@@ -356,9 +356,11 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           Çıkış Yap
         </Button>
       </div>
+
     </div>
   </div>
 )}
+
 
 
 
@@ -469,20 +471,18 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
               <h1
-                className="
-                  font-semibold 
-                  text-foreground
-                  whitespace-nowrap 
-                  overflow-hidden 
-                  text-ellipsis
-                  text-[clamp(0.9rem, 3vw, 1.25rem)]
-                  max-w-full
-                "
-              >
-                {displayName
-                  ? `Hoş geldiniz, ${displayName} hocam`
-                  : navigation.find((i) => i.href === pathname)?.name || "Öğretmen Paneli"}
-              </h1>
+  className="
+    font-semibold text-foreground
+    whitespace-nowrap overflow-hidden text-ellipsis
+    max-w-[70vw]
+    text-[clamp(0.85rem, 2.7vw, 1.25rem)]
+  "
+>
+  {displayName
+    ? `Hoş geldiniz, ${displayName} hocam`
+    : (navigation.find((i) => i.href === pathname)?.name || "Öğretmen Paneli")}
+</h1>
+
             </div>
 
             <div className="flex items-center gap-x-4 lg:gap-x-6">
