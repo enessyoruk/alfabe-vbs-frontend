@@ -468,14 +468,14 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
               <h1
- className="
-    font-semibold text-foreground
-    text-[clamp(0.85rem, 2.5vw, 1.15rem)]
-    leading-tight
+className="
+    font-semibold 
+    text-foreground
     whitespace-nowrap
     overflow-hidden
-    max-w-[70%]
-    text-ellipsis
+    text-[clamp(0.85rem, 3vw, 1.15rem)]
+    flex-shrink
+    leading-tight
   "
 >
   {displayName
@@ -488,7 +488,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
             <div className="flex items-center gap-x-4 lg:gap-x-6">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="relative">
+                  <Button variant="ghost" size="sm" className="relative flex-shrink-0">
+
                     <Bell className="h-5 w-5" />
                     {!notificationsLoading && unreadCount > 0 && (
                       <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 bg-secondary text-secondary-foreground text-xs flex items-center justify-center">
