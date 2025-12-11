@@ -466,16 +466,17 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           </Button>
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex flex-1 items-center">
+            <div className="flex flex-1 items-center min-w-0">
               <h1
 className="
     font-semibold 
     text-foreground
     whitespace-nowrap
     overflow-hidden
-    text-[clamp(0.85rem, 3vw, 1.15rem)]
-    flex-shrink
-    leading-tight
+    text-ellipsis
+    text-[clamp(0.85rem, 2.4vw, 1.2rem)]
+    min-w-0
+    max-w-full
   "
 >
   {displayName
@@ -485,7 +486,8 @@ className="
 
             </div>
 
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
+            <div className="flex items-center gap-x-4 lg:gap-x-6 flex-shrink-0">
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="relative flex-shrink-0">
