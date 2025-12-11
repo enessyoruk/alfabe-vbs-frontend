@@ -865,6 +865,28 @@ async function handleCreateAnalysis() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* DELETE CONFIRM */}
+<Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+  <DialogContent className="max-w-sm">
+    <DialogHeader>
+      <DialogTitle>Sınavı Sil</DialogTitle>
+      <DialogDescription>
+        Bu sınavı ve ilişkili analizleri silmek istediğinize emin misiniz?
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="flex justify-end gap-2 mt-4">
+      <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+        Vazgeç
+      </Button>
+      <Button variant="destructive" onClick={handleDeleteExam}>
+        Sil
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
+
     
     
     </div>
