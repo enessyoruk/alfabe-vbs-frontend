@@ -275,8 +275,9 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       className={`
         absolute inset-y-0 left-0 w-64 bg-card border-r shadow-lg
         flex flex-col
-        transform transition-transform duration-300 ease-out
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        transform transition-transform duration-300 ease-in-out
+${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+
       `}
     >
 
@@ -469,11 +470,15 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
               <h1
-  className="
-    font-semibold text-foreground
-    whitespace-nowrap overflow-hidden text-ellipsis
-    max-w-[70vw]
-    text-[clamp(0.85rem, 2.7vw, 1.25rem)]
+ className="
+    font-semibold 
+    text-foreground
+    whitespace-nowrap
+    overflow-hidden
+    text-[clamp(0.8rem, 2.2vw, 1.25rem)]
+    leading-tight
+    max-w-[75vw]
+    shrink
   "
 >
   {displayName
