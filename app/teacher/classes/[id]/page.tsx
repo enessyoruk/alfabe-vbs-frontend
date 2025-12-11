@@ -107,9 +107,10 @@ export default function TeacherClassStudentsPage() {
 
   const hasStudents = useMemo(() => students.length > 0, [students])
 
-  const title = classNameFromQuery
-    ? `${classNameFromQuery} - Öğrenciler`
-    : "Sınıf Öğrencileri"
+ const title = classNameFromQuery
+  ? classNameFromQuery
+  : "Sınıf Öğrencileri"
+
 
   return (
     <div className="space-y-6">
@@ -140,9 +141,10 @@ export default function TeacherClassStudentsPage() {
   {title}
 </h1>
 
-            <p className="text-muted-foreground">
-              Bu sınıfa kayıtlı öğrencileri görüntülüyorsunuz.
-            </p>
+            <p className="text-xs text-muted-foreground">
+  Bu sınıfa kayıtlı öğrencileri görüntülüyorsunuz.
+</p>
+
           </div>
         </div>
       </div>
