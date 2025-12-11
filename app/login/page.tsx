@@ -1,7 +1,6 @@
-// app/login/page.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +11,9 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { AuthBackground } from "@/components/auth/auth-background"
 import { toast } from "sonner"
 
-// Yardımcı Tipler ve Fonksiyonlar (Aynı)
+// -------------------------------
+// Yardımcı tipler
+// -------------------------------
 type AnyObj = Record<string, any>
 
 type LoginUser = {
@@ -27,6 +28,9 @@ type LoginResponse =
   | { user?: LoginUser; data?: { user?: LoginUser }; claims?: AnyObj; error?: string; message?: string }
   | LoginUser
 
+// -------------------------------
+// Yardımcı fonksiyonlar
+// -------------------------------
 function normalizeRoles(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
   return raw.map(r => String(r || "")).filter(r => r.trim() !== "")
@@ -77,9 +81,9 @@ function pickUser(r: LoginResponse | undefined): LoginUser | null {
   return null
 }
 
-// --------------------------------------------------------------
-// PAGE
-// --------------------------------------------------------------
+// ===============================================================
+// PAGE COMPONENT
+// ===============================================================
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -87,8 +91,24 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
+  // 🔥 Yeni: Logout reason mesajı
+  const [logoutReasonMsg, setLogoutReasonMsg] = useState("")
+
   const router = useRouter()
   const sp = useSearchParams()
+
+  // ✔ Logout reason mesajını oku
+  useEffect(() => {
+    const reason = localStorage.getItem("vbs_logout_reason")
+
+    if (reason === "timeout") {
+      setLogoutReasonMsg("Oturum süreniz dolduğu için sonlandırıldı.")
+    } else if (reason === "multi") {
+      setLogoutReasonMsg("Oturumunuz başka bir cihazdan açıldığı için sonlandırıldı.")
+    }
+
+    localStorage.removeItem("vbs_logout_reason")
+  }, [])
 
   const validate = () =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && password.length >= 6
@@ -159,11 +179,10 @@ export default function LoginPage() {
 
   return (
     <AuthBackground>
-      {/* 🔥 TEK DIŞ ÇERÇEVE — TAM ORTADA, SABİT GENİŞLİK */}
       <div className="w-full flex justify-center px-4">
         <div className="w-full max-w-md">
 
-          {/* KUTU */}
+          {/* Ana Login Kutusu */}
           <div className="rounded-[32px] bg-white/80 shadow-xl border border-slate-200/70 backdrop-blur-sm px-6 py-8 sm:px-8 sm:py-10 space-y-8">
 
             {/* Başlık */}
@@ -176,7 +195,14 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Hata */}
+            {/* 🔥 OTURUM SONLANDIRMA MESAJI */}
+            {logoutReasonMsg && (
+              <div className="bg-yellow-100 text-yellow-800 border border-yellow-300 px-4 py-3 rounded-lg text-sm">
+                {logoutReasonMsg}
+              </div>
+            )}
+
+            {/* Hata Mesajı */}
             {errorMsg && (
               <div className="bg-red-100 text-red-700 border border-red-300 px-4 py-3 rounded-lg text-sm">
                 {errorMsg}
@@ -199,10 +225,11 @@ export default function LoginPage() {
                 <div className="text-center space-y-1">
                   <h2 className="text-xl font-semibold">Giriş Yap</h2>
                   <p className="text-sm text-muted-foreground">
-                    E-posta adresiniz ve şifreniz ile giriş yapın
+                    E-posta adresiniz veya telefon numaranız ile giriş yapın
                   </p>
                 </div>
 
+                {/* Form */}
                 <form onSubmit={handleLogin} noValidate className="space-y-6">
 
                   {/* Email */}
@@ -284,6 +311,7 @@ export default function LoginPage() {
               ← Ana sayfaya dön
             </Link>
           </div>
+
         </div>
       </div>
     </AuthBackground>

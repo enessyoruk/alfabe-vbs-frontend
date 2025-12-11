@@ -45,21 +45,28 @@ function isFormData(body: any): body is FormData {
 }
 
 
-function handleUnauthorizedRedirect() {
-  if (typeof window === "undefined") return
+function handleUnauthorizedRedirect(reason?: "timeout" | "multi") {
+  if (typeof window === "undefined") return;
 
-  // localStorage temizle
   try {
-    localStorage.removeItem("vbs:user")
+    localStorage.removeItem("vbs:user");
   } catch {}
 
-  // Non-HttpOnly cookie’leri temizle
-  document.cookie = "vbs_auth=; Max-Age=0; Path=/; SameSite=Lax"
-  document.cookie = "vbs_role=; Max-Age=0; Path=/; SameSite=Lax"
+  // Mesajı localStorage’a yaz
+  if (reason === "multi") {
+    localStorage.setItem("vbs_logout_reason", "multi");
+  } else if (reason === "timeout") {
+    localStorage.setItem("vbs_logout_reason", "timeout");
+  }
 
-  // Login sayfasına ışınla
-  window.location.href = "/login"
+  // Cookies sil
+  document.cookie = "vbs_auth=; Max-Age=0; Path=/; SameSite=Lax";
+  document.cookie = "vbs_role=; Max-Age=0; Path=/; SameSite=Lax";
+
+  // Login’e yönlendir
+  window.location.href = "/login";
 }
+
 
 
 // Tek noktadan fetch
@@ -86,9 +93,25 @@ export async function apiFetch<T = any>(
   })
 
   if (res.status === 401) {
-    handleUnauthorizedRedirect()
-    throw new Error("Unauthorized")
+  const userRaw = localStorage.getItem("vbs:user");
+  let logoutReason: "timeout" | "multi" = "multi";
+
+  if (userRaw) {
+    try {
+      const u = JSON.parse(userRaw).user;
+      if (u?.sessionExpiresAt) {
+        const exp = new Date(u.sessionExpiresAt).getTime();
+        if (exp < Date.now()) {
+          logoutReason = "timeout";
+        }
+      }
+    } catch {}
   }
+
+  handleUnauthorizedRedirect(logoutReason);
+  throw new Error("Unauthorized");
+}
+
 
   if (res.status === 429) {
     const ra = res.headers.get("Retry-After")
