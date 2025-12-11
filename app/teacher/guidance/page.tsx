@@ -600,9 +600,22 @@ export default function GuidancePage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-foreground">
-                              {student.name}
-                            </h3>
+                            <h3
+  className="
+    font-semibold 
+    text-foreground
+    whitespace-nowrap 
+    overflow-hidden 
+    text-ellipsis 
+    min-w-0
+    max-w-[60%]
+    text-[clamp(0.85rem,4vw,1rem)]
+    flex-shrink
+  "
+>
+  {student.name}
+</h3>
+
                             <Badge variant="outline">
                               {student.className}
                             </Badge>
@@ -622,10 +635,21 @@ export default function GuidancePage() {
                                 Son rehberlik notu:{" "}
                                 {formatDateTime(latestNote.date)}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                Notu yazan:{" "}
-                                {latestNote.createdBy || "Bilinmiyor"}
-                              </p>
+                              <p
+  className="
+    text-xs 
+    text-muted-foreground
+    whitespace-nowrap 
+    overflow-hidden 
+    text-ellipsis 
+    max-w-full
+    text-[clamp(0.7rem,3vw,0.8rem)]
+    flex-shrink
+  "
+>
+  Notu yazan: {latestNote.createdBy || "Bilinmiyor"}
+</p>
+
                             </>
                           ) : (
                             <p className="text-xs text-muted-foreground">
