@@ -692,140 +692,89 @@ async function handleCreateAnalysis() {
           ) : (
             <div className="space-y-4">
               {examResults.map((exam) => (
-  <div key={exam.id} className="p-6 border rounded-lg">
+                <div key={exam.id} className="p-6 border rounded-lg">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold">{exam.examTitle}</h3>
+                        <Badge>{exam.className}</Badge>
+                        {exam.hasAnalysis && (
+                          <Badge className="bg-green-200 text-green-900">
+                            Analiz Mevcut
+                          </Badge>
+                        )}
+                      </div>
 
-    {/* =======================
-        ÜST SATIR — SINAV BAŞLIĞI
-        ======================= */}
-    <div className="flex justify-between items-start mb-4 gap-3">
+                      <p className="text-sm text-muted-foreground">
+                        {exam.studentCount} öğrenci •{" "}
+                        {new Date(exam.uploadDate).toLocaleDateString("tr-TR")}
+                      </p>
 
-      {/* Sol taraf */}
-      <div className="flex-1 min-w-0">
-        
-        {/* Sınav adı + sınıf badge + analiz badge */}
-        <div className="flex items-center gap-2 mb-1 min-w-0">
+                      {exam.description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {exam.description}
+                        </p>
+                      )}
+                    </div>
 
-          {/* Sınav adı */}
-          <h3
-            className="
-              font-semibold
-              text-[clamp(0.9rem,3vw,1.2rem)]
-              whitespace-nowrap
-              overflow-hidden
-              min-w-0
-              flex-shrink
-            "
-          >
-            {exam.examTitle}
-          </h3>
+                    <div className="flex gap-2">
+                      {exam.hasAnalysis && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleAnalysisView(exam.analysis)}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      )}
 
-          {/* Sınıf etiketi */}
-          <Badge
-            className="
-              whitespace-nowrap
-              text-[clamp(0.65rem,2vw,0.75rem)]
-            "
-          >
-            {exam.className}
-          </Badge>
+                      <Button
+  size="sm"
+  variant="outline"
+  className="text-red-600"
+  onClick={() => requestDelete(exam.id)}
+>
+  <Trash2 className="h-4 w-4" />
+</Button>
 
-          {/* Analiz mevcut */}
-          {exam.hasAnalysis && (
-            <Badge
-              className="
-                bg-green-200 text-green-900
-                whitespace-nowrap
-                text-[clamp(0.6rem,2vw,0.75rem)]
-              "
-            >
-              Analiz Mevcut
-            </Badge>
-          )}
-        </div>
+                    </div>
+                  </div>
 
-        {/* öğrenci & tarih */}
-        <p className="text-sm text-muted-foreground">
-          {exam.studentCount} öğrenci •{" "}
-          {new Date(exam.uploadDate).toLocaleDateString("tr-TR")}
-        </p>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-sm">
+                      <FileImage className="h-4 w-4" />
+                      <span>{exam.fileName ?? "dosya.jpg"}</span>
+                    </div>
 
-        {/* açıklama */}
-        {exam.description && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {exam.description}
-          </p>
-        )}
-      </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const clean = exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
+                          const url = `/api/vbs/teacher/exams/download?path=${encodeURIComponent(clean)}`
+                          const a = document.createElement("a")
+                          a.href = url
+                          a.download = exam.fileName ?? "exam.jpg"
+                          document.body.appendChild(a)
+                          a.click()
+                          a.remove()
+                        }}
+                      >
+                        İndir
+                      </Button>
 
-      {/* Sağ ikonlar */}
-      <div className="flex gap-2 flex-shrink-0">
-        
-        {/* İndir */}
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            const clean = exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
-            const url = `/api/vbs/teacher/exams/download?path=${encodeURIComponent(clean)}`
-            const a = document.createElement("a")
-            a.href = url
-            a.download = exam.fileName ?? "exam.jpg"
-            document.body.appendChild(a)
-            a.click()
-            a.remove()
-          }}
-        >
-          <Upload className="h-4 w-4 mr-1" />
-          İndir
-        </Button>
-
-        {/* Sil */}
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-red-600"
-          onClick={() => requestDelete(exam.id)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-
-    {/* =======================
-        ALT SATIR — DOSYA BİLGİSİ
-        ======================= */}
-    <div className="flex justify-between items-center gap-3">
-
-      {/* Dosya adı */}
-      <div className="flex items-center gap-2 text-sm min-w-0 flex-1">
-        <FileImage className="h-4 w-4" />
-        <span
-          className="
-            whitespace-nowrap
-            overflow-hidden
-            min-w-0
-            flex-shrink
-            text-[clamp(0.75rem,2.4vw,0.95rem)]
-          "
-        >
-          {exam.fileName ?? "dosya.jpg"}
-        </span>
-      </div>
-
-      {/* Detayları gör */}
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => handleImagePreview(exam.fileUrl)}
-        className="flex-shrink-0"
-      >
-        Detayları Gör
-      </Button>
-    </div>
-
-  </div>
-))}
-
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleImagePreview(exam.fileUrl)}
+                      >
+                        Detayları Gör
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
