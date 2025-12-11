@@ -14,17 +14,15 @@ function requiredEnv(name: string): string {
 }
 
 const BACKEND_API_BASE =
-  process.env.BACKEND_API_BASE ||
-  process.env.NEXT_PUBLIC_API_BASE
+  process.env.BACKEND_API_BASE || process.env.NEXT_PUBLIC_API_BASE
 
 if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-// SESSION SECRET (FALLBACK YOK!)
 const SESSION_SECRET = requiredEnv("SESSION_SECRET")
 
-// ---------- helpers ----------
+// Helpers
 function isValidEmail(v: unknown) {
   return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 }
@@ -99,16 +97,14 @@ function noStore(resp: NextResponse) {
 }
 
 function normalizeRoles(raw: any): string[] {
-  if (Array.isArray(raw)) {
-    return raw.filter((r) => typeof r === "string") as string[]
-  }
-  if (typeof raw === "string" && raw.trim()) {
-    return [raw.trim()]
-  }
+  if (Array.isArray(raw)) return raw.filter((r) => typeof r === "string")
+  if (typeof raw === "string" && raw.trim()) return [raw.trim()]
   return []
 }
 
-// ---------- POST ----------
+// ----------------------------------------------------------
+// POST /login
+// ----------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json().catch(() => ({}))
@@ -134,37 +130,42 @@ export async function POST(req: NextRequest) {
 
     const raw = await upstream.text()
     let data: any = {}
+
     try {
       data = raw ? JSON.parse(raw) : {}
-    } catch {
-      data = {}
-    }
+    } catch {}
 
     if (!upstream.ok) {
       const msg = data?.error || data?.message || `Giriş başarısız (HTTP ${upstream.status})`
       const resp = NextResponse.json({ error: msg }, { status: upstream.status })
+
       const ra = upstream.headers.get("Retry-After")
       if (ra) resp.headers.set("Retry-After", ra)
+
       return noStore(resp)
     }
 
-    const user = data?.user ?? data?.data?.user ?? null
+    const user = data?.user ?? null
     if (!user) {
-      return noStore(
-        NextResponse.json(
-          { error: "Beklenmeyen yanıt formatı (user yok)." },
-          { status: 502 },
-        ),
-      )
+      return noStore(NextResponse.json({ error: "Beklenmeyen yanıt formatı (user yok)." }, { status: 502 }))
     }
 
     const roles = normalizeRoles(user.roles)
 
+    // 🔥 Backend’den gelen session bilgileri
+    const sessionVersion = user.sessionVersion ?? null
+    const sessionExpiresAt = user.sessionExpiresAt ?? null
+
+    // ----------------------------------------------------
+    // JWT oluştur (tek cihaz login + timeout bilgisi dahil)
+    // ----------------------------------------------------
     const token = await signSession({
       sub: String(user.id),
       email: String(user.email || ""),
       name: String(user.name || ""),
       roles,
+      session_ver: sessionVersion || undefined,
+      session_expires_at: sessionExpiresAt || undefined, // 🔥 EKLENDİ
     })
 
     const safeUser = {
@@ -173,10 +174,13 @@ export async function POST(req: NextRequest) {
       name: user.name,
       roles,
       teacherNumericId: user.teacherNumericId ?? null,
+      sessionVersion,
+      sessionExpiresAt, // 🔥 EKLENDİ
     }
 
     const resp = NextResponse.json({ user: safeUser }, { status: 200 })
 
+    // Cookie'leri ayarla
     resp.cookies.set(buildSessionCookie(token, req))
     setRoleCookie(resp, req, roles)
 
@@ -186,7 +190,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ---------- GET ----------
+// ----------------------------------------------------------
+// GET /login
+// ----------------------------------------------------------
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("vbs_session")?.value
@@ -205,7 +211,7 @@ export async function GET(req: NextRequest) {
           name: payload.name,
           roles: payload.roles,
         },
-      }),
+      })
     )
   } catch {
     return noStore(NextResponse.json({ ok: false }, { status: 401 }))
