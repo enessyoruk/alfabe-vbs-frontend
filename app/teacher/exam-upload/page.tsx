@@ -704,74 +704,82 @@ async function handleCreateAnalysis() {
               {examResults.map((exam) => (
   <div key={exam.id} className="p-6 border rounded-lg space-y-4">
 
-    {/* BAŞLIK + BUTONLAR */}
-    <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:items-center">
+   {/* BAŞLIK + BUTONLAR */}
+<div
+  className="
+    flex flex-col gap-2
+    sm:flex-row sm:items-start sm:justify-between
+  "
+>
+  {/* SOL: Başlık (tek satır, küçülür) */}
+  <h3
+    className="
+      font-semibold
+      text-[clamp(0.9rem,3vw,1.2rem)]
+      whitespace-nowrap
+      overflow-hidden
+      text-ellipsis
+      min-w-0
+      max-w-[70%]   /* PC’de butonlara çarpmasın */
+    "
+  >
+    {exam.examTitle}
+  </h3>
 
+  {/* SAĞ: Butonlar (PC’de sağ üst köşede durur) */}
+  <div
+    className="
+      flex gap-2 
+      sm:justify-end 
+      flex-shrink-0
+    "
+  >
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => {
+        const clean = exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
+        const url = `/api/vbs/teacher/exams/download?path=${encodeURIComponent(clean)}`
+        const a = document.createElement("a")
+        a.href = url
+        a.download = exam.fileName ?? "exam.jpg"
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+      }}
+    >
+      İndir
+    </Button>
 
-      {/* Başlık tek satır + otomatik küçülme */}
-      <div className="flex items-center justify-between gap-3 min-w-0">
-        <h3
-          className="
-            font-semibold 
-            text-[clamp(0.9rem,4vw,1.2rem)]
-            whitespace-nowrap 
-            overflow-hidden 
-            text-ellipsis 
-            min-w-0 
-            flex-shrink
-          "
-        >
-          {exam.examTitle}
-        </h3>
-      </div>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => handleImagePreview(exam.fileUrl)}
+    >
+      Detayları Gör
+    </Button>
 
-      {/* Sağdaki buton grubu */}
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            const clean = exam.fileUrl.replace(/^https?:\/\/[^/]+/, "")
-            const url = `/api/vbs/teacher/exams/download?path=${encodeURIComponent(clean)}`
-            const a = document.createElement("a")
-            a.href = url
-            a.download = exam.fileName ?? "exam.jpg"
-            document.body.appendChild(a)
-            a.click()
-            a.remove()
-          }}
-        >
-          İndir
-        </Button>
+    {exam.hasAnalysis && (
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => handleAnalysisView(exam.analysis)}
+      >
+        <Share2 className="h-4 w-4" />
+      </Button>
+    )}
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => handleImagePreview(exam.fileUrl)}
-        >
-          Detayları Gör
-        </Button>
+    <Button
+      size="sm"
+      variant="outline"
+      className="text-red-600"
+      onClick={() => requestDelete(exam.id)}
+    >
+      <Trash2 className="h-4 w-4" />
+    </Button>
+  </div>
+</div>
 
-        {exam.hasAnalysis && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleAnalysisView(exam.analysis)}
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
-        )}
-
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-red-600"
-          onClick={() => requestDelete(exam.id)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
 
     {/* SINIF + ANALİZ BADGE */}
     <div className="flex items-center gap-2">
