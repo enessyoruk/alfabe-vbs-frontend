@@ -99,14 +99,15 @@ export default function LoginPage() {
 
   // 🔥 Logout reason mesajını oku
   useEffect(() => {
-    const reason = localStorage.getItem("vbs_logout_reason")
+  const reason = localStorage.getItem("vbs_logout_reason")
 
-    if (reason === "timeout") {
-      setLogoutReasonMsg("Oturumunuz sonlandırıldı. Lütfen yeniden giriş yapın.")
-    }
+  if (reason) {
+    setLogoutReasonMsg("Oturumunuz sonlandırıldı. Lütfen yeniden giriş yapın.")
+  }
 
-    localStorage.removeItem("vbs_logout_reason")
-  }, [])
+  localStorage.removeItem("vbs_logout_reason")
+}, [])
+
 
   const validate = () =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && password.length >= 6
