@@ -468,17 +468,19 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center min-w-0">
               <h1
-className="
+  className="
     font-semibold 
+    text-[clamp(1rem,3.6vw,1.25rem)] 
+    whitespace-nowrap 
+    overflow-hidden 
+    leading-tight
     text-foreground
-    whitespace-nowrap
-    overflow-hidden
-    text-ellipsis
-    text-[clamp(0.85rem, 2.4vw, 1.2rem)]
+    flex-shrink 
     min-w-0
-    max-w-full
   "
 >
+
+
   {displayName
     ? `Hoş geldiniz, ${displayName} hocam`
     : (navigation.find((i) => i.href === pathname)?.name || "Öğretmen Paneli")}
