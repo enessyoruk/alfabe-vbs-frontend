@@ -256,110 +256,108 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
       
       {/* MOBILE SIDEBAR */}
-     {sidebarOpen && (
+<div
+  className={`
+    fixed inset-0 z-50 lg:hidden
+    transition-opacity duration-300
+    ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+  `}
+>
+
+  {/* Overlay */}
+  <div
+    className="absolute inset-0 bg-black/50"
+    onClick={() => setSidebarOpen(false)}
+  />
+
+  {/* Drawer */}
   <div
     className={`
-      fixed inset-0 z-50 lg:hidden
-      transition-opacity duration-300
-      ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+      absolute inset-y-0 left-0 w-64 bg-card border-r shadow-lg
+      flex flex-col
+      transform transition-transform duration-300 ease-out
+      ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
     `}
   >
-    {/* Overlay */}
-    <div
-      className="absolute inset-0 bg-black/50"
+
+    {/* Sağ üst üç çizgi (veli paneli gibi) */}
+    <button
       onClick={() => setSidebarOpen(false)}
+      className="absolute top-3 right-3 z-[200] p-2 rounded-md hover:bg-muted transition-colors lg:hidden"
+    >
+      <Menu className="h-5 w-5 text-foreground" />
+    </button>
+
+    {/* Arka plan logo */}
+    <div
+      className="absolute inset-0 opacity-60 bg-no-repeat bg-center bg-contain pointer-events-none"
+      style={{
+        backgroundImage:
+          "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
+        backgroundSize: "360px 220px",
+      }}
     />
 
-    {/* Drawer */}
-    <div
-      className={`
-        absolute inset-y-0 left-0 w-64 bg-card border-r shadow-lg
-        flex flex-col
-        transform transition-transform duration-300 ease-in-out
-${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-
-      `}
-    >
-
-      {/* Sağ üst üç çizgi (veli panelindeki gibi) */}
-      {sidebarOpen && (
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="absolute top-3 right-3 z-[200] p-2 rounded-md hover:bg-muted transition-colors lg:hidden"
-        >
-          <Menu className="h-5 w-5 text-foreground" />
-        </button>
-      )}
-
-      {/* Arka plan logo */}
-      <div
-        className="absolute inset-0 opacity-60 bg-no-repeat bg-center bg-contain pointer-events-none"
-        style={{
-          backgroundImage:
-            "url('/images/design-mode/logo-alfabe-removebg-preview.png')",
-          backgroundSize: "360px 220px",
-        }}
-      />
-
-      {/* Üst başlık */}
-      <div className="relative z-10 flex flex-col justify-center p-4 border-b bg-card/80 backdrop-blur-sm">
-        <span className="font-semibold text-foreground">Öğretmen Paneli</span>
-        <span className="text-xs text-muted-foreground">Alfa-β Akademi</span>
-      </div>
-
-      {/* Menü */}
-      <nav className="relative z-10 flex-1 p-4 space-y-2 overflow-y-auto">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.name}
-            </Link>
-          )
-        })}
-      </nav>
-
-      {/* Footer */}
-      <div className="relative z-10 border-t bg-card/80 backdrop-blur-sm p-4">
-        <div className="flex items-center gap-3 mb-3 min-w-0">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="/teacher-avatar.png" />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground whitespace-nowrap">
-              {displayName || "Öğretmen"}
-            </p>
-            <p className="text-xs text-muted-foreground whitespace-nowrap">
-              {user.branch || "Öğretmen"}
-            </p>
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-          className="w-full bg-transparent"
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Çıkış Yap
-        </Button>
-      </div>
+    {/* Üst başlık */}
+    <div className="relative z-10 flex flex-col justify-center p-4 border-b bg-card/80 backdrop-blur-sm">
+      <span className="font-semibold text-foreground">Öğretmen Paneli</span>
+      <span className="text-xs text-muted-foreground">Alfa-β Akademi</span>
     </div>
+
+    {/* Menü */}
+    <nav className="relative z-10 flex-1 p-4 space-y-2 overflow-y-auto">
+      {navigation.map((item) => {
+        const isActive = pathname === item.href
+        return (
+          <Link
+            key={item.name}
+            href={item.href}
+            onClick={() => setSidebarOpen(false)}
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+              isActive
+                ? "bg-secondary text-secondary-foreground"
+                : "text-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <item.icon className="h-4 w-4" />
+            {item.name}
+          </Link>
+        )
+      })}
+    </nav>
+
+    {/* Footer */}
+    <div className="relative z-10 border-t bg-card/80 backdrop-blur-sm p-4">
+      <div className="flex items-center gap-3 mb-3 min-w-0">
+        <Avatar className="h-8 w-8">
+          <AvatarImage src="/teacher-avatar.png" />
+          <AvatarFallback>{initials}</AvatarFallback>
+        </Avatar>
+
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground whitespace-nowrap">
+            {displayName || "Öğretmen"}
+          </p>
+          <p className="text-xs text-muted-foreground whitespace-nowrap">
+            {user.branch || "Öğretmen"}
+          </p>
+        </div>
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleLogout}
+        className="w-full bg-transparent"
+      >
+        <LogOut className="h-4 w-4 mr-2" />
+        Çıkış Yap
+      </Button>
+    </div>
+
   </div>
-)}
+</div>
+
 
 
 
@@ -471,14 +469,13 @@ ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             <div className="flex flex-1 items-center">
               <h1
  className="
-    font-semibold 
-    text-foreground
+    font-semibold text-foreground
+    text-[clamp(0.85rem, 2.5vw, 1.15rem)]
+    leading-tight
     whitespace-nowrap
     overflow-hidden
-    text-[clamp(0.8rem, 2.2vw, 1.25rem)]
-    leading-tight
-    max-w-[75vw]
-    shrink
+    max-w-[70%]
+    text-ellipsis
   "
 >
   {displayName
