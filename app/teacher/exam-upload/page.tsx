@@ -542,7 +542,7 @@ async function handleCreateAnalysis() {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-[650px]">
+            <DialogContent className="max-w-[650px] w-full sm:w-auto px-4">
               <DialogHeader>
                 <DialogTitle>Sınav Sonucu Yükle</DialogTitle>
               </DialogHeader>
@@ -577,14 +577,24 @@ async function handleCreateAnalysis() {
                   <div className="border p-3 rounded-md max-h-40 overflow-auto">
                     <div className="grid grid-cols-2 gap-2">
                       {filteredClasses.map((c) => (
-                        <label key={c.id} className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedClassIds.includes(c.id)}
-                            onChange={() => toggleClassSelection(c.id)}
-                          />
-                          {c.name}
-                        </label>
+                        <label
+  key={c.id}
+  className="
+    flex items-center gap-2 
+    text-sm 
+    sm:text-base
+  "
+>
+  <input
+    type="checkbox"
+    checked={selectedClassIds.includes(c.id)}
+    onChange={() => toggleClassSelection(c.id)}
+  />
+  <span className="truncate max-w-[150px] sm:max-w-none">
+    {c.name}
+  </span>
+</label>
+
                       ))}
                     </div>
                   </div>
@@ -695,7 +705,8 @@ async function handleCreateAnalysis() {
   <div key={exam.id} className="p-6 border rounded-lg space-y-4">
 
     {/* BAŞLIK + BUTONLAR */}
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:items-center">
+
 
       {/* Başlık tek satır + otomatik küçülme */}
       <div className="flex items-center justify-between gap-3 min-w-0">
