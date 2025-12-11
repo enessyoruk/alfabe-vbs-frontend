@@ -44,12 +44,23 @@ function isFormData(body: any): body is FormData {
   return typeof FormData !== "undefined" && body instanceof FormData
 }
 
-// ❌ ESKİ: redirect
-// ✅ YENİ: sadece log
+
 function handleUnauthorizedRedirect() {
   if (typeof window === "undefined") return
-  console.warn("[api] 401 Unauthorized — yönlendirme yok")
+
+  // localStorage temizle
+  try {
+    localStorage.removeItem("vbs:user")
+  } catch {}
+
+  // Non-HttpOnly cookie’leri temizle
+  document.cookie = "vbs_auth=; Max-Age=0; Path=/; SameSite=Lax"
+  document.cookie = "vbs_role=; Max-Age=0; Path=/; SameSite=Lax"
+
+  // Login sayfasına ışınla
+  window.location.href = "/login"
 }
+
 
 // Tek noktadan fetch
 export async function apiFetch<T = any>(
