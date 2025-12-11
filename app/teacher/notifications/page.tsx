@@ -162,13 +162,15 @@ export default function TeacherNotificationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Bildirimler</h1>
           {loading ? (
-            <p className="text-muted-foreground">Bildirimler yükleniyor...</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">Bildirimler yükleniyor...</p>
           ) : error ? (
-            <p className="text-red-600 text-sm">Bildirimler yüklenemedi: {error}</p>
+            <p className="text-red-600 text-xs sm:text-sm">Bildirimler yüklenemedi: {error}</p>
           ) : unreadCount > 0 ? (
-            <p className="text-muted-foreground">{unreadCount} okunmamış bildirim</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+  {unreadCount} okunmamış bildirim
+</p>
           ) : (
-            <p className="text-muted-foreground">Tüm bildirimler okundu</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">Tüm bildirimler okundu</p>
           )}
         </div>
         <Button variant="outline" size="sm" onClick={handleMarkAllAsRead} disabled={unreadCount === 0 || loading}>
@@ -205,17 +207,23 @@ export default function TeacherNotificationsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-foreground">{notification.title}</h3>
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base">
+  {notification.title}
+</h3>
                         {!notification.read && (
                           <Badge variant="secondary" className="bg-primary text-primary-foreground">
                             Yeni
                           </Badge>
                         )}
                       </div>
-                      <p className="text-muted-foreground mb-2">{notification.message}</p>
+                      <p className="text-muted-foreground mb-2 text-xs sm:text-sm">
+  {notification.message}
+</p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-4 w-4" />
-                        <span>{new Date(notification.date).toLocaleString("tr-TR")}</span>
+                        <span className="text-xs sm:text-sm">
+  {new Date(notification.date).toLocaleString("tr-TR")}
+</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

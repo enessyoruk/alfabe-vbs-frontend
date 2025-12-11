@@ -130,7 +130,7 @@ export default function HolidaysPage() {
       {/* Navigation */}
       <div className="flex items-center gap-2 mb-6">
         <Link href="/teacher/dashboard" className="text-blue-600 hover:underline">
-          Ana Panel
+          Ana Sayfa
         </Link>
         <span className="text-gray-500">/</span>
         <Link href="/teacher/holidays" className="text-blue-600 hover:underline">
