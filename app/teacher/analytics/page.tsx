@@ -300,7 +300,20 @@ export default function AnalyticsPage() {
                         <span className="font-bold text-yellow-800 text-sm">#{i + 1}</span>
                       </div>
                       <div>
-                        <p className="font-medium">{s.name}</p>
+                        <p
+  className="
+    font-medium 
+    whitespace-nowrap 
+    overflow-hidden 
+    text-ellipsis 
+    max-w-[160px]
+    text-[clamp(0.8rem,3vw,1rem)]
+    sm:max-w-none sm:whitespace-normal
+  "
+>
+  {s.name}
+</p>
+
                         <p className="text-muted-foreground text-sm">
                           Devam %{s.attendanceRate?.toFixed(1) ?? "—"}
                         </p>
@@ -341,7 +354,19 @@ export default function AnalyticsPage() {
                         <TrendingDown className="h-4 w-4 text-red-600" />
                       </div>
                       <div>
-                        <p className="font-medium">{s.name}</p>
+                        <p
+  className="
+    font-medium 
+    whitespace-nowrap 
+    overflow-hidden 
+    text-ellipsis 
+    max-w-[160px]
+    text-[clamp(0.8rem,3vw,1rem)]
+    sm:max-w-none sm:whitespace-normal
+  "
+>
+  {s.name}
+</p>
                         <p className="text-muted-foreground text-sm">{s.reason || ""}</p>
                       </div>
                     </div>
@@ -379,10 +404,30 @@ export default function AnalyticsPage() {
                           <h4 className="font-medium">{ins.title}</h4>
                         </div>
 
-                        <Badge>{ins.status ?? "Normal"}</Badge>
+                        <Badge>
+  {ins.status === "Excellent"
+    ? "Mükemmel"
+    : ins.status === "Good"
+    ? "İyi"
+    : ins.status === "Bad"
+    ? "Zayıf"
+    : ins.status === "Warning"
+    ? "Uyarı"
+    : "Normal"}
+</Badge>
                       </div>
 
-                      <p className="text-muted-foreground text-sm">{ins.description}</p>
+                      <p className="text-muted-foreground text-sm">
+  {ins.description
+    ?.replace("Excellent", "Mükemmel")
+    ?.replace("excellent", "mükemmel")
+    ?.replace("Good", "İyi")
+    ?.replace("good", "iyi")
+    ?.replace("Bad", "Zayıf")
+    ?.replace("bad", "zayıf")
+    ?.replace("Warning", "Uyarı")
+    ?.replace("warning", "uyarı")}
+</p>
                     </div>
                   ))}
                 </div>
