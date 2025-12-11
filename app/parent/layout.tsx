@@ -372,19 +372,20 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                 <AvatarImage src="/parent-avatar.png" />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 max-w-[150px]">
+
                 <p
   className="
     font-medium text-foreground
     whitespace-nowrap
     overflow-hidden
-    text-ellipsis
     min-w-0
-    text-[clamp(0.8rem,1.6vw,0.95rem)]
+    text-[clamp(0.75rem,1.4vw,0.95rem)]
   "
 >
-                  {displayName || "Veli"}
-                </p>
+  {displayName || "Veli"}
+</p>
+
               </div>
             </div>
             <Button
