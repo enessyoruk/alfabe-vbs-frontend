@@ -93,10 +93,23 @@ export default function TeacherClassesPage() {
           classes.map((c) => (
             <Card key={c.id} className="flex flex-col justify-between">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{c.name}</span>
-                  <Users className="h-5 w-5 text-primary" />
-                </CardTitle>
+                <CardTitle className="flex items-center justify-between gap-2">
+  <span
+    className="
+      font-semibold 
+      whitespace-nowrap 
+      overflow-hidden 
+      text-ellipsis 
+      max-w-[75%]
+      text-[clamp(0.9rem,3vw,1.1rem)]
+    "
+  >
+    {c.name}
+  </span>
+
+  <Users className="h-5 w-5 text-primary shrink-0" />
+</CardTitle>
+
               </CardHeader>
               <CardContent className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">

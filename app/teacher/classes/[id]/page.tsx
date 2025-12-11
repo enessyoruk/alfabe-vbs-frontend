@@ -125,7 +125,21 @@ export default function TeacherClassStudentsPage() {
             Geri
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+            <h1
+  className="
+    font-bold 
+    text-foreground
+    whitespace-nowrap 
+    overflow-hidden 
+    text-ellipsis 
+    max-w-full
+    text-[clamp(1.1rem,4vw,1.75rem)]
+    leading-tight
+  "
+>
+  {title}
+</h1>
+
             <p className="text-muted-foreground">
               Bu sınıfa kayıtlı öğrencileri görüntülüyorsunuz.
             </p>
