@@ -372,7 +372,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
                 <AvatarImage src="/parent-avatar.png" />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0 max-w-[150px]">
+              <div className="flex-1 min-w-0 max-w-[190px]">
 
                 <p
   className="
@@ -380,7 +380,9 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     whitespace-nowrap
     overflow-hidden
     min-w-0
-    text-[clamp(0.75rem,1.4vw,0.95rem)]
+    text-[clamp(0.70rem,1.2vw,0.95rem)]
+    leading-tight
+
   "
 >
   {displayName || "Veli"}
