@@ -101,11 +101,10 @@ export default function LoginPage() {
   useEffect(() => {
     const reason = localStorage.getItem("vbs_logout_reason")
 
-    if (reason === "timeout") {
-      setLogoutReasonMsg("Oturum süreniz dolduğu için sonlandırıldı.")
-    } else if (reason === "multi") {
-      setLogoutReasonMsg("Oturumunuz başka bir cihazdan açıldığı için sonlandırıldı.")
-    }
+    if (reason === "session-ended") {
+  setLogoutReasonMsg("Oturumunuz sonlandırıldı. Lütfen yeniden giriş yapın.")
+}
+
 
     localStorage.removeItem("vbs_logout_reason")
   }, [])
