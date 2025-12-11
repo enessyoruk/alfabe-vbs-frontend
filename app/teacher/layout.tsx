@@ -466,7 +466,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           </Button>
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex flex-1 items-center min-w-0">
+            <div className="flex flex-1 items-center justify-between min-w-0">
+
               <h1
   className="
     font-semibold 
