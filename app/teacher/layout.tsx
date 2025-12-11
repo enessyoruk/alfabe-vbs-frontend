@@ -471,26 +471,26 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
               <h1
   className="
-    font-semibold
+    font-semibold 
+    text-[clamp(1rem,3.6vw,1.25rem)] 
+    whitespace-nowrap 
+    overflow-hidden 
     leading-tight
     text-foreground
-    whitespace-nowrap
-    overflow-visible
-    flex-shrink
+    flex-shrink 
     min-w-0
-    text-[clamp(0.85rem, min(5vw, calc(100vw-160px)) / 1.35, 1.25rem)]
   "
 >
+
+
   {displayName
     ? `Hoş geldiniz, ${displayName} hocam`
-    : navigation.find((i) => i.href === pathname)?.name || "Öğretmen Paneli"}
+    : (navigation.find((i) => i.href === pathname)?.name || "Öğretmen Paneli")}
 </h1>
-
-
 
             </div>
 
-            <div className="flex items-center gap-x-4 lg:gap-x-6 flex-shrink-0 w-[160px] justify-end">
+            <div className="flex items-center gap-x-4 lg:gap-x-6 flex-shrink-0">
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
