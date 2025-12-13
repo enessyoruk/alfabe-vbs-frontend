@@ -148,7 +148,9 @@ export default function HomePage() {
         },
         {
           question: "Alfa-β Akademi dijital bir eğitim platformu mudur?",
-          answer: "Alfa-β Akademi yalnızca bir dijital eğitim platformu değildir...",
+          answer: "Alfa-β Akademi yalnızca bir dijital eğitim platformu değildir. Yüz yüze eğitimi esas alan kurumumuzda, dijital sistemler öğrenci takibi ve veli bilgilendirme süreçlerini destekleyici bir araç olarak kullanılmaktadır."
+
+
         },
       ].map((faq, index) => (
         
