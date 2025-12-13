@@ -3,29 +3,29 @@
 export function CarouselSection() {
   const items = [
     {
-      src: "/modern-classroom-with-students-studying-mathematic.jpg",
-      title: "Modern Sınıf Ortamı",
-      text: "Teknoloji destekli eğitim sınıflarımızda öğrencilerimiz en iyi koşullarda öğreniyor."
+      src: "/alfabekarsi.jpg", // <-- kurum girişi
+      title: "Alfa-β Akademi",
+      text: "Öğrenciler için istikrarlı, veliler için güven veren bir eğitim ortamı."
     },
     {
-      src: "/happy-students-celebrating-academic-success--gradu.jpg",
-      title: "Başarı Hikayeleri",
-      text: "Öğrencilerimizin akademik başarıları ve kişisel gelişimleri bizim en büyük gururumuz."
+      src: "/toplantisinif.jpg", // <-- birebir rehberlik / görüşme
+      title: "Kontrollü Rehberlik Süreci",
+      text: "Öğrencilerimizin akademik durumu profesyonel şekilde değerlendirilir."
     },
     {
-      src: "/teacher-helping-student-with-homework--one-on-one-.jpg",
-      title: "Birebir İlgi",
-      text: "Deneyimli öğretmenlerimiz her öğrenciye özel ilgi göstererek potansiyellerini ortaya çıkarıyor."
+      src: "/coridor.jpg", // <-- koridor / fiziksel ortam
+      title: "Kurumsal Eğitim Atmosferi",
+      text: "Öğrencilerimiz düzenli, temiz ve denetimli alanlarda eğitim alır."
     },
     {
-      src: "/students-using-tablets-and-computers-for-digital-l.jpg",
-      title: "Dijital Eğitim",
-      text: "Çağdaş eğitim teknolojileri ile öğrencilerimiz geleceğe hazırlanıyor."
+      src: "/sinif.jpg", // <-- sınıf (öğrenciler derste)
+      title: "Disiplinli Sınıf Yapısı",
+      text: "Ders ortamlarımız akademik odak ve verimlilik esas alınarak yürütülür."
     },
     {
-      src: "/parents-meeting-with-teachers--school-communicatio.jpg",
-      title: "Veli İşbirliği",
-      text: "Velilerimizle sürekli iletişim halinde, çocuklarının gelişimini birlikte takip ediyoruz."
+      src: "/sinifogretmen.jpg", // <-- öğretmen tahtada
+      title: "Deneyimli Eğitim Kadrosu",
+      text: "Alanında yetkin öğretmenlerimizle dersler etkin biçimde işlenir."
     }
   ];
 
@@ -33,18 +33,16 @@ export function CarouselSection() {
     <section
       className="
         py-14 
-        mt-4           /* mobil */
-        md:mt-20       /* tablet */
-        lg:mt-32       /* PC */
+        mt-4
+        md:mt-20
+        lg:mt-32
         bg-white 
         w-full 
         overflow-hidden
       "
     >
-      {/* container DEĞİL → TAM GENİŞLİK */}
       <div className="w-full overflow-hidden">
         <div className="relative w-full overflow-hidden">
-          {/* scroll alanı */}
           <div className="flex gap-6 animate-scroll-x">
             {[...items, ...items].map((item, i) => (
               <div
