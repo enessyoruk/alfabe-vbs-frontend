@@ -154,12 +154,14 @@ export default function HomePage() {
         <Card
           key={index}
           className="
-            hover:shadow-md transition-shadow
-            w-full
-            sm:w-[90%]
-            md:w-[80%]
-            lg:w-[60%]       /* PC → sabit, ortalanmış, daha dar görünüm */
-          "
+  hover:shadow-md transition-shadow
+  w-full
+  sm:w-[95%]
+  md:w-[90%]
+  lg:w-[75%]
+  xl:w-[70%]
+"
+
         >
           <CardHeader className="pb-3 cursor-pointer" onClick={() => toggleFaq(index)}>
             <CardTitle className="text-base flex items-center justify-between">
