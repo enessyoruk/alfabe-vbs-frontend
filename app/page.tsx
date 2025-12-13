@@ -126,7 +126,8 @@ export default function HomePage() {
     </div>
 
     {/* ORTALAMA + WIDTH FIX */}
-    <div className="max-w-2xl mx-auto space-y-4 flex flex-col items-center">
+    <div className="max-w-4xl mx-auto space-y-4 flex flex-col items-center">
+
 
       {[
         {
@@ -154,14 +155,12 @@ export default function HomePage() {
         <Card
           key={index}
           className="
-  hover:shadow-md transition-shadow
-  w-full
-  sm:w-[95%]
-  md:w-[90%]
-  lg:w-[75%]
-  xl:w-[70%]
-"
-
+            hover:shadow-md transition-shadow
+            w-full
+            sm:w-[90%]
+            md:w-[80%]
+            lg:w-[60%]       
+          "
         >
           <CardHeader className="pb-3 cursor-pointer" onClick={() => toggleFaq(index)}>
             <CardTitle className="text-base flex items-center justify-between">
