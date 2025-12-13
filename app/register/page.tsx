@@ -427,7 +427,7 @@ export default function RegisterPage() {
                     </button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Şifreniz en az 6 karakter olmalı ve en az bir harf ile en az bir rakam içermelidir.
+                    
                   </p>
                   {hasInteracted && fieldErrors.password && (
                     <p className="mt-1 text-xs text-destructive">{fieldErrors.password}</p>
