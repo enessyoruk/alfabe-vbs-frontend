@@ -7,7 +7,7 @@ export function TeacherSection() {
   const teachers = [
     { name: "Buse Yılmaz", subject: "Matematik" },
     { name: "Ayşe Civelek Bilgin", subject: "Yabancı Dil" },
-    { name: "Hilal Çarşambalı", subject: "Yabancı Dil" },
+    { name: "Zuhal Çarşambalı", subject: "Yabancı Dil" },
     { name: "Metin Gürer", subject: "Türkçe" },
     { name: "Huriye Hamzaçebi", subject: "Türkçe" },
     { name: "Oktay Yaman", subject: "Fen Bilimleri" },
