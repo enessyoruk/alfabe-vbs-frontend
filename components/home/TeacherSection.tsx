@@ -19,7 +19,7 @@ export function TeacherSection() {
     <section id="ogretmenler" className="py-20 bg-card/30">
       <div className="container mx-auto px-4">
 
-        {/* SECTION BAŞLIĞI — Hakkımızda ile aynı stil */}
+        {/* SECTION BAŞLIĞI  */}
         <div className="text-center mb-16">
           <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Öğretmen Kadromuz

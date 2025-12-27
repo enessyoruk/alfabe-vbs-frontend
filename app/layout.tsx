@@ -13,7 +13,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Alfa-β Akademi - Veli ve Öğretmen Bilgi Sistemi",
   description: "Alfa-β Akademi özel öğretim kurumu veli ve öğretmen bilgi yönetim sistemi",
-  
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
