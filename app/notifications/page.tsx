@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Bell, Calendar, AlertCircle, Info, CheckCircle2, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 
-
 type Role = "Parent" | "Teacher" | string
 type VbsUser = { id?: string; email?: string; name?: string; roles?: Role[] }
 
@@ -42,16 +41,14 @@ function parseStoredUser(raw: string | null): VbsUser | null {
 }
 
 function pickEndpointByRoles(roles: Role[] | undefined): string {
-  if (!roles || roles.length === 0) return "/api/notifications" // geriye uyum
+  if (!roles || roles.length === 0) return "/api/notifications"
   if (roles.includes("Parent")) return "/api/parent/notifications"
   if (roles.includes("Teacher")) return "/api/teacher/notifications"
   return "/api/notifications"
 }
 
 function normalizeItem(x: ApiItem): UiNotification {
-  // tip yoksa backend default "announcement"
   const t = (x.type ?? "announcement") as UiNotification["type"]
-  // çok basit bir öncelik sezgisi (istersen geliştiririz)
   const priority: UiNotification["priority"] =
     t === "warning" || t === "holiday" ? "high" : t === "exam" ? "medium" : "low"
 
@@ -149,7 +146,6 @@ export default function NotificationsPage() {
         const u = parseStoredUser(raw)
         const endpoint = pickEndpointByRoles(u?.roles)
 
-        // Önce rol-endpoint’ine istek at; 404/405 gelirse geriye uyum için /api/notifications’a düş
         const res = await fetch(endpoint, { credentials: "include" })
         let data: any
         if (!res.ok) {
@@ -160,10 +156,8 @@ export default function NotificationsPage() {
           data = await res.json().catch(() => ({}))
         }
 
-        // Beklenen format: { items: ApiItem[] }  (backend AdminNotificationsController böyle dönüyor)
         const arr: ApiItem[] = Array.isArray(data?.items) ? data.items : []
         if (!arr.length) {
-          // Boş olmasını hata saymıyoruz; sadece liste boş
           if (!cancelled) {
             setItems([])
           }
@@ -175,7 +169,6 @@ export default function NotificationsPage() {
       } catch (e: any) {
   const msg = e?.message || "Bildirimler yüklenemedi."
 
-  // 🔥 Sağ altta uyarı göster
   toast.error(msg, {
     duration: 2500,
     position: "bottom-right",

@@ -8,8 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BookOpen, Clock, CheckCircle, Search, Info } from "lucide-react"
 import { authService } from "@/lib/auth"
 
-// ---- TIPLER ----
-
 type HomeworkStatus = "pending" | "completed" | "overdue"
 
 interface HomeworkSubmission {
@@ -51,7 +49,6 @@ interface ParentHomeworkItem {
 
 const children: [] = []
 
-
 export default function ParentHomeworkPage() {
   const [selectedStudent, setSelectedStudent] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<"all" | HomeworkStatus>("all")
@@ -59,7 +56,6 @@ export default function ParentHomeworkPage() {
   const [homeworkData, setHomeworkData] = useState<ParentHomeworkItem[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
-  // Ödev sistemi bilgilendirme pop-up'ı
   const [showInfoModal, setShowInfoModal] = useState<boolean>(true)
 
   useEffect(() => {
@@ -76,7 +72,7 @@ export default function ParentHomeworkPage() {
 
         const response = await fetch("/api/homework", {
           method: "GET",
-          credentials: "include", // cookie'leri gönder
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },

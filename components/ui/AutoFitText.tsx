@@ -30,12 +30,10 @@ export function AutoFitText({
 
       const parentWidth = el.parentElement?.clientWidth || 0
 
-      // Binary search ile en doğru font-size'ı bul
       while (low <= high) {
         mid = Math.floor((low + high) / 2)
         el.style.fontSize = `${mid}px`
 
-        // Metin container'a sığıyor mu?
         if (el.scrollWidth <= parentWidth) {
           low = mid + 1
         } else {

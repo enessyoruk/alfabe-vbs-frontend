@@ -111,7 +111,6 @@ export default function TeacherClassStudentsPage() {
   ? classNameFromQuery
   : "Sınıf Öğrencileri"
 
-
   return (
     <div className="space-y-6">
       {/* Header */}

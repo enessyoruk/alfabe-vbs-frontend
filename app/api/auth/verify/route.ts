@@ -1,4 +1,3 @@
-// app/api/auth/verify/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { jwtVerify } from "jose"
 

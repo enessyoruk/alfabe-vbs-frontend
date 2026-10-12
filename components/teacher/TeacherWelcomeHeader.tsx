@@ -29,8 +29,8 @@ export function TeacherWelcomeHeader({ displayName }: TeacherWelcomeHeaderProps)
         {/* Auto-Fit Başlık */}
         <AutoFitText
           text={`Hoş geldiniz, ${displayName} hocam`}
-          maxSize={28}   // PC'de 28px
-          minSize={14}   // Mobilde 14px'e kadar küçülür (taşma olmaz)
+          maxSize={28}
+          minSize={14}
           className="font-bold text-foreground mb-2"
         />
 

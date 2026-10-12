@@ -146,7 +146,6 @@ export default function StudentInfoPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Oturum / parentId bilgisi
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -159,7 +158,6 @@ export default function StudentInfoPage() {
       }
 
       const parsed = JSON.parse(raw)
-      // Login payload: { user: { id, email, name, roles } } veya düz { id, ... }
       const id =
         parsed?.user?.id ??
         parsed?.id
@@ -178,7 +176,6 @@ export default function StudentInfoPage() {
     }
   }, [router])
 
-  // Öğrenci bilgilerini yükle
   useEffect(() => {
     if (!authChecked) return
     if (!parentId) return
@@ -227,7 +224,6 @@ export default function StudentInfoPage() {
 
         const normalizedList = arr.map(normalizeStudentDetail)
 
-        // URL'den öğrenci seçimi: ?student=ID veya ?studentId=ID
         const fromQuery =
           searchParams.get("student") ||
           searchParams.get("studentId")
@@ -304,7 +300,6 @@ export default function StudentInfoPage() {
 >
   Öğrenci bilgilerini görüntüleyin
 </h1>
-
 
         {/* Birden fazla öğrenci varsa seçim butonları */}
         {!loading && students.length > 1 && (

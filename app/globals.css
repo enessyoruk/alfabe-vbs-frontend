@@ -1,13 +1,9 @@
-/* Tailwind v4 çekirdeği */
 @import "tailwindcss";
 
-/* (İsteğe bağlı) animasyon yardımcıları — paketi kurduysan kullan */
 @import "tw-animate-css";
 
-/* Dark mode helper (Tailwind v4 custom variant) */
 @custom-variant dark (&:is(.dark *));
 
-/* ---------- Design Tokens (Light) ---------- */
 :root {
   --background: #ffffff;
   --foreground: #4b5563;
@@ -55,7 +51,6 @@
   --sidebar-ring: rgba(38, 182, 255, 0.5);
 }
 
-/* ---------- Design Tokens (Dark) ---------- */
 .dark {
   --background: #1a1a1a;
   --foreground: #f9fafb;
@@ -103,7 +98,6 @@
   --sidebar-ring: rgba(38, 182, 255, 0.5);
 }
 
-/* ---------- Tailwind Theme Bindings ---------- */
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -157,7 +151,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* ---------- Base Layer ---------- */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -172,7 +165,6 @@ html, body {
   width: 100%;
 }
 
-/* ---------- Animations ---------- */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -193,8 +185,6 @@ html, body {
   50%      { transform: translateY(-10px); }
 }
 
-/* ---------- Seamless marquee ---------- */
-/* 5 kart x 400px + 4 gap x 24px = 2096px */
 @keyframes scroll-x {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-2096px); }
@@ -205,14 +195,12 @@ html, body {
   white-space: nowrap;
 }
 
-/* Mobilde carousel daha yavaş aksın */
 @media (max-width: 640px) {
   .animate-scroll-x {
     animation-duration: 38s; /* 28s → 38s = daha yavaş akış */
   }
 }
 
-/* ---------- Utility Classes ---------- */
 .animate-fade-in-up { animation: fadeInUp 0.6s ease-out; }
 .animate-slide-in-right { animation: slideInRight 0.6s ease-out; }
 .animate-fade-in { animation: fadeIn 0.8s ease-out; }
@@ -226,7 +214,6 @@ html, body {
 .animate-gradient-sync { animation: gradient-sync 4s ease-in-out infinite; }
 .animate-gradient-sync-alt { animation: gradient-sync-alt 4s ease-in-out infinite 2s; }
 
-/* ---------- Blob Animasyonları ---------- */
 @keyframes blob {
   0%,100% { transform: translate3d(0, 0, 0) scale(1); }
   33% { transform: translate3d(24px, -40px, 0) scale(1.04); }
@@ -239,7 +226,6 @@ html, body {
 .animation-delay-2000 { animation-delay: 2s; }
 .animation-delay-4000 { animation-delay: 4s; }
 
-/* ---------- Mega Blob Motion ---------- */
 @keyframes blob-move-1 {
   0%{transform:translate3d(0,0,0)}
   20%{transform:translate3d(120px,60px,0)}

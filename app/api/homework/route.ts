@@ -1,4 +1,3 @@
-// app/api/teacher/homework/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -19,7 +18,6 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-
 const u = (path: string) => `${BACKEND_API_BASE}${path.startsWith("/") ? "" : "/"}${path}`
 
 function noStore(res: NextResponse) {
@@ -37,20 +35,17 @@ async function readJson(res: Response) {
 function buildAuthHeaders(req: NextRequest) {
   const headers: Record<string, string> = { Accept: "application/json" }
 
-  // Authorization header öncelikli; yoksa cookie token (opsiyonel)
   const ah = req.headers.get("authorization") || ""
   const cookieToken = req.cookies.get("authToken")?.value
   if (ah.toLowerCase().startsWith("bearer ")) headers.Authorization = ah
   else if (cookieToken) headers.Authorization = `Bearer ${cookieToken}`
 
-  // Cookie-based oturum varsa çerezi upstream’e geçir
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) headers.Cookie = incomingCookie
 
   return headers
 }
 
-// GET /api/teacher/homework?classId=...
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
@@ -78,13 +73,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/teacher/homework
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
     headers["Content-Type"] = "application/json"
 
-    const bodyText = await req.text() // gövdeyi değiştirmeden ilet
+    const bodyText = await req.text()
     const upstream = await fetch(u("/api/vbs/teacher/homework"), {
       method: "POST",
       cache: "no-store",
@@ -104,7 +98,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT /api/teacher/homework
 export async function PUT(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
@@ -130,7 +123,6 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE /api/teacher/homework?id=123  veya  /api/teacher/homework?action=cleanup
 export async function DELETE(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)

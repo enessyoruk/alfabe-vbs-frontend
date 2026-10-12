@@ -1,4 +1,3 @@
-// app/api/holidays/route.ts  (mevcut dosyanın yerine uygula)
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -18,7 +17,6 @@ const BACKEND_API_BASE =
 if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
-
 
 const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
@@ -46,7 +44,6 @@ function buildAuthHeaders(req: NextRequest) {
   return headers
 }
 
-// GET /api/holidays  → TR resmi tatilleri (date.nager.at)
 export async function GET() {
   try {
     const currentYear = new Date().getFullYear()
@@ -78,20 +75,18 @@ export async function GET() {
   }
 }
 
-// POST /api/holidays  → (Yönetici) tatil bildirimi başlat
-// Backend varsayılan uç: POST /api/admin/notifications  (body: { type: "holiday", ... })
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
     headers["Content-Type"] = "application/json"
 
-    const body = await req.text() // gelen payload olduğu gibi iletilir
+    const body = await req.text()
     const upstream = await fetch(u("/api/admin/notifications"), {
       method: "POST",
       cache: "no-store",
       credentials: "include",
       headers,
-      body, // ör: { holidayId, message, sendSMS, type: "holiday" }
+      body,
     })
 
     const data = await readJson(upstream)

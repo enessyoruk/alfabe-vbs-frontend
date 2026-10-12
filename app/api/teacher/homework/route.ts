@@ -1,4 +1,3 @@
-// app/api/teacher/homework/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -19,7 +18,6 @@ const BACKEND_API_BASE =
 if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
-
 
 const UPSTREAM_PATH = "/api/vbs/teacher/homework"
 

@@ -12,8 +12,6 @@ import { HeroSection } from "@/components/home/HeroSection"
 import { CarouselSection } from "@/components/home/CarouselSection"
 import { TeacherSection } from "@/components/home/TeacherSection"
 
-
-
 export default function HomePage() {
   useEffect(() => {
     
@@ -108,11 +106,8 @@ export default function HomePage() {
   </div>
 </section>
 
-
-
            {/* Teachers Section */}
       <TeacherSection />
-
 
       {/* FAQ Section */}
 <section id="sss" className="py-16">
@@ -127,7 +122,6 @@ export default function HomePage() {
 
     {/* ORTALAMA + WIDTH FIX */}
     <div className="max-w-4xl mx-auto space-y-4 flex flex-col items-center">
-
 
       {[
         {
@@ -149,7 +143,6 @@ export default function HomePage() {
         {
           question: "Alfa-β Akademi dijital bir eğitim platformu mudur?",
           answer: "Alfa-β Akademi yalnızca bir dijital eğitim platformu değildir. Yüz yüze eğitimi esas alan kurumumuzda, dijital sistemler öğrenci takibi ve veli bilgilendirme süreçlerini destekleyici bir araç olarak kullanılmaktadır."
-
 
         },
       ].map((faq, index) => (
@@ -201,8 +194,6 @@ export default function HomePage() {
   </div>
 </section>
 
-
-
       {/* Contact Section */}
 <section id="iletisim" className="py-20 bg-card/30">
   <div className="container mx-auto px-4">
@@ -244,7 +235,6 @@ export default function HomePage() {
 
   </div>
 </div>
-
 
         {/* Mail */}
         <div className="flex items-start gap-4">
@@ -347,8 +337,6 @@ export default function HomePage() {
   </div>
 </section>
 
-
-
       {/* Footer */}
       <footer className="bg-foreground text-background py-8">
         <div className="container mx-auto px-4">
@@ -369,7 +357,6 @@ export default function HomePage() {
   <p className="text-right whitespace-nowrap opacity-70">
     Developed by <strong>Mehmet Enes YÖRÜK</strong>
   </p>
-
 
             </div>
           </div>

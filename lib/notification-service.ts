@@ -1,12 +1,6 @@
-// lib/notification-service.ts
-// Merkezî Bildirim Servisi (frontend)
-// - Hafızada tutar + localStorage’a yazar (sayfa yenilenince kaybolmasın)
-// - İleride backend’e taşınması kolay (tek noktadan değişecek)
-// - Basit gözlemci (subscribe) ile UI otomatik güncellenebilir
 
 import { getLocalJson, setLocalJson, clearLocal, formatDateTR } from "@/lib/utils"
 
-/* ======================= Türler ======================= */
 export type NotificationType =
   | "homework"
   | "exam"
@@ -18,12 +12,12 @@ export type NotificationType =
 
 export interface Notification {
   id: string
-  userId: string            // Bildirimi alacak veli ID'si
-  studentId?: string        // İlgili öğrenci
+  userId: string
+  studentId?: string
   title: string
   message: string
   type: NotificationType
-  date: string              // ISO string
+  date: string
   isRead: boolean
   metadata?: {
     homeworkId?: string
@@ -35,13 +29,11 @@ export interface Notification {
   }
 }
 
-/* ======================= Kalıcı Depo ======================= */
 const LS_KEY = "vbs:notifications"
 const LS_PARENT_MAP_KEY = "vbs:parent-students"
 
-// Varsayılan parent-öğrenci eşleşmesi (örnek)
 const defaultParentStudentMap: Record<string, string[]> = {
-  "1": ["1", "2"], // Parent 1 → Student 1 & 2
+  "1": ["1", "2"],
 }
 
 function loadStore(): Notification[] {
@@ -51,7 +43,6 @@ function saveStore(list: Notification[]) {
   setLocalJson(LS_KEY, list)
 }
 
-// Parent-Student eşleşmesini de saklayalım (ileride backend'den gelebilir)
 function loadParentMap(): Record<string, string[]> {
   return getLocalJson<Record<string, string[]>>(LS_PARENT_MAP_KEY, defaultParentStudentMap) || defaultParentStudentMap
 }
@@ -59,7 +50,6 @@ function saveParentMap(map: Record<string, string[]>) {
   setLocalJson(LS_PARENT_MAP_KEY, map)
 }
 
-/* ======================= Gözlemci (Observer) ======================= */
 type Listener = (items: Notification[]) => void
 const listeners = new Set<Listener>()
 function notify(list: Notification[]) {
@@ -70,30 +60,24 @@ export function subscribe(fn: Listener) {
   return () => listeners.delete(fn)
 }
 
-/* ======================= Yardımcılar ======================= */
 function nowIso() { return new Date().toISOString() }
 function newid(prefix: string) { return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` }
 
-/* ======================= Servis ======================= */
 let store = loadStore()
 let parentStudentMap = loadParentMap()
 
 export const notificationService = {
-  /* -------- Admin/seed yardımcıları -------- */
-  /** Parent-Student eşleşmesini güncelle (ör. login sonrasında) */
   setParentStudentMap(map: Record<string, string[]>) {
     parentStudentMap = map
     saveParentMap(map)
   },
 
-  /** Tüm bildirimi temizle (test için) */
   clearAll() {
     store = []
     saveStore(store)
     notify(store)
   },
 
-  /* -------- Oluşturucular -------- */
   createHomeworkNotification: (data: {
     homeworkId: string
     classId: string
@@ -102,7 +86,6 @@ export const notificationService = {
     dueDate: string | Date
     teacherName?: string
   }) => {
-    // Şimdilik sınıf filtresi yapmıyoruz → bağlı tüm velilere gönder
     const affectedParents = Object.entries(parentStudentMap)
 
     const created: Notification[] = affectedParents.map(([parentId, studentIds]) => ({
@@ -138,7 +121,6 @@ export const notificationService = {
     score?: number
     teacherName?: string
   }) => {
-    // Öğrenciye özel sonuç yüklendiyse tek veliye; değilse sınıfın tüm velilerine
     if (data.studentId) {
       const parentId = Object.entries(parentStudentMap).find(([, list]) => list.includes(data.studentId!))?.[0]
       if (!parentId) return { success: false, notificationsCreated: 0 }
@@ -166,7 +148,6 @@ export const notificationService = {
       return { success: true, notificationsCreated: 1 }
     }
 
-    // Genel duyuru: sınıfın tüm velileri (şimdilik tüm veliler)
     const affectedParents = Object.entries(parentStudentMap)
     const created: Notification[] = affectedParents.map(([parentId, studentIds]) => ({
       id: newid("exam"),
@@ -206,7 +187,6 @@ export const notificationService = {
       studentId: data.studentId,
       title: "Yeni Rehberlik Notu",
       message: `${data.studentName} için “${data.area}” konusunda rehberlik notu eklendi.`,
-      // Tip tartışmalı olabilir; mevcut ekranlar "grade"e bakıyorsa bozmayalım:
       type: "grade",
       date: nowIso(),
       isRead: false,
@@ -239,7 +219,6 @@ export const notificationService = {
     return { success: true, notificationsCreated: created.length }
   },
 
-  /* -------- Okuma & Güncelleme -------- */
   getNotifications(userId: string): Notification[] {
     return store
       .filter((n) => n.userId === userId)

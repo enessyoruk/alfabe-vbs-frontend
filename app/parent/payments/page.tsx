@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertCircle, CheckCircle, Clock, Search, Receipt } from "lucide-react"
 
-// Mock payment data
 const paymentData = [
   {
     id: "1",
@@ -17,7 +16,7 @@ const paymentData = [
     amount: 2500,
     dueDate: "2024-01-31",
     paidDate: "2024-01-15",
-    status: "paid", // paid, pending, overdue
+    status: "paid",
     paymentMethod: "Kredi Kartı",
     invoiceNumber: "INV-2024-001",
     category: "Eğitim Ücreti",
@@ -89,7 +88,6 @@ const paymentData = [
   },
 ]
 
-// Mock children data
 const children = [
   { id: "1", name: "Elif Yılmaz", class: "9-A Matematik" },
   { id: "2", name: "Can Yılmaz", class: "7-B Fen" },

@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken"
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 
-// Mock homework data (same as main route)
 const mockHomework = [
   {
     id: "1",
@@ -64,7 +63,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Ödev bulunamadı" }, { status: 404 })
     }
 
-    // Check authorization
     if (decoded.userType === "teacher" && homework.teacherId !== decoded.userId) {
       return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
     }

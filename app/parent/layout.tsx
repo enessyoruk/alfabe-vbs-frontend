@@ -121,7 +121,6 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
   const router = useRouter()
   const pathname = usePathname()
 
-  // USER
   useEffect(() => {
     let cancelled = false
     const init = () => {
@@ -138,7 +137,6 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     }
   }, [])
 
-  // NOTIFICATIONS
   useEffect(() => {
     if (!user?.roles?.includes("Parent")) return
     let cancelled = false
@@ -227,7 +225,6 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     )
   }
 
-  // Sidebar'ı yumuşak aç/kapa
   const toggleSidebar = () => setSidebarOpen((prev) => !prev)
   const closeSidebar = () => setSidebarOpen(false)
 

@@ -1,4 +1,3 @@
-// app/gizlilik/page.tsx
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"

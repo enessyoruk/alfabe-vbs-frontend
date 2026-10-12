@@ -1,4 +1,3 @@
-// app/api/vbs/teacher/exams/analysis/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -12,7 +11,6 @@ const UPSTREAM = `${BACKEND}/api/vbs/teacher/exams/analysis`
 
 export async function POST(req: NextRequest) {
   try {
-    // Tarayıcıdan gelen cookie'yi backend'e aynen forward ediyoruz
     const cookieHeader = req.headers.get("cookie") ?? ""
     const payload = await req.json()
 
@@ -23,7 +21,6 @@ export async function POST(req: NextRequest) {
         Cookie: cookieHeader,
       },
       body: JSON.stringify(payload),
-      // güvenlik için
       cache: "no-store",
     })
 

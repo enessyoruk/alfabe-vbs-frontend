@@ -1,4 +1,3 @@
-// app/teacher/analytics/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -88,7 +87,6 @@ export default function AnalyticsPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
   const [analyticsError, setAnalyticsError] = useState<string | null>(null)
 
-  // ==== Sınıfları Yükle ====
   useEffect(() => {
     const ctrl = new AbortController()
     ;(async () => {
@@ -124,7 +122,6 @@ export default function AnalyticsPage() {
     return () => ctrl.abort()
   }, [])
 
-  // ==== Analiz Yükle ====
   useEffect(() => {
     if (!selectedClass) return
 
@@ -168,9 +165,6 @@ export default function AnalyticsPage() {
     return () => ctrl.abort()
   }, [selectedClass, classes])
 
-  // ============================================
-  // 🚀 PREMIUM LOADER (REHBER ÖĞRETMEN MODELİ)
-  // ============================================
   if (analyticsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

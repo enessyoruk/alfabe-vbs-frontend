@@ -25,7 +25,6 @@ import { useRouter } from "next/navigation"
 import { AuthBackground } from "@/components/auth/auth-background"
 import { toast } from "sonner"
 
-
 type UserType = "parent" | "teacher"
 
 type FormDataState = {
@@ -46,7 +45,6 @@ type FieldErrors = {
 }
 
 function passwordIsStrongEnough(pwd: string) {
-  // En az 6 karakter, en az 1 harf (TR dahil) ve en az 1 rakam
   return /^(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d).{6,}$/.test(pwd)
 }
 
@@ -200,7 +198,7 @@ export default function RegisterPage() {
           phoneNumber: formData.phoneNumber,
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
-          userType, // "parent" | "teacher"
+          userType,
         }),
         signal: controller.signal,
       }).finally(() => clearTimeout(t))
@@ -209,7 +207,6 @@ export default function RegisterPage() {
       try {
         data = await response.json()
       } catch {
-        // JSON parse hatası durumunda sessiz geç
       }
 
       if (!response.ok) {
@@ -248,7 +245,6 @@ export default function RegisterPage() {
 
   }
 
-  // ---------- SUCCESS EKRANI (aynı büyük panel stilinde) ----------
   if (success) {
     return (
       <AuthBackground>
@@ -270,7 +266,6 @@ export default function RegisterPage() {
     )
   }
 
-  // ---------- FORM EKRANI ----------
   return (
     <AuthBackground>
       <div className="w-full max-w-md px-3">

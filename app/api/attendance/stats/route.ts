@@ -1,4 +1,3 @@
-// app/api/attendance/stats/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"

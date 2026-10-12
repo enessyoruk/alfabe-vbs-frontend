@@ -1,4 +1,3 @@
-// app/kvkk/page.tsx
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ScrollBackButton } from "@/components/scroll-back-button"

@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { jwtVerify } from "jose"
@@ -24,10 +23,8 @@ async function verify(token: string): Promise<SessionPayload> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Static and API — no auth, but CSP override MUST apply
   const res = NextResponse.next()
 
-  // 🔥 ZORUNLU CSP OVERRIDE — BEYAZ EKRANI KALDIRAN KOD
   res.headers.set(
     "Content-Security-Policy",
     [
@@ -44,7 +41,6 @@ export async function middleware(req: NextRequest) {
     ].join("; ")
   )
 
-  // Özel durumlar: API, statik dosyalar → auth kontrolü yok
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
@@ -55,7 +51,6 @@ export async function middleware(req: NextRequest) {
     return res
   }
 
-  // Protected route kontrolü
   const rule = PROTECTED.find((r) => pathname.startsWith(r.prefix))
   if (!rule) return res
 

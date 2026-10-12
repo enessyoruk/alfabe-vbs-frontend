@@ -1,4 +1,3 @@
-// app/api/vbs/parent/exams/route.ts
 
 import { NextRequest, NextResponse } from "next/server"
 
@@ -24,7 +23,6 @@ if (!BACKEND_API_BASE) {
 export async function GET(req: NextRequest) {
   const upstream = `${BACKEND_API_BASE}/api/vbs/parent/exams`
 
-  // Cookie forward
   const cookie = req.headers.get("cookie") || ""
 
   const up = await fetch(upstream, {

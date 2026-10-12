@@ -22,10 +22,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react"
 
-/* ============================================================
-   TYPES + HELPERS (AYNEN KALDI)
-============================================================ */
-
 type ApiStudent = {
   id: string | number
   name?: string
@@ -135,10 +131,6 @@ function formatMonthLabel(value: string) {
   })
 }
 
-/* ============================================================
-   PAGE COMPONENT
-============================================================ */
-
 export default function AttendancePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -169,7 +161,6 @@ export default function AttendancePage() {
     return out
   }, [])
 
-  /* ---------------- LOAD STUDENTS ---------------- */
   useEffect(() => {
     const ac = new AbortController()
 
@@ -212,7 +203,6 @@ export default function AttendancePage() {
     return () => ac.abort()
   }, [router, searchParams])
 
-  /* ---------------- LOAD ATTENDANCE ---------------- */
   useEffect(() => {
     if (!selectedStudent) return
 
@@ -257,8 +247,6 @@ export default function AttendancePage() {
     setPage(1)
   }, [selectedStudent, selectedMonth])
 
-  /* ---------------- DERIVED ---------------- */
-
   const filtered = attendance
 
   const stats = useMemo(() => {
@@ -277,10 +265,6 @@ export default function AttendancePage() {
   const currentPage = Math.min(page, pageCount)
   const startIndex = (currentPage - 1) * pageSize
   const pagedRecords = filtered.slice(startIndex, startIndex + pageSize)
-
-  /* ============================================================
-     UI
-  ============================================================ */
 
   return (
     <div className="space-y-6">

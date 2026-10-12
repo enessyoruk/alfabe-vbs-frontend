@@ -1,4 +1,3 @@
-// app/api/parent/guidance-notes/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -12,7 +11,6 @@ const UPSTREAM = `${BACKEND}/api/vbs/parent/guidance`
 
 export async function GET(req: NextRequest) {
   try {
-    // Tarayıcıdan gelen cookie'yi backend'e forward et
     const cookieHeader = req.headers.get("cookie") ?? ""
 
     const upstream = await fetch(UPSTREAM, {

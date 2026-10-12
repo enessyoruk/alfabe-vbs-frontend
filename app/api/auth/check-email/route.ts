@@ -1,4 +1,3 @@
-// app/api/auth/check-email/route.ts
 import { NextResponse } from "next/server";
 import { backendFetch, endpoints } from "@/lib/api";
 

@@ -1,4 +1,3 @@
-// app/parent/exam-results/page.tsx
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -68,7 +67,6 @@ type ParentStudent = {
   subjects: { name: string; teacherName?: string }[]
 }
 
-/* ================== TARİH NORMALIZATION FUNC ================== */
 function parseExamDate(d: string): Date {
   if (!d) return new Date(0)
 
@@ -108,7 +106,6 @@ export default function ParentExamResultsPage() {
 
   const [authChecked, setAuthChecked] = useState(false)
 
-  // Oturum kontrolü
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -127,7 +124,6 @@ export default function ParentExamResultsPage() {
     }
   }, [router])
 
-  // Öğrenciler + sınav sonuçları yükleme
   useEffect(() => {
     if (!authChecked) return
 

@@ -3,27 +3,27 @@
 export function CarouselSection() {
   const items = [
     {
-      src: "/alfabekarsi.jpg", // <-- kurum girişi
+      src: "/alfabekarsi.jpg",
       title: "Alfa-β Akademi",
       text: "Öğrenciler için istikrarlı, veliler için güven veren bir eğitim ortamı."
     },
     {
-      src: "/toplantisinif.jpg", // <-- birebir rehberlik / görüşme
+      src: "/toplantisinif.jpg",
       title: "Kontrollü Rehberlik Süreci",
       text: "Öğrencilerimizin akademik durumu profesyonel şekilde değerlendirilir."
     },
     {
-      src: "/coridor.jpg", // <-- koridor / fiziksel ortam
+      src: "/coridor.jpg",
       title: "Kurumsal Eğitim Atmosferi",
       text: "Öğrencilerimiz düzenli, temiz ve denetimli alanlarda eğitim alır."
     },
     {
-      src: "/sinif.jpg", // <-- sınıf (öğrenciler derste)
+      src: "/sinif.jpg",
       title: "Disiplinli Sınıf Yapısı",
       text: "Ders ortamlarımız akademik odak ve verimlilik esas alınarak yürütülür."
     },
     {
-      src: "/sinifogretmen.jpg", // <-- öğretmen tahtada
+      src: "/sinifogretmen.jpg",
       title: "Deneyimli Eğitim Kadrosu",
       text: "Alanında yetkin öğretmenlerimizle dersler etkin biçimde işlenir."
     }

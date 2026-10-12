@@ -1,4 +1,3 @@
-// app/api/vbs/teacher/exams/download/route.ts
 import { NextRequest } from "next/server"
 
 export const runtime = "nodejs"
@@ -15,7 +14,6 @@ export async function GET(req: NextRequest) {
       return new Response("missing path", { status: 400 })
     }
 
-    // /uploads/... → tam backend URL
     const backendUrl = `${BASE}${path}`
 
     const upstream = await fetch(backendUrl)

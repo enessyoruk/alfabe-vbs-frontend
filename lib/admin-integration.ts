@@ -1,11 +1,4 @@
-/**
- * Admin Panel Entegrasyon Yardımcı Fonksiyonları
- *
- * Bu dosya, mevcut okul yönetim sistemi ile admin panel arasındaki
- * entegrasyonu kolaylaştırmak için yardımcı fonksiyonlar içerir.
- */
 
-// Admin panel için API client
 export class AdminAPIClient {
   private baseUrl: string
   private adminToken: string
@@ -36,7 +29,6 @@ export class AdminAPIClient {
     return await response.json()
   }
 
-  // Kullanıcı yönetimi
   async getUsers() {
     return this.request("/api/admin/users")
   }
@@ -61,7 +53,6 @@ export class AdminAPIClient {
     })
   }
 
-  // Kayıt istekleri yönetimi
   async getRegistrations() {
     return this.request("/api/admin/registrations")
   }
@@ -80,7 +71,6 @@ export class AdminAPIClient {
     })
   }
 
-  // Sınıf yönetimi
   async getClasses() {
     return this.request("/api/admin/classes")
   }
@@ -92,7 +82,6 @@ export class AdminAPIClient {
     })
   }
 
-  // Öğrenci yönetimi
   async getStudents(classId?: string) {
     const query = classId ? `?classId=${classId}` : ""
     return this.request(`/api/admin/students${query}`)
@@ -105,7 +94,6 @@ export class AdminAPIClient {
     })
   }
 
-  // Raporlama
   async getSystemStats() {
     return this.request("/api/admin/stats")
   }
@@ -118,7 +106,6 @@ export class AdminAPIClient {
   }
 }
 
-// Webhook handler
 export class WebhookHandler {
   private webhookUrl: string
   private secret: string
@@ -154,12 +141,10 @@ export class WebhookHandler {
   }
 
   private generateSignature(event: string, data: any): string {
-    // Basit signature oluşturma (production'da HMAC kullanılmalı)
     const payload = JSON.stringify({ event, data })
     return Buffer.from(`${this.secret}:${payload}`).toString("base64")
   }
 
-  // Webhook olayları
   async notifyUserCreated(user: any) {
     return this.sendEvent("user.created", user)
   }
@@ -177,7 +162,6 @@ export class WebhookHandler {
   }
 }
 
-// Toplu işlemler için yardımcı fonksiyonlar
 export class BulkOperations {
   private apiClient: AdminAPIClient
 
@@ -212,7 +196,6 @@ export class BulkOperations {
   }
 }
 
-// Veri senkronizasyonu
 export class DataSync {
   private sourceAPI: AdminAPIClient
   private targetAPI: AdminAPIClient
@@ -230,7 +213,6 @@ export class DataSync {
     const sourceUserIds = new Set(sourceUsers.map((u: any) => u.id))
     const targetUserIds = new Set(targetUsers.map((u: any) => u.id))
 
-    // Yeni kullanıcıları ekle
     const newUsers = sourceUsers.filter((u: any) => !targetUserIds.has(u.id))
     for (const user of newUsers) {
       await this.targetAPI.createUser(user)
@@ -258,7 +240,6 @@ export class DataSync {
   }
 }
 
-// Örnek kullanım
 export function createAdminIntegration(config: {
   schoolSystemUrl: string
   adminPanelUrl: string

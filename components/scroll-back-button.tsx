@@ -1,4 +1,3 @@
-// components/scroll-back-button.tsx
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -9,7 +8,6 @@ export function ScrollBackButton() {
   const router = useRouter()
 
   const handleClick = useCallback(() => {
-    // Eğer geri gidecek bir geçmiş varsa history.back, yoksa ana sayfa
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back()
     } else {

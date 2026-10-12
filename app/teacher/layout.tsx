@@ -54,8 +54,6 @@ const navigation = [
   { name: "Tatil Bildirimleri", href: "/teacher/holidays", icon: Calendar },
 ]
 
-// --------------------------------------------------
-
 function saveTeacherNotificationReadSet(userId: string | null, set: Set<string>) {
   if (typeof window === "undefined") return
   try {
@@ -112,8 +110,6 @@ function getTeacherNotificationReadSet(userId: string | null): Set<string> {
   }
 }
 
-// --------------------------------------------------
-
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState<VbsUser | null>(null)
@@ -125,7 +121,6 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   const router = useRouter()
   const pathname = usePathname()
 
-  // AUTH GUARD
   useEffect(() => {
     const u = readVbsUser()
     const nextUrl = `/login?next=${encodeURIComponent(pathname || "/teacher/dashboard")}`
@@ -145,7 +140,6 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     setLoading(false)
   }, [router, pathname])
 
-  // NOTIFICATIONS
   useEffect(() => {
     if (!user) return
     let cancelled = false
@@ -358,9 +352,6 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   </div>
 </div>
 
-
-
-
       {/* ----------------------------- */}
       {/* DESKTOP SIDEBAR (PC) */}
       {/* ----------------------------- */}
@@ -487,7 +478,6 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     ? `Hoş geldiniz, ${displayName} hocam`
     : (navigation.find(i => i.href === pathname)?.name || "Öğretmen Paneli")}
 </h1>
-
 
             </div>
 

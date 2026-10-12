@@ -24,14 +24,12 @@ const formatDateTime = (value?: string) => {
     return value
   }
 
-  // 👇 Sadece tarih, burada da saat yok
   return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   }).format(d)
 }
-
 
 type GuidanceStudentRaw = {
   studentId?: number
@@ -200,7 +198,6 @@ export default function StudentAnalysisPage() {
   </CardContent>
 </Card>
 
-
         <Card>
   <CardHeader>
     <CardTitle className="flex items-center gap-2">
@@ -214,7 +211,6 @@ export default function StudentAnalysisPage() {
     </p>
   </CardContent>
 </Card>
-
 
         <Card>
           <CardHeader>

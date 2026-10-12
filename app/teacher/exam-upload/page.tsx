@@ -69,17 +69,14 @@ export default function ExamUploadPage() {
     }
   }, [])
 
-  // classes
   const [classes, setClasses] = useState<ClassItem[]>([])
   const [classesLoading, setClassesLoading] = useState(true)
   const [classesError, setClassesError] = useState<string | null>(null)
 
-  // exam list
   const [examResults, setExamResults] = useState<GeneralExamItem[]>([])
   const [listLoading, setListLoading] = useState(false)
   const [listError, setListError] = useState<string | null>(null)
 
-  // dialogs
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false)
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false)
@@ -87,7 +84,6 @@ export default function ExamUploadPage() {
   const [isAnalysisViewOpen, setIsAnalysisViewOpen] = useState(false)
   const [viewAnalysisContent, setViewAnalysisContent] = useState("")
 
-  // form fields
   const [selectedGrade, setSelectedGrade] = useState("")
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([])
   const [examTitle, setExamTitle] = useState("")
@@ -100,8 +96,6 @@ export default function ExamUploadPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(null)
 
-
-  // grade options
   const gradeOptions = useMemo(() => {
     const dynamic = Array.from(
       new Set(
@@ -136,8 +130,6 @@ const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(nul
   setDeleteConfirmOpen(true)
 }
 
-
-  // LOAD CLASSES
   useEffect(() => {
     const ctrl = new AbortController()
 
@@ -179,7 +171,6 @@ const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(nul
     return () => ctrl.abort()
   }, [])
 
-  // LOAD EXAMS
   async function refreshExams() {
     try {
       setListLoading(true)
@@ -255,7 +246,6 @@ const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(nul
     refreshExams()
   }, [])
 
-  // File change
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -278,7 +268,6 @@ const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(nul
     setSelectedFileBlobUrl(URL.createObjectURL(file))
   }
 
-  // UPLOAD NEW EXAM
 async function handleUploadExam() {
   if (selectedClassIds.length === 0 || !examTitle || !selectedFile) {
     toast.error("Ders, başlık ve dosya zorunludur.", {
@@ -290,7 +279,6 @@ async function handleUploadExam() {
 
   setBusy(true)
   try {
-    // upload image
     const form = new FormData()
     form.append("Image", selectedFile)
 
@@ -307,7 +295,6 @@ async function handleUploadExam() {
 
     const filePath = uploadJson.fileUrl
 
-    // teacher id
     const parsed = JSON.parse(localStorage.getItem("vbs:user") || "{}")
     const teacherId = parsed?.user?.teacherNumericId
       ? Number(parsed.user.teacherNumericId)
@@ -328,7 +315,6 @@ async function handleUploadExam() {
       position: "bottom-right",
     })
 
-    // Reset UI
     setIsUploadDialogOpen(false)
     setSelectedGrade("")
     setSelectedClassIds([])
@@ -348,7 +334,6 @@ async function handleUploadExam() {
   }
 }
 
-// CREATE ANALYSIS
 async function handleCreateAnalysis() {
   if (!selectedExamForAnalysis || !analysisContent.trim()) {
     toast.error("Sınav ve analiz içeriği zorunludur.", {
@@ -388,7 +373,6 @@ async function handleCreateAnalysis() {
   }
 }
 
-
   async function handleDeleteExam() {
   if (!deleteTargetId) return
 
@@ -411,8 +395,6 @@ async function handleCreateAnalysis() {
     })
   }
 }
-
-
 
   function handleImagePreview(url: string) {
     setPreviewImageUrl(url)
@@ -438,9 +420,6 @@ async function handleCreateAnalysis() {
     return Array.from(map.values()).reduce((a, b) => a + b, 0)
   }, [examResults])
 
-  // ======================================================
-  // 🚀 PREMIUM LOADER
-  // ======================================================
   if (classesLoading || listLoading) {
     return (
       <div className="flex items-center justify-center min-h-[380px]">
@@ -452,9 +431,6 @@ async function handleCreateAnalysis() {
     )
   }
 
-  // ======================================================
-  // NORMAL RENDER
-  // ======================================================
   return (
     <div className="space-y-6">
       {/* HEADER */}
@@ -779,7 +755,6 @@ async function handleCreateAnalysis() {
     </Button>
   </div>
 </div>
-
 
     {/* SINIF + ANALİZ BADGE */}
     <div className="flex items-center gap-2">

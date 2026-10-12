@@ -1,4 +1,3 @@
-// app/api/teacher/homework/[id]/submissions/route.ts  (mevcut dosyanın yerine)
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -19,7 +18,6 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-
 const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
 function noStore(res: NextResponse) {
@@ -37,13 +35,11 @@ async function readJson(r: Response) {
 function buildAuthHeaders(req: NextRequest) {
   const headers: Record<string, string> = { Accept: "application/json" }
 
-  // Authorization header öncelikli; yoksa cookie token (opsiyonel)
   const ah = req.headers.get("authorization") || ""
   const cookieToken = req.cookies.get("authToken")?.value
   if (ah.toLowerCase().startsWith("bearer ")) headers.Authorization = ah
   else if (cookieToken) headers.Authorization = `Bearer ${cookieToken}`
 
-  // Cookie-based oturum varsa çerezi upstream’e geçir
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) headers.Cookie = incomingCookie
 
@@ -54,7 +50,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   try {
     const headers = buildAuthHeaders(req)
 
-    // Query parametreleri varsa aynen aktar
     const upstreamUrl = new URL(u(`/api/vbs/teacher/homework/${params.id}/submissions`))
     req.nextUrl.searchParams.forEach((v, k) => upstreamUrl.searchParams.set(k, v))
 

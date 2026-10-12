@@ -1,4 +1,3 @@
-// /types/parent-types.ts
 
 export type VbsUser = {
   id: string

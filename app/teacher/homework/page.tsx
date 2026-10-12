@@ -59,14 +59,12 @@ export default function HomeworkManagementPage() {
   const [listLoading, setListLoading] = useState(false)
   const [listError, setListError] = useState<string | null>(null)
 
-  // create dialog state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedClass, setSelectedClass] = useState("")
   const [homeworkTitle, setHomeworkTitle] = useState("")
   const [homeworkDescription, setHomeworkDescription] = useState("")
   const [dueDate, setDueDate] = useState("")
 
-  // archive & edit
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingHomework, setEditingHomework] = useState<HomeworkItem | null>(null)
@@ -74,7 +72,6 @@ export default function HomeworkManagementPage() {
   const [editDescription, setEditDescription] = useState("")
   const [editDueDate, setEditDueDate] = useState("")
 
-  // Bilgilendirme kutusu (sağ üst, çarpılı)
   const [showInfo, setShowInfo] = useState(true)
 
   useEffect(() => {
@@ -91,7 +88,6 @@ export default function HomeworkManagementPage() {
     }
   }
 
-  // ==== Load classes from backend (real) ====
   useEffect(() => {
     const ctrl = new AbortController()
     ;(async () => {
@@ -119,7 +115,6 @@ export default function HomeworkManagementPage() {
     return () => ctrl.abort()
   }, [])
 
-  // ==== List homework via local proxy ====
   async function refreshHomework() {
     try {
       setListLoading(true)
@@ -140,16 +135,14 @@ export default function HomeworkManagementPage() {
     refreshHomework()
   }, [])
 
-  // ==== Create ====
   async function handleCreateHomework() {
     try {
       const payload = {
         classId: Number(selectedClass),
         title: homeworkTitle.trim(),
         description: homeworkDescription.trim() || null,
-        // date input yyyy-mm-dd → iso
         dueDate: new Date(dueDate + "T00:00:00").toISOString(),
-        teacherId: undefined as number | undefined, // ileride claim’den doldurulabilir
+        teacherId: undefined as number | undefined,
       }
       const res = await fetch("/api/teacher/homework", {
         method: "POST",
@@ -173,7 +166,6 @@ export default function HomeworkManagementPage() {
     }
   }
 
-  // ==== Archive cleanup (older/expired) ====
   async function handleArchiveCleanup() {
     try {
       const res = await fetch("/api/teacher/homework?action=cleanup", {
@@ -189,7 +181,6 @@ export default function HomeworkManagementPage() {
     }
   }
 
-  // ==== Edit / Update ====
   function handleEditHomework(h: HomeworkItem) {
     setEditingHomework(h)
     setEditTitle(h.title)
@@ -222,7 +213,6 @@ export default function HomeworkManagementPage() {
     }
   }
 
-  // ==== Delete ====
   async function handleDeleteHomework(id: number) {
     if (!confirm("Bu ödevi silmek istediğinizden emin misiniz?")) return
     try {

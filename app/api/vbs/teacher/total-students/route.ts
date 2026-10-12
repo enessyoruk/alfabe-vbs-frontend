@@ -27,7 +27,6 @@ export async function GET(req: NextRequest) {
       Accept: "application/json",
     }
 
-    // JWT cookie → backend'e forward et
     const cookie = req.headers.get("cookie")
     if (cookie) headers["Cookie"] = cookie
 

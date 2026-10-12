@@ -1,4 +1,3 @@
-// components/auth/auth-background.tsx
 "use client"
 
 import type { ReactNode } from "react"

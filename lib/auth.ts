@@ -1,9 +1,8 @@
-// /lib/auth.ts
 export type VbsUser = {
   id: string
   email: string
   name: string
-  roles: string[] // ["Parent"] | ["Teacher"] | ["Admin"]
+  roles: string[]
 }
 
 export interface User {
@@ -43,7 +42,6 @@ function clearUser() {
   try { localStorage.removeItem(STORAGE_KEY) } catch {}
 }
 
-/* Görsel amaçlı non-HttpOnly cookie’ler (middleware bunları KULLANMIYOR) */
 function setCookie(name: string, value: string, maxAgeSec: number) {
   const isHttps = typeof window !== "undefined" && window.location?.protocol === "https:"
   const secure = isHttps ? "; Secure" : ""
@@ -57,7 +55,7 @@ export function setSession(user: VbsUser) {
   saveUser(user)
   const oneWeek = 60 * 60 * 24 * 7
   const role = user.roles?.includes("Teacher") ? "Teacher" : user.roles?.includes("Parent") ? "Parent" : ""
-  setCookie("vbs_auth", "1", oneWeek) // sadece UI kolaylığı
+  setCookie("vbs_auth", "1", oneWeek)
   if (role) setCookie("vbs_role", role, oneWeek)
 }
 
@@ -71,7 +69,6 @@ export const authService = {
   async login(emailInput: string, password: string, _userType?: "parent" | "teacher" | "admin"): Promise<VbsUser & { type?: User["type"] }> {
     const email = emailInput?.trim()
 
-    // 🔁 ÖNEMLİ: Proxy edilen Next.js route’u kullan
     const res = await fetch(`/api/auth/login`, {
       method: "POST",
       credentials: "include",
@@ -90,7 +87,6 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     clearSession()
-    // backend vbs_session’ı temizlemeyi Next.js proxy ile de yapabiliriz (gerekirse ekleriz)
     return
   },
 
@@ -132,7 +128,6 @@ export const authService = {
   },
 
   async checkEmail(email: string): Promise<{ available: boolean }> {
-    // (aynen bırakıyoruz; gerekirse ayrı proxy ekleriz)
     const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE}/api/vbs/auth/check-email`)
     url.searchParams.set("email", email.trim().toLowerCase())
     const res = await fetch(url.toString(), { method: "GET", credentials: "include", mode: "cors" })
@@ -150,7 +145,7 @@ export const authService = {
     password: string
     userType: "parent" | "teacher"
   }): Promise<{ message: string }> {
-    const res = await fetch(`/api/auth/register`, { // istersen bunu da proxyye alırız; şimdilik direkt backend’e de gidebilir
+    const res = await fetch(`/api/auth/register`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

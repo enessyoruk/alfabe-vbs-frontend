@@ -23,10 +23,6 @@ import type {
   VbsUser,
 } from "@/types/parent-types"
 
-/* ============================================================= */
-/* ========================= HELPERS =========================== */
-/* ============================================================= */
-
 const parseStoredUser = (raw: string | null): VbsUser | null => {
   if (!raw) return null
   try {
@@ -37,10 +33,6 @@ const parseStoredUser = (raw: string | null): VbsUser | null => {
   }
 }
 
-/* ============================================================= */
-/* ======================= MAIN PAGE =========================== */
-/* ============================================================= */
-
 export default function ParentDashboardPage() {
   const router = useRouter()
 
@@ -50,7 +42,6 @@ export default function ParentDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  /* ------------------- AUTH GUARD -------------------- */
   useEffect(() => {
     const raw = localStorage.getItem("vbs:user")
     const u = parseStoredUser(raw)
@@ -64,7 +55,6 @@ export default function ParentDashboardPage() {
     setUser(u)
   }, [router])
 
-  /* ---------------- NORMALIZERS (FAST) ---------------- */
   const normalizeStudent = useCallback((x: ApiStudent): UiStudent => {
     return {
       id: String(x.id ?? ""),
@@ -92,7 +82,6 @@ export default function ParentDashboardPage() {
     []
   )
 
-  /* ------------------ FETCH DATA ---------------------- */
   useEffect(() => {
     if (!user) return
 
@@ -152,7 +141,6 @@ export default function ParentDashboardPage() {
     return () => ac.abort()
   }, [user, router, normalizeStudent, normalizeNotification])
 
-  /* ----------------- LOADING SCREEN ------------------- */
   if (isLoading) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm z-50">
@@ -163,10 +151,6 @@ export default function ParentDashboardPage() {
       </div>
     )
   }
-
-  /* ============================================================= */
-  /* ========================== UI =============================== */
-  /* ============================================================= */
 
   return (
     <div className="space-y-6">

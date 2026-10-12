@@ -1,4 +1,3 @@
-// app/parent/guidance-notes/page.tsx
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
@@ -21,7 +20,6 @@ import {
   NotebookTabs,
 } from "lucide-react"
 
-// ⭐ Modern dropdown için gerekli importlar
 import {
   Select,
   SelectTrigger,
@@ -30,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-
 
 type GuidanceNote = {
   id: string
@@ -76,7 +73,6 @@ export default function ParentGuidanceNotesPage() {
   const [selectedStudent, setSelectedStudent] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState<string>("")
 
-  // ---------------- AUTH ----------------
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -108,7 +104,6 @@ export default function ParentGuidanceNotesPage() {
     }
   }, [router])
 
-  // ---------------- FETCH ----------------
   useEffect(() => {
     if (!authChecked) return
 
@@ -145,7 +140,6 @@ if ([401, 403].includes(studentsRes.status)) {
   router.replace("/login")
   return
 }
-
 
         const notesJson = await notesRes.json().catch(() => ({}))
         const items = Array.isArray(notesJson.items) ? notesJson.items : []
@@ -195,7 +189,6 @@ if ([401, 403].includes(studentsRes.status)) {
     fetchAll()
   }, [authChecked, router])
 
-  // ---------------- OPTIONS ----------------
   const studentOptions: StudentOption[] = useMemo(() => {
     if (students.length > 0) return students
 

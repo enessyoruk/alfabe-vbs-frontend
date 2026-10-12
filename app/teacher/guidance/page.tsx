@@ -35,7 +35,6 @@ import {
 } from "lucide-react"
 import { http, endpoints } from "@/lib/api"
 
-// 🔹 Tek tek rehberlik notu tipi
 type GuidanceNote = {
   id: string
   area: string
@@ -45,7 +44,6 @@ type GuidanceNote = {
   isForParent?: boolean
 }
 
-// 🔹 Öğrenci tipi + rehberlik notları
 type GuidanceStudent = {
   id: string
   name: string
@@ -74,7 +72,6 @@ const developmentAreas = [
   "Stres Yönetimi",
 ]
 
-// Yerel tarih/saat formatlayıcı
 const formatDateTime = (value?: string) => {
   if (!value) return ""
   const d = new Date(value)
@@ -246,7 +243,6 @@ export default function GuidancePage() {
     }
   }
 
-  // 🔹 SINIF SEÇENEKLERİ
   const classOptions = Array.from(
     studentsData.reduce((map, s) => {
       if (s.classId > 0 && !map.has(s.classId)) {
@@ -258,7 +254,6 @@ export default function GuidancePage() {
     .map(([id, name]) => ({ id: String(id), name }))
     .sort((a, b) => Number(a.id) - Number(b.id))
 
-  // 🧠 Filtrelenmiş tüm öğrenciler
   const filteredStudents = studentsData.filter((student) => {
     if (
       selectedClass &&
@@ -275,7 +270,6 @@ export default function GuidancePage() {
     return true
   })
 
-  // ⭐ PAGINATION CALC
   const totalPages = Math.max(
     1,
     Math.ceil(filteredStudents.length / PAGE_SIZE),
@@ -342,7 +336,6 @@ export default function GuidancePage() {
   setNoteContent("")
 }
 
-
   const handleParentNote = async () => {
     try {
       if (!selectedStudent) {
@@ -372,7 +365,6 @@ export default function GuidancePage() {
     router.push(`/teacher/guidance/analysis/${studentId}`)
   }
 
-  // Statü hesapla
   const getStudentStatus = (student: GuidanceStudent) => {
     const {
       homeworkParticipation,
@@ -523,7 +515,7 @@ export default function GuidancePage() {
               value={filterStatus}
               onValueChange={(v: any) => {
                 setFilterStatus(v)
-                setPage(1) // PAGINATION RESET
+                setPage(1)
               }}
             >
               <SelectTrigger className="w-48">
@@ -543,7 +535,7 @@ export default function GuidancePage() {
               value={selectedClass}
               onValueChange={(v) => {
                 setSelectedClass(v)
-                setPage(1) // PAGINATION RESET
+                setPage(1)
               }}
             >
               <SelectTrigger className="w-48">

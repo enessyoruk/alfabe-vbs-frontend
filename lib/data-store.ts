@@ -1,12 +1,7 @@
-// lib/data-store.ts
-// Merkezi mock veri deposu (kalıcı: localStorage)
-// - Tarayıcıda persist eder, SSR/edge güvenli kontroller içerir
-// - İleride backend’e taşımak kolay: sadece load/save katmanını değiştir
 
 import { getLocalJson, setLocalJson, isBrowser } from "@/lib/utils"
 import { notificationService } from "@/lib/notification-service"
 
-/* ======================= Türler ======================= */
 export type StudentId = string
 export type ParentId = string
 export type TeacherId = string
@@ -32,8 +27,8 @@ export interface Homework {
   title: string
   description: string
   subject: string
-  assignedDate: string // ISO
-  dueDate: string      // ISO
+  assignedDate: string
+  dueDate: string
   status: HomeworkStatus
   submissions: HomeworkSubmission[]
 }
@@ -47,8 +42,8 @@ export interface ExamResult {
   className: string
   subject: string
   examTitle: string
-  examDate: string // ISO
-  uploadDate: string // ISO
+  examDate: string
+  uploadDate: string
   score: number
   maxScore: number
   grade: string
@@ -68,7 +63,7 @@ export interface GeneralExamResult {
   className: string
   examTitle: string
   description: string
-  uploadDate: string // ISO
+  uploadDate: string
   fileName: string
   fileUrl: string
   studentCount: number
@@ -76,14 +71,11 @@ export interface GeneralExamResult {
   analysis: string | null
 }
 
-/* ======================= Varsayılan Seed ======================= */
-// Parent-Student mapping
 const DEFAULT_PARENT_STUDENT_MAP: Record<ParentId, StudentId[]> = {
   "1": ["1", "2"],
   "2": ["3"],
 }
 
-// Teacher-Class mapping
 const DEFAULT_TEACHER_CLASS_MAP: Record<TeacherId, ClassId[]> = {
   "1": ["1", "2"],
   "2": ["3"],
@@ -224,7 +216,6 @@ const DEFAULT_GENERAL_EXAM_RESULTS: GeneralExamResult[] = [
   },
 ]
 
-/* ======================= LS Anahtarları ======================= */
 const LS_KEYS = {
   PARENT_MAP: "vbs:parent-students",
   TEACHER_MAP: "vbs:teacher-classes",
@@ -233,7 +224,6 @@ const LS_KEYS = {
   EXAMS_GENERAL: "vbs:exam-results-general",
 }
 
-/* ======================= Bellek + Persist ======================= */
 let parentStudentMap: Record<ParentId, StudentId[]> =
   getLocalJson<Record<ParentId, StudentId[]>>(LS_KEYS.PARENT_MAP, DEFAULT_PARENT_STUDENT_MAP) ||
   DEFAULT_PARENT_STUDENT_MAP
@@ -261,8 +251,6 @@ function persistAll() {
   setLocalJson(LS_KEYS.EXAMS_GENERAL, generalExamResultsStore)
 }
 
-/* ======================= Public API ======================= */
-// Eşlemeleri dışa ver (read-only kopya)
 export function getParentStudentMap(): Record<ParentId, StudentId[]> {
   return { ...parentStudentMap }
 }
@@ -270,7 +258,6 @@ export function getTeacherClassMap(): Record<TeacherId, ClassId[]> {
   return { ...teacherClassMap }
 }
 
-// Setters (login/seed sonrası çağırılabilir)
 export function setParentStudentMap(map: Record<ParentId, StudentId[]>) {
   parentStudentMap = map
   notificationService.setParentStudentMap(map)
@@ -281,7 +268,6 @@ export function setTeacherClassMap(map: Record<TeacherId, ClassId[]>) {
   persistAll()
 }
 
-/* ---- Sorgular ---- */
 export function getStudentsByParentId(parentId: ParentId): StudentId[] {
   return parentStudentMap[parentId] || []
 }
@@ -302,7 +288,6 @@ export function getGeneralExamResultsByClassId(classId: ClassId): GeneralExamRes
   return generalExamResultsStore.filter((e) => e.classId === classId)
 }
 
-/* ---- Mutasyonlar ---- */
 export function addHomework(hw: Homework, options?: { notify?: boolean }) {
   homeworkStore = [hw, ...homeworkStore]
   persistAll()
@@ -317,7 +302,6 @@ export function addHomework(hw: Homework, options?: { notify?: boolean }) {
       teacherName: undefined,
     })
   }
-  // console.log("[store] Homework added. Total:", homeworkStore.length)
 }
 
 export function updateHomeworkSubmission(
@@ -353,7 +337,6 @@ export function addExamResult(exam: ExamResult, options?: { notify?: boolean }) 
       teacherName: undefined,
     })
   }
-  // console.log("[store] Exam result added. Total:", examResultsStore.length)
 }
 
 export function addGeneralExamResult(exam: GeneralExamResult, options?: { notify?: boolean }) {
@@ -366,13 +349,10 @@ export function addGeneralExamResult(exam: GeneralExamResult, options?: { notify
       classId: exam.classId,
       className: exam.className,
       examTitle: exam.examTitle,
-      // genel sınav duyurusu → studentId yok
     })
   }
-  // console.log("[store] General exam result added. Total:", generalExamResultsStore.length)
 }
 
-/* ---- Admin/Test yardımcıları ---- */
 export function resetStoreToDefaults() {
   parentStudentMap = { ...DEFAULT_PARENT_STUDENT_MAP }
   teacherClassMap = { ...DEFAULT_TEACHER_CLASS_MAP }

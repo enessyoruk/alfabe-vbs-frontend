@@ -1,4 +1,3 @@
-// app/api/attendance/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -28,7 +27,6 @@ async function readJson(r: Response) {
   try { return t ? JSON.parse(t) : {} } catch { return t ? { message: t } : {} }
 }
 
-// 🔥 DOĞRU AUTH — vbs_session
 function buildAuthHeaders(req: NextRequest) {
   const headers: Record<string, string> = { Accept: "application/json" }
 
@@ -46,7 +44,6 @@ function buildAuthHeaders(req: NextRequest) {
   return headers
 }
 
-// ------------------ GET ------------------
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
@@ -91,7 +88,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ------------------ POST ------------------
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
@@ -117,7 +113,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ------------------ PUT ------------------
 export async function PUT(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)

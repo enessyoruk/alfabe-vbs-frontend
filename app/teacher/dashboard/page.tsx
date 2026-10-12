@@ -1,4 +1,3 @@
-// app/teacher/dashboard/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -42,9 +41,6 @@ type QuickStat = {
   bgColor: string
 }
 
-//
-// 🔥 GÜNCEL — Artık yalnızca attendanceAverage + homeworkParticipation var
-//
 type ClassPerformanceItem = {
   className: string
   homeworkParticipation: number
@@ -63,7 +59,6 @@ type DashboardNotification = {
   color: string
 }
 
-// Dashboard içi hafif tipler
 type HomeworkSummary = {
   id: number | string
   classId: number | string
@@ -91,7 +86,6 @@ export default function TeacherDashboardPage() {
   const [generalNotifications, setGeneralNotifications] = useState<DashboardNotification[]>([])
   const [isDataLoading, setIsDataLoading] = useState(true)
 
-  // --- Guard: sadece Teacher ---
   useEffect(() => {
     try {
       const raw =
@@ -118,7 +112,6 @@ export default function TeacherDashboardPage() {
     }
   }, [router])
 
-  // --- Dashboard verilerini yükle ---
   useEffect(() => {
     if (isAuthLoading) return
     const ctrl = new AbortController()
@@ -127,7 +120,6 @@ export default function TeacherDashboardPage() {
       try {
         setIsDataLoading(true)
 
-        // === USER BİLGİSİ ===
         const raw =
           typeof window !== "undefined" ? localStorage.getItem("vbs:user") : null
         const stored = raw ? JSON.parse(raw) : null
@@ -139,9 +131,6 @@ export default function TeacherDashboardPage() {
           return
         }
 
-        // ======================================================
-        // 1) SINIFLAR
-        // ======================================================
         let mappedClasses: TeacherClass[] = []
         try {
           const res = await fetch(endpoints.teacher.classes, {
@@ -184,9 +173,6 @@ export default function TeacherDashboardPage() {
 
         setTeacherClasses(mappedClasses)
 
-        // ======================================================
-        // X) CLASS PERFORMANCE — Gerçek analytics endpointi
-        // ======================================================
         let perf: ClassPerformanceItem[] = []
 
         for (const cls of mappedClasses) {
@@ -214,11 +200,6 @@ export default function TeacherDashboardPage() {
 
         setClassPerformance(perf)
 
-
-
-      // =====================================================================
-      // 2) TOPLAM ÖĞRENCİ SAYISI (backend → total-students)
-      // =====================================================================
       let totalStudents = 0
       try {
         const totalRes = await http.get<any>(
@@ -230,9 +211,6 @@ export default function TeacherDashboardPage() {
         console.error("[dashboard] teacher.total-students hata:", err)
       }
 
-      // =====================================================================
-      // 3) ÖDEV/EXAM endpointleri (dokunmadım)
-      // =====================================================================
       let homeworkItems: HomeworkSummary[] = []
       try {
         const hwRes = await fetch("/api/teacher/homework", {
@@ -276,9 +254,6 @@ export default function TeacherDashboardPage() {
         }
       }
 
-      // =====================================================================
-      // 4) SINAVLAR (dokunmadım)
-      // =====================================================================
       let examItems: ExamSummary[] = []
       try {
         const exRes = await fetch(endpoints.teacher.exams, {
@@ -288,7 +263,6 @@ export default function TeacherDashboardPage() {
   cache: "no-store",
   signal: ctrl.signal,
 })
-
 
         if (exRes.ok) {
           const exJson = await exRes.json()
@@ -332,10 +306,6 @@ export default function TeacherDashboardPage() {
         }
       }
 
-      // =====================================================================
-      // 5) QUICK STATS (Toplam öğrenci → totalStudents)
-      // =====================================================================
-
       const today = new Date()
       const activeHomeworkCount = homeworkItems.filter((hw) => {
         if (!hw.classId) return false
@@ -357,7 +327,7 @@ export default function TeacherDashboardPage() {
       setQuickStats([
         {
           title: "Toplam Öğrenci",
-          value: totalStudents,          // ✔ DÜZELTİLDİ
+          value: totalStudents,
           icon: Users,
           color: "text-secondary",
           bgColor: "bg-secondary/10",
@@ -378,9 +348,6 @@ export default function TeacherDashboardPage() {
         },
       ])
 
-      // =====================================================================
-      // 6) Bildirimler (dokunmadım)
-      // =====================================================================
       try {
         const notRes = await http.get<any>(
           endpoints.teacher.notifications,
@@ -412,9 +379,9 @@ export default function TeacherDashboardPage() {
     .sort((a, b) => {
       const d1 = new Date(a.date || 0).getTime()
       const d2 = new Date(b.date || 0).getTime()
-      return d2 - d1 // en yeni üste
+      return d2 - d1
     })
-    .slice(0, 3) // sadece en yeni 5 duyuru
+    .slice(0, 3)
 )
 
       } catch (err) {
@@ -430,8 +397,6 @@ export default function TeacherDashboardPage() {
 
   return () => ctrl.abort()
 }, [isAuthLoading])
-
-
 
   if (isAuthLoading) {
     return (
@@ -617,8 +582,6 @@ export default function TeacherDashboardPage() {
 
 </div>
 
-
-
   </div>
 </div>
 
@@ -670,7 +633,6 @@ export default function TeacherDashboardPage() {
   </div>
 
 </div>
-
 
       <div className="grid grid-cols-2 gap-3">
         <div>

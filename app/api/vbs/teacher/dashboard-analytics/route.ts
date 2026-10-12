@@ -1,4 +1,3 @@
-// app/api/vbs/teacher/analytics/route.ts  (mevcut dosyanın yerine uygula)
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -19,7 +18,6 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-
 const UPSTREAM_PATH = "/api/vbs/teacher/analytics"
 const u = (p: string) => `${BACKEND_API_BASE}${p.startsWith("/") ? "" : "/"}${p}`
 
@@ -38,13 +36,11 @@ async function readJson(r: Response) {
 function buildAuthHeaders(req: NextRequest) {
   const headers: Record<string, string> = { Accept: "application/json" }
 
-  // Authorization header öncelikli; yoksa cookie token (opsiyonel)
   const ah = req.headers.get("authorization") || ""
   const cookieToken = req.cookies.get("authToken")?.value
   if (ah.toLowerCase().startsWith("bearer ")) headers.Authorization = ah
   else if (cookieToken) headers.Authorization = `Bearer ${cookieToken}`
 
-  // Cookie-based oturum varsa çerezi upstream’e geçir
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) headers.Cookie = incomingCookie
 
@@ -55,7 +51,6 @@ export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    // Query parametrelerini aynen forward et (classId, period vs.)
     const upstreamUrl = new URL(u(UPSTREAM_PATH))
     req.nextUrl.searchParams.forEach((v, k) => upstreamUrl.searchParams.set(k, v))
 
@@ -82,7 +77,7 @@ export async function POST(req: NextRequest) {
     const headers = buildAuthHeaders(req)
     headers["Content-Type"] = "application/json"
 
-    const body = await req.text() // gövdeyi değiştirmeden ilet
+    const body = await req.text()
     const up = await fetch(u(UPSTREAM_PATH), {
       method: "POST",
       cache: "no-store",

@@ -18,15 +18,11 @@ async function readJson(r: Response) {
   }
 }
 
-/* ============================== */
-/*            GET                 */
-/* ============================== */
 export async function GET(req: NextRequest) {
   try {
     const cookieHeader = req.headers.get("cookie") ?? ""
 
     const upstreamUrl = new URL(UPSTREAM)
-    // FE → ?studentId=... gibi query'leri backend’e aynen ilet
     req.nextUrl.searchParams.forEach((v, k) =>
       upstreamUrl.searchParams.set(k, v)
     )
@@ -58,9 +54,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/* ============================== */
-/*            POST                */
-/* ============================== */
 export async function POST(req: NextRequest) {
   try {
     const cookieHeader = req.headers.get("cookie") ?? ""

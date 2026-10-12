@@ -1,12 +1,8 @@
-// app/api/vbs/teacher/guidance/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-
-
-// Env fallback
 function requiredEnv(name: string): string {
   const val = process.env[name]
   if (!val || !val.trim()) {
@@ -52,26 +48,21 @@ function buildAuthHeaders(req: NextRequest): Record<string, string> {
     Accept: "application/json",
   }
 
-  // Eğer Authorization varsa → kullan
   const ah = req.headers.get("authorization") || ""
   if (ah.toLowerCase().startsWith("bearer ")) {
     headers.Authorization = ah
   } else {
-    // HttpOnly cookie → vbs_session
     const session = req.cookies.get("vbs_session")?.value
     if (session) {
       headers.Authorization = `Bearer ${session}`
     }
   }
 
-  // Normal Cookie header — bazı isteklerde boştur
   const incomingCookie = req.headers.get("cookie")
   if (incomingCookie) {
     headers.Cookie = incomingCookie
   }
 
-  // ⭐ ZORUNLU FIX ⭐
-  // Next runtime cookie'yi POST/PUT sırasında saklıyor → biz zorla iletiyoruz
   const raw = req.cookies.toString()
   if (raw) {
     headers["X-Forwarded-Cookie"] = raw
@@ -80,9 +71,6 @@ function buildAuthHeaders(req: NextRequest): Record<string, string> {
   return headers
 }
 
-
-
-// GET: Öğrenci rehberlik verileri
 export async function GET(req: NextRequest) {
   
 
@@ -116,7 +104,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST: Yeni rehberlik notu ekleme
 export async function POST(req: NextRequest) {
  
 
@@ -151,7 +138,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT: Rehberlik kaydı güncelleme
 export async function PUT(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)

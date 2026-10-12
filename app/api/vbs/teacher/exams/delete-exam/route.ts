@@ -1,4 +1,3 @@
-// app/api/vbs/teacher/exams/delete-exam/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -29,23 +28,20 @@ function buildAuthHeaders(req: NextRequest) {
   return headers
 }
 
-// 🔥 ARTIK POST
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
 
-    // BACKEND’DEKİ POST ALIAS ROUTE
     const upstreamUrl = new URL(
       u("/api/vbs/teacher/exams/general/delete")
     )
 
-    // query string'i ileri taşı
     req.nextUrl.searchParams.forEach((v, k) =>
       upstreamUrl.searchParams.set(k, v)
     )
 
     const up = await fetch(upstreamUrl.toString(), {
-      method: "POST",           // 🔥 artık POST
+      method: "POST",
       credentials: "include",
       cache: "no-store",
       headers

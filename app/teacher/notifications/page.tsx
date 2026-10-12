@@ -15,7 +15,6 @@ type NotificationItem = {
   read: boolean
 }
 
-// Sadece teacher bildirimleri için basit userId okuyucu
 function readTeacherUserId(): string | null {
   if (typeof window === "undefined") return null
   try {
@@ -50,7 +49,6 @@ function saveTeacherNotificationReadSet(userId: string | null, set: Set<string>)
     const key = `vbs:teacher:notifications:read:${userId || "anon"}`
     window.localStorage.setItem(key, JSON.stringify(Array.from(set)))
   } catch {
-    // ignore
   }
 }
 
@@ -95,7 +93,6 @@ export default function TeacherNotificationsPage() {
         const userId = readTeacherUserId()
         const readSet = getTeacherNotificationReadSet(userId)
 
-        // Beklenen şekil: { items: [{ id, title, message, type, date }] }
         if (data && Array.isArray(data.items)) {
           const mapped: NotificationItem[] = data.items.map((n: any) => ({
             id: n.id,

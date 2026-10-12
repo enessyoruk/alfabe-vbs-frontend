@@ -3,9 +3,6 @@ import { SignJWT, jwtVerify, type JWTPayload } from "jose"
 
 export const runtime = "nodejs"
 
-// ======================================================
-// ENV HELPERS
-// ======================================================
 function requiredEnv(name: string): string {
   const val = process.env[name]
   if (!val || !val.trim()) {
@@ -23,9 +20,6 @@ if (!BACKEND_API_BASE) {
 
 const SESSION_SECRET = requiredEnv("SESSION_SECRET")
 
-// ======================================================
-// HELPERS
-// ======================================================
 function isValidEmail(v: unknown) {
   return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 }
@@ -60,7 +54,7 @@ function buildSessionCookie(token: string, req: NextRequest) {
     secure: isHttps(req),
     sameSite: "lax" as const,
     path: "/",
-    maxAge: 60 * 60 * 24, // 24h
+    maxAge: 60 * 60 * 24,
   }
 }
 
@@ -105,9 +99,6 @@ function normalizeRoles(raw: any): string[] {
   return []
 }
 
-// ======================================================
-// POST /login
-// ======================================================
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json().catch(() => ({}))
@@ -155,17 +146,11 @@ export async function POST(req: NextRequest) {
 
     const roles = normalizeRoles(user.roles)
 
-    // ======================================================
-    // 🔥 Session bilgisi (string'e çevrildi)
-    // ======================================================
     const sessionVersion = user.sessionVersion ?? null
     const sessionExpiresAt = user.sessionExpiresAt
       ? String(user.sessionExpiresAt)
       : null
 
-    // ======================================================
-    // JWT oluştur (tek cihaz login + timeout)
-    // ======================================================
     const token = await signSession({
       sub: String(user.id),
       email: String(user.email || ""),
@@ -196,9 +181,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ======================================================
-// GET /login
-// ======================================================
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("vbs_session")?.value

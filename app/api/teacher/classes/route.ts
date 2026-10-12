@@ -1,4 +1,3 @@
-// app/api/teacher/classes/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -32,7 +31,6 @@ export async function GET(req: NextRequest) {
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        // tarayıcıdaki vbs_session + vbs_role + vbs_auth komple backend'e gidiyor
         cookie: req.headers.get("cookie") ?? ""
       }
     })

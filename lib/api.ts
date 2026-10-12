@@ -1,6 +1,4 @@
-// lib/api.ts
 
-// Env yardımcı fonksiyon
 function resolveApiBase(): string {
   const base =
     process.env.NEXT_PUBLIC_API_BASE ||
@@ -19,7 +17,6 @@ export const API_BASE = resolveApiBase()
 
 type Json = Record<string, any> | any[]
 
-// Güvenli JSON parse
 async function readJson<T = any>(res: Response): Promise<T> {
   if (res.status === 204) return {} as T
   const text = await res.text()
@@ -32,7 +29,6 @@ async function readJson<T = any>(res: Response): Promise<T> {
 
 function buildUrl(path: string): string {
   if (path.startsWith("/api/")) {
-    // ⭐ Next.js API route — backend’e gitme
     return path
   }
 
@@ -44,9 +40,6 @@ function isFormData(body: any): body is FormData {
   return typeof FormData !== "undefined" && body instanceof FormData
 }
 
-// -------------------------------------------------------
-// 🔥 GLOBAL unauthorized handler (timeout | multi)
-// -------------------------------------------------------
 function handleUnauthorizedRedirect(reason?: "timeout" | "multi") {
   if (typeof window === "undefined") return
 
@@ -66,9 +59,6 @@ function handleUnauthorizedRedirect(reason?: "timeout" | "multi") {
   window.location.href = "/login"
 }
 
-// -------------------------------------------------------
-// 🔥 Tek noktadan fetch wrapper
-// -------------------------------------------------------
 export async function apiFetch<T = any>(
   path: string,
   init: RequestInit = {},
@@ -93,9 +83,6 @@ export async function apiFetch<T = any>(
     ...init,
   })
 
-  // -------------------------------------------------------
-  // 🔥 401 — timeout & multi-login ayrımı
-  // -------------------------------------------------------
   if (res.status === 401) {
     let reason: "timeout" | "multi" = "multi"
 
@@ -116,9 +103,6 @@ export async function apiFetch<T = any>(
     throw new Error("Unauthorized")
   }
 
-  // -------------------------------------------------------
-  // 🔥 RATE LIMIT
-  // -------------------------------------------------------
   if (res.status === 429) {
     const ra = res.headers.get("Retry-After")
     const wait = ra ? ` Lütfen ${ra} sn sonra tekrar deneyin.` : ""
@@ -127,9 +111,6 @@ export async function apiFetch<T = any>(
     throw new Error(msg + wait)
   }
 
-  // -------------------------------------------------------
-  // 🔥 Diğer hatalar
-  // -------------------------------------------------------
   if (!res.ok) {
     const data = await readJson<{ error?: string; message?: string }>(res)
     const msg = data?.error || data?.message || `API Error (HTTP ${res.status})`
@@ -141,9 +122,6 @@ export async function apiFetch<T = any>(
 
 export const backendFetch = apiFetch
 
-// -------------------------------------------------------
-// HTTP METHODS
-// -------------------------------------------------------
 export const http = {
   get: <T = any>(path: string, init?: RequestInit) =>
     apiFetch<T>(path, { method: "GET", ...(init || {}) }),
@@ -188,9 +166,6 @@ export const http = {
     apiFetch<T>(path, { method: "DELETE", ...(init || {}) }),
 }
 
-// -------------------------------------------------------
-// ENDPOINTS
-// -------------------------------------------------------
 const baseVbs = {
   auth: {
     login: "/api/vbs/auth/login",

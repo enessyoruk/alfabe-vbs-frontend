@@ -1,4 +1,3 @@
-// app/api/parent/notifications/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -34,7 +33,6 @@ export async function GET(req: NextRequest) {
       Accept: "application/json",
     }
 
-    // Backend cookie forward
     const backendCookie = req.cookies.get("vbs_backend")?.value
     if (backendCookie) {
       headers.Cookie = decodeURIComponent(backendCookie)
@@ -48,14 +46,11 @@ export async function GET(req: NextRequest) {
 
     const data = await readJson(upstream)
 
-    // ✅ Eğer backend 2xx dönerse → aynen data'yı 200 ile geç
     if (upstream.ok) {
       const res = NextResponse.json(data, { status: 200 })
       return noStore(res)
     }
 
-    // ❌ Backend 4xx/5xx ise:
-    // UI tarafına 500 yansıtmak istemiyoruz.
     const messageFromBackend =
       (data as any)?.error ||
       (data as any)?.message ||

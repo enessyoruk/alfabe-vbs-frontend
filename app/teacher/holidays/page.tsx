@@ -25,7 +25,6 @@ export default function HolidaysPage() {
   const [listLoading, setListLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // basit runtime istatistikleri (bu oturum için)
   const [totalNotificationsSent, setTotalNotificationsSent] = useState(0)
   const [totalSmsSent, setTotalSmsSent] = useState(0)
 
@@ -44,11 +43,9 @@ export default function HolidaysPage() {
       const response = await fetch("/api/holidays", { credentials: "include" })
       const data = await response.json()
 
-      // Beklenen: { success: boolean, holidays: Holiday[] }
       if (data?.success && Array.isArray(data.holidays)) {
         setHolidays(data.holidays)
       } else if (Array.isArray(data)) {
-        // alternatif: direkt liste dönerse
         setHolidays(data)
       } else {
         console.warn(" /api/holidays beklenmeyen cevap:", data)

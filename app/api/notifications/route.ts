@@ -1,4 +1,3 @@
-// app/api/notifications/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -19,7 +18,6 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
-
 const u = (path: string) => `${BACKEND_API_BASE}${path.startsWith("/") ? "" : "/"}${path}`
 
 function noStore(res: NextResponse) {
@@ -34,11 +32,6 @@ async function readJson(res: Response) {
   try { return text ? JSON.parse(text) : {} } catch { return text ? { message: text } : {} }
 }
 
-/**
- * GET /api/notifications
- * Backend: GET /api/vbs/parent/notifications
- * Authorization: Header’daki Bearer veya cookie’deki authToken Bearer olarak forward edilir.
- */
 export async function GET(req: NextRequest) {
   try {
     const headers: Record<string, string> = { Accept: "application/json" }
@@ -48,7 +41,6 @@ export async function GET(req: NextRequest) {
     if (authHeader.toLowerCase().startsWith("bearer ")) headers.Authorization = authHeader
     else if (cookieAuthToken) headers.Authorization = `Bearer ${cookieAuthToken}`
 
-    // Cookie-based oturum varsa çerezi upstream’e geçir
     const incomingCookie = req.headers.get("cookie")
     if (incomingCookie) headers.Cookie = incomingCookie
 
@@ -70,10 +62,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/**
- * PUT /api/notifications
- * Not: Backend’de henüz read/mark-as-read uçları yok. 405 dönüyoruz.
- */
 export async function PUT() {
   return NextResponse.json(
     { error: "Güncelleme desteklenmiyor (backend PUT endpointi yok)" },

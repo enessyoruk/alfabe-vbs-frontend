@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing url" }, { status: 400 })
     }
 
-    // --- Sadece Cookie forward ---
     const cookieHeader = req.headers.get("cookie") ?? ""
 
     const upstream = await fetch(fileUrl, {
@@ -34,7 +33,6 @@ export async function GET(req: NextRequest) {
 
     const arrayBuffer = await upstream.arrayBuffer()
 
-    // --- Binary Response döndür ---
     const res = new NextResponse(arrayBuffer, {
       status: 200,
       headers: {

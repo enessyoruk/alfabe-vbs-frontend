@@ -1,12 +1,8 @@
-// app/api/vbs/teacher/exams/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-// ===============================
-// ENV
-// ===============================
 const BACKEND =
   process.env.BACKEND_API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE
@@ -20,9 +16,6 @@ const UPSTREAM_PATH = "/api/vbs/teacher/exams"
 const u = (p: string) =>
   `${BACKEND}${p.startsWith("/") ? "" : "/"}${p}`
 
-// ===============================
-// HELPERS
-// ===============================
 function noStore(res: NextResponse) {
   res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
   res.headers.set("Pragma", "no-cache")
@@ -42,26 +35,20 @@ async function readJson(r: Response) {
 function buildAuthHeaders(req: NextRequest): Record<string, string> {
   const headers: any = { Accept: "application/json" }
 
-  // Bearer → varsa aynen geç
   const ah = req.headers.get("authorization") || ""
   if (ah.toLowerCase().startsWith("bearer ")) {
     headers.Authorization = ah
   } else {
-    // Cookie → vbs_session
     const token = req.cookies.get("vbs_session")?.value
     if (token) headers.Authorization = `Bearer ${token}`
   }
 
-  // Cookie'leri backend'e yansıt
   const incoming = req.headers.get("cookie")
   if (incoming) headers.Cookie = incoming
 
   return headers
 }
 
-// ===============================
-// GET → sınav listesini getir
-// ===============================
 export async function GET(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)
@@ -93,9 +80,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ===============================
-// POST → yeni sınav oluştur
-// ===============================
 export async function POST(req: NextRequest) {
   try {
     const headers = buildAuthHeaders(req)

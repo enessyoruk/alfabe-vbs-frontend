@@ -37,7 +37,6 @@ export function HeroSection() {
   <span className="text-primary">Dijital Çözüm</span>
 </h2>
 
-
           <p className="text-xl text-muted-foreground mb-8 text-pretty animate-fade-in-delay"></p>
 
         </div>

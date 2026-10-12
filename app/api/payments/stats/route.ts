@@ -1,4 +1,3 @@
-// app/api/parent/payments/stats/route.ts   (mevcut dosyanın yerine)
 import { type NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -52,9 +51,7 @@ export async function GET(req: NextRequest) {
       return noStore(NextResponse.json({ error: "studentId zorunludur" }, { status: 400 }))
     }
 
-    // Varsayılan upstream: /api/vbs/parent/students/{studentId}/payments/stats
     const upstreamUrl = new URL(u(`/api/vbs/parent/students/${studentId}/payments/stats`))
-    // Diğer tüm query parametrelerini (ör. ay/filtre) aktar
     incoming.searchParams.forEach((v, k) => { if (k !== "studentId") upstreamUrl.searchParams.set(k, v) })
 
     const up = await fetch(upstreamUrl.toString(), {

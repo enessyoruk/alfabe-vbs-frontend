@@ -11,9 +11,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { AuthBackground } from "@/components/auth/auth-background"
 import { toast } from "sonner"
 
-// -------------------------------
-// Yardımcı tipler
-// -------------------------------
 type AnyObj = Record<string, any>
 
 type LoginUser = {
@@ -28,9 +25,6 @@ type LoginResponse =
   | { user?: LoginUser; data?: { user?: LoginUser }; claims?: AnyObj; error?: string; message?: string }
   | LoginUser
 
-// -------------------------------
-// Yardımcı fonksiyonlar
-// -------------------------------
 function normalizeRoles(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
   return raw.map(r => String(r || "")).filter(r => r.trim() !== "")
@@ -81,9 +75,6 @@ function pickUser(r: LoginResponse | undefined): LoginUser | null {
   return null
 }
 
-// ===============================================================
-// PAGE COMPONENT
-// ===============================================================
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -91,13 +82,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
-  // 🔥 Logout reason mesajı
   const [logoutReasonMsg, setLogoutReasonMsg] = useState("")
 
   const router = useRouter()
   const sp = useSearchParams()
 
-  // 🔥 Logout reason mesajını oku
   useEffect(() => {
   const reason = localStorage.getItem("vbs_logout_reason")
 
@@ -107,7 +96,6 @@ export default function LoginPage() {
 
   localStorage.removeItem("vbs_logout_reason")
 }, [])
-
 
   const validate = () =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && password.length >= 6

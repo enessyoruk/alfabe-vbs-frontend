@@ -13,7 +13,6 @@ export interface LoginCredentials {
 }
 
 class AuthService {
-  // Mock users for demonstration - in a real app, this would connect to a database
   private mockUsers: User[] = [
     {
       id: "1",
@@ -45,35 +44,29 @@ class AuthService {
     },
   ]
 
-  // Mock passwords - in a real app, these would be hashed and stored securely
   private mockPasswords: Record<string, string> = {
-    "05551234567": "123456", // Parent - Ahmet
-    "05559876543": "teacher123", // Teacher - Ayşe
-    "05555555555": "parent123", // Parent - Mehmet
-    "05551111111": "ogretmen456", // Teacher - Fatma
+    "05551234567": "123456",
+    "05559876543": "teacher123",
+    "05555555555": "parent123",
+    "05551111111": "ogretmen456",
   }
 
   async login(phone: string, password: string, userType: "parent" | "teacher"): Promise<User> {
-    // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    // Clean phone number (remove spaces and formatting)
     const cleanPhone = phone.replace(/\s/g, "")
 
-    // Find user by phone and type
     const user = this.mockUsers.find((u) => u.phone === cleanPhone && u.type === userType)
 
     if (!user) {
       throw new Error("Kullanıcı bulunamadı. Telefon numaranızı ve kullanıcı tipinizi kontrol edin.")
     }
 
-    // Check password
     const expectedPassword = this.mockPasswords[cleanPhone]
     if (!expectedPassword || expectedPassword !== password) {
       throw new Error("Şifre hatalı. Lütfen tekrar deneyin.")
     }
 
-    // Store user in localStorage for session management
     if (typeof window !== "undefined") {
       localStorage.setItem("currentUser", JSON.stringify(user))
     }

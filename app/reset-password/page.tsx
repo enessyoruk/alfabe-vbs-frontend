@@ -11,7 +11,6 @@ import Link from "next/link"
 import { AuthBackground } from "@/components/auth/auth-background"
 import { toast } from "sonner"
 
-
 export default function ResetPasswordPage() {
   const [phoneNumber, setPhoneNumber] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -19,12 +18,10 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("")
 
   const normalizePhone = (value: string) => {
-    // Sadece rakam, maksimum 11 hane
     return value.replace(/\D/g, "").slice(0, 11)
   }
 
   const validatePhoneNumber = (phone: string) => {
-    // 05XXXXXXXXX formatında, 11 hane
     return /^05\d{9}$/.test(phone)
   }
 
@@ -48,7 +45,6 @@ export default function ResetPasswordPage() {
         throw new Error("Geçerli bir telefon numarası girin. Örn: 05XXXXXXXXX (11 haneli).")
       }
 
-      // TODO: Backend entegrasyonu
       await new Promise((resolve) => setTimeout(resolve, 800))
 
       setIsSuccess(true)
@@ -57,7 +53,6 @@ export default function ResetPasswordPage() {
     err?.message ||
     "İşlem sırasında beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
 
-  // 🔥 Sağ altta göster
   toast.error(msg, {
     duration: 2500,
     position: "bottom-right",
@@ -70,7 +65,6 @@ export default function ResetPasswordPage() {
 
   }
 
-  // ---------- SUCCESS EKRANI ----------
   if (isSuccess) {
     return (
       <AuthBackground>
@@ -112,7 +106,6 @@ export default function ResetPasswordPage() {
     )
   }
 
-  // ---------- FORM EKRANI ----------
   return (
     <AuthBackground>
       <div className="w-full max-w-md px-3">

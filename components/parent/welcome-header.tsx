@@ -58,8 +58,6 @@ function WelcomeHeaderComponent({ user }: Props) {
   Hoş geldiniz, {displayName}
 </h1>
 
-
-
           <p className="text-muted-foreground text-sm">
             Çocuğunuzun akademik durumunu kolayca takip edin.
           </p>

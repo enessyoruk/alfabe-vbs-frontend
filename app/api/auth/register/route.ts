@@ -1,10 +1,7 @@
-// app/api/auth/register/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 
-// Bu route Node.js runtime ister
 export const runtime = "nodejs"
 
-// --- Backend base URL (prod: .env üzerinden yönetin) ---
 function requiredEnv(name: string): string {
   const val = process.env[name]
   if (!val || !val.trim()) {
@@ -21,13 +18,10 @@ if (!BACKEND_API_BASE) {
   throw new Error("BACKEND_API_BASE or NEXT_PUBLIC_API_BASE is not set")
 }
 
+const MAX_BODY_BYTES = 64 * 1024
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 20
 
-// ======== Güvenlik / Limitler ========
-const MAX_BODY_BYTES = 64 * 1024 // 64 KB
-const RATE_LIMIT_WINDOW_MS = 60_000 // 1 dk
-const RATE_LIMIT_MAX = 20 // 1 dk'da en fazla 20 kayıt denemesi / IP
-
-// Çok basit bir in-memory rate limit (prod'da Redis gibi bir store önerilir)
 const rateMap = new Map<string, { count: number; resetAt: number }>()
 function checkRate(ip: string) {
   const now = Date.now()
@@ -43,7 +37,6 @@ function checkRate(ip: string) {
   return { allowed: true }
 }
 
-// ======== Yardımcılar ========
 function normalizePhone(raw: string): string {
   return String(raw || "").replace(/\s+/g, "").replace(/\D/g, "")
 }
@@ -62,7 +55,6 @@ function isValidUserType(t: unknown): t is "parent" | "teacher" {
 }
 
 async function forwardResponse(upstream: Response) {
-  // JSON ya da düz metni şeffafça ilet
   const text = await upstream.text()
   const contentType =
     upstream.headers.get("Content-Type") ||
@@ -73,23 +65,17 @@ async function forwardResponse(upstream: Response) {
     headers: { "Content-Type": contentType },
   })
 
-  // Set-Cookie varsa forward et (çoğu zaman register cookie setlemez ama güvenli olsun)
   const setCookie = upstream.headers.get("set-cookie")
   if (setCookie) res.headers.set("set-cookie", setCookie)
 
-  // Rate limit başlıkları (Retry-After) varsa ilet
   const retryAfter = upstream.headers.get("Retry-After")
   if (retryAfter) res.headers.set("Retry-After", retryAfter)
 
   return res
 }
 
-// ======== POST /api/auth/register ========
-// Frontend’den gelen kaydı .NET backend’e PROXY eder.
-// Böylece başvurular DB’ye düşer ve admin panelinde görünür.
 export async function POST(request: NextRequest) {
   try {
-    // Rate limit
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
       request.headers.get("x-real-ip") ||
@@ -104,19 +90,16 @@ export async function POST(request: NextRequest) {
       return res
     }
 
-    // İçerik tipi kontrolü
     const contentType = request.headers.get("content-type") || ""
     if (!contentType.includes("application/json")) {
       return NextResponse.json({ error: "Content-Type application/json olmalı." }, { status: 400 })
     }
 
-    // Büyük gövde saldırılarına karşı korunma
     const raw = await request.text()
     if (raw.length > MAX_BODY_BYTES) {
       return NextResponse.json({ error: "İstek çok büyük." }, { status: 413 })
     }
 
-    // JSON parse
     let body: any
     try {
       body = raw ? JSON.parse(raw) : {}
@@ -124,7 +107,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Geçersiz JSON." }, { status: 400 })
     }
 
-    // Alanları topla ve minimal doğrula
     const name = String(body?.name || "").trim()
     const phoneNumber = String(body?.phoneNumber || "").trim()
     const email = String(body?.email || "").trim().toLowerCase()
@@ -148,12 +130,10 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedPhone = normalizePhone(phoneNumber)
-    // 10–15 hane arası (ülke kodu dâhil olabilir)
     if (normalizedPhone.length < 10 || normalizedPhone.length > 15) {
       return NextResponse.json({ error: "Geçersiz telefon formatı." }, { status: 400 })
     }
 
-    // .NET backend’e ilet (server-to-server, CORS yok)
     const url = `${BACKEND_API_BASE}/api/vbs/auth/register`
     const upstream = await fetch(url, {
       method: "POST",
@@ -166,7 +146,7 @@ export async function POST(request: NextRequest) {
         phoneNumber: normalizedPhone,
         email,
         password,
-        userType, // "parent" | "teacher"
+        userType,
       }),
     })
 
@@ -177,15 +157,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// ======== GET /api/auth/register ========
-// (Opsiyonel) Admin’in bekleyen başvuruları görmesi için backend’e proxy.
-// Backend’teki gerçek liste endpoint’inizi buraya koyun.
 export async function GET(request: NextRequest) {
   try {
     const urlObj = new URL(request.url)
-    const status = urlObj.searchParams.get("status") // pending | approved | rejected
+    const status = urlObj.searchParams.get("status")
 
-    // Backend tarafında bu parametre destekleniyorsa ekleyelim
     const target = new URL(`${BACKEND_API_BASE}/api/vbs/auth/registrations`)
     if (status) target.searchParams.set("status", status)
 
