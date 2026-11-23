@@ -2,7 +2,7 @@
 
 Alfa-β Akademi özel öğretim kurumu için geliştirilmiş web uygulaması. Kurumun tanıtım sitesini, veli panelini, öğretmen panelini ve yönetici akışlarını tek arayüzde toplar.
 
-Canlı site: [alfabe-vbs-frontend.vercel.app](https://alfabe-vbs-frontend.vercel.app)
+Canlı site: [alfabeakademi.com](alfabeakademi.com)
 
 API katmanı ayrı repodadır: [alfabe-vbs-backend](https://github.com/enessyoruk/alfabe-vbs-backend)
 
